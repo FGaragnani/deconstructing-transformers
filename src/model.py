@@ -12,12 +12,8 @@ class TransformerLikeModel(nn.Module):
 
     self.embed_size = embed_size
     self.input_size = input_size
-    self.hidden_ff_size_dec = hidden_ff_size_dec
-    self.hidden_ff_size_enc = hidden_ff_size_enc
-    if hidden_ff_size_dec is None:
-      self.hidden_ff_size_dec = self.embed_size * 4
-    if hidden_ff_size_enc is None:
-      self.hidden_ff_size_enc = self.embed_size * 4
+    self.hidden_ff_size_enc = hidden_ff_size_enc if hidden_ff_size_enc is not None else embed_size * 4
+    self.hidden_ff_size_dec = hidden_ff_size_dec if hidden_ff_size_dec is not None else embed_size * 4
 
     self.cls_token = nn.Parameter(torch.randn(1, 1, embed_size)) if cls_token_method == 'learnable' else torch.ones(1, 1, embed_size)
     self.output_len = output_len
