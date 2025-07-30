@@ -55,6 +55,11 @@ def train_model(model: TransformerLikeModel, epochs: int, train_data_loader: Dat
   test_loss = 0
   for X_test, y_test in test_data_loader:
     X_test, y_test = X_test.to(device), y_test.to(device)
+    print(f"Input sequence: {X_test[0]}\nTarget sequence: {y_test[0]}\nPredicted sequence: {model(X_test)[0]}", end="")
+    break
+
+  for X_test, y_test in test_data_loader:
+    X_test, y_test = X_test.to(device), y_test.to(device)
     outputs = model(X_test)
     loss = criterion(outputs, y_test)
     test_loss += loss.item()
