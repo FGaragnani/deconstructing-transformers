@@ -75,7 +75,7 @@ Returns:
     Optional[Tuple[DatasetTimeSeries, DatasetTimeSeries]]: A tuple containing the training and testing datasets, or None if the row is invalid.
 """
 def parse_dataset_from_xls(file_path: str, sheet_type: SheetType, row: int, output_len: int, preprocessing: PreprocessingTimeSeries, split: float = 0.75) -> Tuple[DatasetTimeSeries, DatasetTimeSeries]:
-    df = pd.read_excel(file_path, header=None)
+    df = pd.read_excel(file_path, sheet_name=sheet_type.value, header=None)
 
     # Start from row 2
     data_rows = df.iloc[1:]
