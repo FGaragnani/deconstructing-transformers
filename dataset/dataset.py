@@ -60,7 +60,7 @@ class DatasetTimeSeries(Dataset):
         return self.tensor_dataset.__len__()
 
     def __getitem__(self, idx):
-        return self.tensor_dataset[idx]
+        return (self.tensor_dataset[idx][0].unsqueeze(1), self.tensor_dataset[idx][1].unsqueeze(1))
 
 """
 Parses a dataset from an Excel file.
@@ -95,8 +95,9 @@ def parse_dataset_from_xls(file_path: str, sheet_type: SheetType, row: int, outp
         index = 0
 
     timesteps = sheet_type.to_recurrence()
-    category = str(data_rows.iloc[0, 3])
+    category = str(data_rows.iloc[0, 3]).rstrip()
     series = data_rows.iloc[0, 6:].to_numpy(dtype=np.float32)
+    series = series[~np.isnan(series)]
     train_series = series[:int(len(series) * split)]
     # This is done in order to employ values from the train_series which are only predicted and not trained upon before
     test_series = np.concatenate([series[int(len(series) * split) - timesteps:int(len(series) * split)], series[int(len(series) * split):]])

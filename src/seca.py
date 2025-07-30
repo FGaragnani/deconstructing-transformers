@@ -4,7 +4,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 
 class ScalarExpansionContractiveAutoencoder(nn.Module):
-  def __init__(self, embed_size: int, input_size: int = 1, lam: float = 1e-9):
+  def __init__(self, embed_size: int, input_size: int = 1, lam: float = 1e-10):
     super(ScalarExpansionContractiveAutoencoder, self).__init__()
     self.embed_size = embed_size
     self.input_size = input_size
@@ -66,15 +66,14 @@ def train_SECA(model: ScalarExpansionContractiveAutoencoder, optimizer: optim.Op
     loss_value = 0
 
     for _, (X, _) in enumerate(data_loader):
-      X = X.to(device)
-
-      optimizer.zero_grad()
-      h, y = model(X)
-      loss = model.loss(X, y, h)
-
-      loss.backward()
-      loss_value += loss.item()
-      optimizer.step()
+        X = X.to(device)
+        h, y = model(X)
+        # loss = model.loss(X, y, h)
+        loss = torch.mean(torch.abs(X - y))
+        optimizer.zero_grad()
+        loss.backward()
+        loss_value += loss.item()
+        optimizer.step()
 
     if verbose:
       print(f"Epoch {i + 1}/{epochs}, Loss: {loss_value}")
@@ -94,11 +93,11 @@ def test_SECA(model: ScalarExpansionContractiveAutoencoder, data_loader: DataLoa
   if verbose:
     print(f"---\tSECA Testing\t---")
 
-  for idx, (X, _) in enumerate(data_loader):
+  for _, (X, _) in enumerate(data_loader):
     X = X.to(device)
     h, y = model(X)
-    loss = model.loss(X, y, h)
-
+    # loss = model.loss(X, y, h)
+    loss = torch.mean(torch.abs(X - y))
     loss_value += loss.item()
 
   if verbose:
