@@ -5,7 +5,7 @@ import torch
 from torch.utils.data import TensorDataset, Dataset
 
 from enum import Enum
-from typing import Optional, Tuple
+from typing import Tuple, List
 
 class SheetType(Enum):
     YEARLY = 0
@@ -74,9 +74,7 @@ Args:
 Returns:
     Optional[Tuple[DatasetTimeSeries, DatasetTimeSeries]]: A tuple containing the training and testing datasets, or None if the row is invalid.
 """
-def parse_dataset_from_xls(file_path: str, sheet_type: SheetType, row: int, output_len: int, preprocessing: PreprocessingTimeSeries, split: float = 0.75) -> Tuple[DatasetTimeSeries, DatasetTimeSeries]:
-    df = pd.read_excel(file_path, sheet_name=sheet_type.value, header=None)
-
+def parse_dataset_from_df(df: pd.DataFrame, sheet_type: SheetType, row: int, output_len: int, preprocessing: PreprocessingTimeSeries, split: float = 0.75) -> Tuple[DatasetTimeSeries, DatasetTimeSeries]:
     # Start from row 2
     data_rows = df.iloc[1:]
 
@@ -106,3 +104,20 @@ def parse_dataset_from_xls(file_path: str, sheet_type: SheetType, row: int, outp
     test_dataset = DatasetTimeSeries(test_series, sheet_type, index, category, output_len, preprocessing)
 
     return train_dataset, test_dataset
+
+def parse_dataset_from_xls(file_path: str, sheet_type: SheetType, row: int, output_len: int, preprocessing: PreprocessingTimeSeries, split: float = 0.75) -> Tuple[DatasetTimeSeries, DatasetTimeSeries]:
+    df = pd.read_excel(file_path, sheet_name=sheet_type.value, header=None)
+    return parse_dataset_from_df(df, sheet_type, row, output_len, preprocessing, split)
+
+def parse_whole_dataset_from_xls(file_path: str, sheet_type: SheetType, output_len: int, preprocessing: PreprocessingTimeSeries, split: float = 0.75) -> List[Tuple[DatasetTimeSeries, DatasetTimeSeries]]:
+    df = pd.read_excel(file_path, sheet_name=sheet_type.value, header=None)
+    datasets = []
+
+    for row in range(2, len(df) + 1):
+        try:
+            train_dataset, test_dataset = parse_dataset_from_df(df, sheet_type, row, output_len, preprocessing, split)
+            datasets.append((train_dataset, test_dataset))
+        except ValueError as e:
+            print(f"Skipping row {row}: {e}")
+
+    return datasets
