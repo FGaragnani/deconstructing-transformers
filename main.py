@@ -23,7 +23,14 @@ def main():
         model: TransformerLikeModel = TransformerLikeModel(embed_size=8, encoder_size=1, decoder_size=1, output_len=OUTPUT_LEN, num_head_enc=2, positional_embedding_method="learnable")
         train_loader, test_loader = DataLoader(train_dataset, batch_size=1, shuffle=True), DataLoader(test_dataset, batch_size=1, shuffle=False)
         train_loss, test_loss = train_transformer_model(model=model, epochs=30, train_data_loader=train_loader, test_data_loader=test_loader, verbose=False)
-        print(f"Train Loss: {train_loss:.4f}, Test Loss: {test_loss:.4f}\n")
+        if test_loss < best_test_loss:
+            best_train_loss = train_loss
+            best_test_loss = test_loss
+            best_dataset = (train_dataset, test_dataset)
+            print(f"Train Loss: {train_loss:.4f}, Test Loss: {test_loss:.4f}\n")
+
+    print(f"Best dataset: {best_dataset[0].category} (ID: {best_dataset[0].id})")
+    print(f"Best Train Loss: {best_train_loss:.4f}, Best Test Loss: {best_test_loss:.4f}")
 
 if __name__ == "__main__":
     main()
