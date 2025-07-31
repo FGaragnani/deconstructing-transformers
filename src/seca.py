@@ -58,6 +58,7 @@ def train_SECA(model: ScalarExpansionContractiveAutoencoder, optimizer: optim.Op
   device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
   model.to(device)
   model.train()
+  model.unfreeze()
 
   if verbose:
     print(f"---\tSECA Training - {epochs} Epochs\t---")

@@ -118,7 +118,8 @@ def parse_whole_dataset_from_xls(file_path: str, sheet_type: SheetType, output_l
     for row in range(2, len(df)):
         try:
             train_dataset, test_dataset = parse_dataset_from_df(df, sheet_type, row, output_len, preprocessing, split)
-            datasets.append((train_dataset, test_dataset))
+            if len(test_dataset) > 0 and len(train_dataset) > 0:
+                datasets.append((train_dataset, test_dataset))
         except IndexError as e:
             print(f"Skipping row {row} due to error: {e}")
 
