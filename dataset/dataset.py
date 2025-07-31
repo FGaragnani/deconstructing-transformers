@@ -54,6 +54,8 @@ class DatasetTimeSeries(Dataset):
             X.append(series[i:i + timesteps])
             y.append(series[i + timesteps:i + timesteps + output_len])
 
+        X = np.array(X)
+        y = np.array(y)
         return TensorDataset(torch.tensor(X, dtype=torch.float32), torch.tensor(y, dtype=torch.float32))
 
     def __len__(self):
@@ -113,11 +115,11 @@ def parse_whole_dataset_from_xls(file_path: str, sheet_type: SheetType, output_l
     df = pd.read_excel(file_path, sheet_name=sheet_type.value, header=None)
     datasets = []
 
-    for row in range(2, len(df) + 1):
+    for row in range(2, len(df)):
         try:
             train_dataset, test_dataset = parse_dataset_from_df(df, sheet_type, row, output_len, preprocessing, split)
             datasets.append((train_dataset, test_dataset))
-        except ValueError as e:
-            print(f"Skipping row {row}: {e}")
+        except IndexError as e:
+            print(f"Skipping row {row} due to error: {e}")
 
     return datasets
