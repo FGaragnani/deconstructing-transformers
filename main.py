@@ -5,7 +5,7 @@ from src.model import TransformerLikeModel
 from dataset.dataset import parse_whole_dataset_from_xls, SheetType, PreprocessingTimeSeries, DatasetTimeSeries
 
 from torch.utils.data import DataLoader
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 OUTPUT_LEN = 4
 
@@ -15,11 +15,15 @@ def main():
     datasets: List[Tuple[DatasetTimeSeries, DatasetTimeSeries]] = parse_whole_dataset_from_xls("M3C.xls", SheetType.QUARTERLY, output_len=OUTPUT_LEN, preprocessing=PreprocessingTimeSeries.NORMALIZE)
 
     best_dataset: Tuple[DatasetTimeSeries, DatasetTimeSeries] = datasets[0]
-    best_train_loss, best_test_loss = float('inf'), float('inf')
+    best_losses: Dict[str, Tuple[float, float]] = {}
 
     seca = ScalarExpansionContractiveAutoencoder(embed_size=8, input_size=1) # Preload SECA so it avoids pretraining in each iteration
 
     for idx, (train_dataset, test_dataset) in enumerate(datasets):
+        if train_dataset.category not in best_losses.keys():
+            best_losses[train_dataset.category] = (float('inf'), float('inf'))
+
+        best_train_loss, best_test_loss = best_losses[train_dataset.category]
         print(f"Training on dataset: {train_dataset.category} (ID: {train_dataset.id})")
         print(f"Number of training samples: {len(train_dataset)}, Number of testing samples: {len(test_dataset)}")
     
@@ -32,8 +36,9 @@ def main():
             best_dataset = (train_dataset, test_dataset)
             print(f"Train Loss: {train_loss:.4f}, Test Loss: {test_loss:.4f}\n")
 
-    print(f"Best dataset: {best_dataset[0].category} (ID: {best_dataset[0].id})")
-    print(f"Best Train Loss: {best_train_loss:.4f}, Best Test Loss: {best_test_loss:.4f}")
+    print(f"\nBest dataset: {best_dataset[0].category} (ID: {best_dataset[0].id})")
+    for category, (best_train_loss, best_test_loss) in best_losses.items():
+        print(f"Category: {category}, Best Train Loss: {best_train_loss:.4f}, Best Test Loss: {best_test_loss:.4f}")
 
 if __name__ == "__main__":
     main()
