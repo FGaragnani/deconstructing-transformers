@@ -44,6 +44,7 @@ def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data
           Y = torch.cat([Y, output], dim=1)
         y = model.seca.decode(output)
         loss = criterion(y, y_batch[:, step].unsqueeze(-1))
+        loss = torch.sqrt(loss)  # Use RMSE
         total_loss += loss
 
       loss.backward()
@@ -72,6 +73,7 @@ def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data
     X_test, y_test = X_test.to(device), y_test.to(device)
     outputs = model(X_test)
     loss = criterion(outputs, y_test)
+    loss = torch.sqrt(loss)  # Use RMSE
     test_loss += loss.item()
 
   ret_test_loss = test_loss / len(test_data_loader)
@@ -116,6 +118,7 @@ def train_encoder_model(model: EncoderOnlyModel, epochs: int, train_data_loader:
           X_batch = torch.cat([X_batch, y.unsqueeze(1)], dim=1)
         y = model.seca.decode(y)
         loss = criterion(y, y_batch[:, step].unsqueeze(-1))
+        loss = torch.sqrt(loss)  # Use RMSE
         total_loss += loss
 
       loss.backward()
@@ -142,6 +145,7 @@ def train_encoder_model(model: EncoderOnlyModel, epochs: int, train_data_loader:
     X_test, y_test = X_test.to(device), y_test.to(device)
     outputs = model(X_test)
     loss = criterion(outputs, y_test)
+    loss = torch.sqrt(loss)  # Use RMSE
     test_loss += loss.item()
 
   ret_test_loss = test_loss / len(test_data_loader)
