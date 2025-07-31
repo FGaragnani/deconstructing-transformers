@@ -3,7 +3,7 @@ import torch.nn as nn
 from src.seca import ScalarExpansionContractiveAutoencoder
 from src.layers import PositionalEmbeddingLayer
 from src.modules import EncoderModule, DecoderModule, Output
-from typing import Optional
+from typing import Optional, List
 
 class TransformerLikeModel(nn.Module):
   def __init__(self, embed_size: int, encoder_size: int = 6, decoder_size: int = 6, input_size: int = 1, hidden_ff_size_enc: Optional[int] = None, hidden_ff_size_dec: Optional[int] = None, num_head_enc: int = 8, num_head_dec_1: int = 8, num_head_dec_2: int = 8,
@@ -70,3 +70,44 @@ class TransformerLikeModel(nn.Module):
       preds.append(self.seca.decode(y))
 
     return torch.stack(preds).permute(1, 0, 2)
+  
+class EncoderOnlyModel(nn.Module):
+  def __init__(self, embed_size: int, encoder_size: int = 6, input_size: int = 1, output_len: int = 1, hidden_ff_size_enc: Optional[int] = None, num_head_enc: int = 8, positional_embedding_method: str = "fixed", max_seq_length: int = 120):
+    super(EncoderOnlyModel, self).__init__()
+
+    self.embed_size = embed_size
+    self.input_size = input_size
+    self.hidden_ff_size_enc = hidden_ff_size_enc if hidden_ff_size_enc is not None else embed_size * 4
+    self.output_len = output_len
+
+    self.seca = ScalarExpansionContractiveAutoencoder(embed_size, input_size)
+    self.pe = PositionalEmbeddingLayer(max_seq_length, embed_size, positional_embedding_method)
+    self.encoder = nn.Sequential(*[
+        EncoderModule(embed_size, num_head_enc, self.hidden_ff_size_enc) for _ in range(encoder_size)
+    ])
+    self.output = Output(embed_size)
+
+  """
+    From the raw input sequence,
+    get the (output_len) sequence, already DECODED.
+  """
+  def forward(self, X: torch.Tensor) -> List[float]:
+    preds = []
+
+    for _ in range(self.output_len):
+      Z = self.seca.encode(X)
+      Z = self.pe(Z)
+      Z = self.encoder(Z)
+      output = self.output(Z)
+      X = torch.cat(
+        (X[:, 1:], output.unsqueeze(1)), dim=1
+      )
+      preds.append(output.squeeze(1))
+
+    return preds
+
+  def single_forward(self, input: torch.Tensor):
+    Z = self.seca.encode(input)
+    Z = self.pe(Z)
+    Z = self.encoder(Z)
+    return Z
