@@ -7,8 +7,10 @@ from src.seca import train_SECA, test_SECA
 from src.model import TransformerLikeModel
 from torch.utils.data import DataLoader
 
+from typing import Tuple
+
 def train_model(model: TransformerLikeModel, epochs: int, train_data_loader: DataLoader, test_data_loader: DataLoader, verbose: bool = True,
-                teacher_forcing_ratio: float = 1.0):
+                teacher_forcing_ratio: float = 1.0) -> Tuple[float, float]:
   device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
   model.to(device)
 
@@ -18,6 +20,9 @@ def train_model(model: TransformerLikeModel, epochs: int, train_data_loader: Dat
 
   optimizer = optim.Adam(model.parameters(), lr=1e-4)
   criterion = nn.MSELoss()
+
+  ret_train_loss = 0.0
+  ret_test_loss = 0.0
 
   for epoch in range(epochs):
     epoch_loss = 0
@@ -48,6 +53,8 @@ def train_model(model: TransformerLikeModel, epochs: int, train_data_loader: Dat
     if (epoch + 1) % 5 == 0:
       teacher_forcing_ratio *= 0.9
 
+    ret_train_loss = epoch_loss / len(train_data_loader)
+
     if verbose:
       print(f"Epoch {epoch+1}/{epochs}, Loss: {epoch_loss/len(train_data_loader):.4f}")
 
@@ -64,5 +71,9 @@ def train_model(model: TransformerLikeModel, epochs: int, train_data_loader: Dat
     loss = criterion(outputs, y_test)
     test_loss += loss.item()
 
+  ret_test_loss = test_loss / len(test_data_loader)
+
   if verbose:
       print(f"Test loss: {test_loss/len(test_data_loader):.4f}")
+
+  return ret_train_loss, ret_test_loss
