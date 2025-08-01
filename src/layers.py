@@ -49,7 +49,8 @@ class MultiHeadAttentionLayer(nn.Module):
         A = torch.matmul(Q, K.transpose(-2, -1))
         A /= (self.head_dim ** 0.5)
         if self.mask:
-          mask = torch.tril(torch.ones(seq_length, seq_length)).to(A.device)
+          q_seq_len, k_seq_len = Q.size(-2), K.size(-2)
+          mask = torch.tril(torch.ones(q_seq_len, k_seq_len)).to(A.device)
           A = A.masked_fill(mask == 0, float('-inf'))
         A = F.softmax(A, dim=-1)
         A = torch.matmul(A, V)
