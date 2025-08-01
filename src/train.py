@@ -16,7 +16,7 @@ def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data
 
   model.train()
   if pretrain_seca:
-    train_SECA(model.seca, optim.Adam(model.seca.parameters(), lr=5e-5), train_data_loader, epochs * 10, verbose)
+    train_SECA(model.seca, optim.Adam(model.seca.parameters(), lr=5e-5), train_data_loader, epochs * 3, verbose)
     test_SECA(model.seca, test_data_loader, verbose)
     model.seca.unfreeze()
 
@@ -35,7 +35,7 @@ def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data
 
       optimizer.zero_grad()
       Y = model.cls_token.expand((batch_size, 1, -1))
-      total_loss = 0
+      total_loss = torch.tensor(0.0, device=device)
 
       for step in range(model.output_len):
         output = model.single_forward((X_batch, Y))
@@ -46,9 +46,9 @@ def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data
         y = model.seca.decode(output)
         loss = criterion(y, y_batch[:, step].unsqueeze(-1))
         loss = torch.sqrt(loss)  # Use RMSE
-        total_loss += loss
+        total_loss = total_loss + loss
 
-      loss.backward()
+      total_loss.backward()
       optimizer.step()
 
       epoch_loss += loss.item()
@@ -108,7 +108,7 @@ def train_encoder_model(model: EncoderOnlyModel, epochs: int, train_data_loader:
       batch_size, output_len, _ = y_batch.shape
 
       optimizer.zero_grad()
-      total_loss = 0
+      total_loss = torch.tensor(0.0, device=device)
 
       for step in range(model.output_len):
         y = model.single_forward(X_batch)
@@ -120,9 +120,9 @@ def train_encoder_model(model: EncoderOnlyModel, epochs: int, train_data_loader:
         y = model.seca.decode(y)
         loss = criterion(y, y_batch[:, step].unsqueeze(-1))
         loss = torch.sqrt(loss)  # Use RMSE
-        total_loss += loss
+        total_loss = total_loss + loss
 
-      loss.backward()
+      total_loss.backward()
       optimizer.step()
 
       epoch_loss += loss.item()
@@ -137,10 +137,13 @@ def train_encoder_model(model: EncoderOnlyModel, epochs: int, train_data_loader:
 
   model.eval()
   test_loss = 0
-  for X_test, y_test in test_data_loader:
-    X_test, y_test = X_test.to(device), y_test.to(device)
-    print(f"Input sequence: {X_test[0]}\nTarget sequence: {y_test[0]}\nPredicted sequence: {model(X_test)[0]}")
-    break
+  
+  if verbose:
+    for X_test, y_test in test_data_loader:
+      X_test, y_test = X_test.to(device), y_test.to(device)
+      predicted = model(X_test)
+      print(f"Input sequence: {X_test[0]}\nTarget sequence: {y_test[0]}\nPredicted sequence: {predicted[0]}")
+      break
 
   for X_test, y_test in test_data_loader:
     X_test, y_test = X_test.to(device), y_test.to(device)
