@@ -31,8 +31,7 @@ def main():
         train_loader, test_loader = DataLoader(train_dataset, batch_size=1, shuffle=True), DataLoader(test_dataset, batch_size=1, shuffle=False)
         train_loss, test_loss = train_transformer_model(model=model, epochs=30, train_data_loader=train_loader, test_data_loader=test_loader, verbose=False, pretrain_seca=(idx == 0))
         if test_loss < best_test_loss:
-            best_train_loss = train_loss
-            best_test_loss = test_loss
+            best_losses[train_dataset.category] = (train_loss, test_loss)
             best_dataset = (train_dataset, test_dataset)
             print(f"Train Loss: {train_loss:.4f}, Test Loss: {test_loss:.4f}\n")
 
