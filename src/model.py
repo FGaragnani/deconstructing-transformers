@@ -91,7 +91,7 @@ class EncoderOnlyModel(nn.Module):
     From the raw input sequence,
     get the (output_len) sequence, already DECODED.
   """
-  def forward(self, X: torch.Tensor) -> List[float]:
+  def forward(self, X: torch.Tensor) -> torch.Tensor:
     preds = []
 
     for _ in range(self.output_len):
@@ -104,7 +104,7 @@ class EncoderOnlyModel(nn.Module):
       )
       preds.append(output.squeeze(1))
 
-    return preds
+    return torch.stack(preds, dim=1)
 
   def single_forward(self, input: torch.Tensor):
     Z = self.seca.encode(input)
