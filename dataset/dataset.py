@@ -29,9 +29,15 @@ class PreprocessingTimeSeries(Enum):
         if self == PreprocessingTimeSeries.NONE:
             return series
         elif self == PreprocessingTimeSeries.NORMALIZE:
-            return (series - series.min()) / (series.max() - series.min())
+            range_val = series.max() - series.min()
+            if range_val == 0:
+                return pd.Series([0.0] * len(series))  # Return zeros if no variation
+            return (series - series.min()) / range_val
         elif self == PreprocessingTimeSeries.STANDARDIZE:
-            return (series - series.mean()) / series.std()
+            std_val = series.std()
+            if std_val == 0:
+                return pd.Series([0.0] * len(series))  # Return zeros if no variation
+            return (series - series.mean()) / std_val
         else:
             raise ValueError("Invalid PreprocessingTimeSeries")
 
