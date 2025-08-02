@@ -17,8 +17,6 @@ def main():
     best_dataset: Tuple[DatasetTimeSeries, DatasetTimeSeries] = datasets[0]
     best_losses: Dict[str, Tuple[float, float]] = {}
 
-    seca = ScalarExpansionContractiveAutoencoder(embed_size=8, input_size=1) # Preload SECA so it avoids pretraining in each iteration
-
     for idx, (train_dataset, test_dataset) in enumerate(datasets):
         if train_dataset.category not in best_losses.keys():
             best_losses[train_dataset.category] = (float('inf'), float('inf'))
@@ -27,9 +25,9 @@ def main():
         print(f"Training on dataset: {train_dataset.category} (ID: {train_dataset.id})")
         print(f"Number of training samples: {len(train_dataset)}, Number of testing samples: {len(test_dataset)}")
     
-        model: TransformerLikeModel = TransformerLikeModel(embed_size=8, encoder_size=1, decoder_size=1, output_len=OUTPUT_LEN, num_head_enc=2, positional_embedding_method="learnable", seca=seca)
+        model: TransformerLikeModel = TransformerLikeModel(embed_size=8, encoder_size=1, decoder_size=1, output_len=OUTPUT_LEN, num_head_enc=2, positional_embedding_method="learnable")
         train_loader, test_loader = DataLoader(train_dataset, batch_size=1, shuffle=True), DataLoader(test_dataset, batch_size=1, shuffle=False)
-        train_loss, test_loss = train_transformer_model(model=model, epochs=30, train_data_loader=train_loader, test_data_loader=test_loader, verbose=False, pretrain_seca=(idx == 0))
+        train_loss, test_loss = train_transformer_model(model=model, epochs=30, train_data_loader=train_loader, test_data_loader=test_loader, verbose=False, pretrain_seca=True)
         if test_loss < best_test_loss:
             best_losses[train_dataset.category] = (train_loss, test_loss)
             best_dataset = (train_dataset, test_dataset)
