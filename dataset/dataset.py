@@ -93,7 +93,7 @@ def parse_dataset_from_df(df: pd.DataFrame, sheet_type: SheetType, row: int, out
         
 
     # Extract index
-    index = str(data_rows.iloc[0, 0])[2:] # Since it's like "N k"
+    index = str(data_rows.iloc[0, 0])[1:] # Since it's like "N k"
     try:
         index = int(index)
     except ValueError:
