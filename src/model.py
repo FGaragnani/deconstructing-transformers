@@ -15,7 +15,7 @@ class TransformerLikeModel(nn.Module):
     self.hidden_ff_size_enc = hidden_ff_size_enc if hidden_ff_size_enc is not None else embed_size * 4
     self.hidden_ff_size_dec = hidden_ff_size_dec if hidden_ff_size_dec is not None else embed_size * 4
 
-    self.cls_token = nn.Parameter(torch.randn(1, 1, embed_size)) if cls_token_method == 'learnable' else torch.ones(1, 1, embed_size)
+    self.cls_token = nn.Parameter(torch.randn(1, 1, embed_size)) if cls_token_method == 'learnable' else nn.Parameter(torch.ones(1, 1, embed_size), requires_grad=False)
     self.output_len = output_len
 
     self.seca = ScalarExpansionContractiveAutoencoder(embed_size, input_size) if seca is None else seca
@@ -43,7 +43,7 @@ class TransformerLikeModel(nn.Module):
 
     Y = self.pe(Y)
     y = self.decoder((Y, Z))[0]
-    y = self.output(y).unsqueeze(1)
+    y = self.output(y)  # Remove the extra unsqueeze(1)
 
     return y
 
@@ -53,8 +53,8 @@ class TransformerLikeModel(nn.Module):
   """
   def forward(self, X: torch.Tensor):
 
-    batch_size, seq_length, embed_size = X.shape
-    Y = self.cls_token.expand((batch_size, self.output_len, self.embed_size))
+    batch_size, seq_length, _ = X.shape  # X has shape [batch, seq_len, 1]
+    Y = self.cls_token.expand((batch_size, 1, self.embed_size))  # Start with just one CLS token
 
     Z = self.seca.encode(X)
     Z = self.pe(Z)
@@ -65,7 +65,7 @@ class TransformerLikeModel(nn.Module):
     for _ in range(self.output_len):
       Y_tok = self.pe(Y)
       y = self.decoder((Y_tok, Z))[0]
-      y = self.output(y)
+      y = self.output(y)  # y is the last token output
       Y = torch.cat([Y, y.unsqueeze(1)], dim=1)
       preds.append(self.seca.decode(y))
 
@@ -99,10 +99,11 @@ class EncoderOnlyModel(nn.Module):
       Z = self.pe(Z)
       Z = self.encoder(Z)
       output = self.output(Z)
+      decoded_output = self.seca.decode(output)
       X = torch.cat(
-        (X[:, 1:], output.unsqueeze(1)), dim=1
+        (X[:, 1:], decoded_output), dim=1
       )
-      preds.append(output.squeeze(1))
+      preds.append(decoded_output.squeeze(1))
 
     return torch.stack(preds, dim=1)
 
