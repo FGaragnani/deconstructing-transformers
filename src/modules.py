@@ -42,16 +42,15 @@ class DecoderModule(nn.Module):
     return (X, Z)
   
 class Output(nn.Module):
-    def __init__(self, embed_dim: int, hidden_dim: Optional[int] = None, output_dim: Optional[int] = None):
+    def __init__(self, embed_dim: int, hidden_dim: Optional[int] = None):
         super().__init__()
         hidden_dim = hidden_dim or embed_dim
-        output_dim = output_dim or embed_dim
 
         self.head = nn.Sequential(
-            # nn.LayerNorm(embed_dim),
-            nn.Linear(embed_dim, embed_dim),
+            nn.LayerNorm(embed_dim),
+            nn.Linear(embed_dim, hidden_dim),
             nn.ReLU(),
-            nn.Linear(embed_dim, embed_dim)
+            nn.Linear(hidden_dim, embed_dim)
         )
 
     def forward(self, X: torch.Tensor) -> torch.Tensor:
