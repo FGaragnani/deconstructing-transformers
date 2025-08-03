@@ -13,9 +13,9 @@ class SheetType(Enum):
 
     def to_recurrence(self) -> int:
         if self == SheetType.YEARLY:
-            return 12
+            return 12 * 2
         elif self == SheetType.QUARTERLY:
-            return 4
+            return 4 * 2
         else:
             raise ValueError("Invalid SheetType")
 
