@@ -50,8 +50,9 @@ class MultiHeadAttentionLayer(nn.Module):
         A /= (self.head_dim ** 0.5)
         if self.mask:
           q_seq_len, k_seq_len = Q.size(-2), K.size(-2)
-          mask = torch.tril(torch.ones(q_seq_len, k_seq_len)).to(A.device)
-          A = A.masked_fill(mask == 0, float('-inf'))
+          # Mask future positions (upper triangle)
+          mask = torch.triu(torch.ones(q_seq_len, k_seq_len), diagonal=1).to(A.device)
+          A = A.masked_fill(mask == 1, float('-inf'))
         A = F.softmax(A, dim=-1)
         A = torch.matmul(A, V)
 
@@ -68,7 +69,7 @@ class FeedForwardLayer(nn.Module):
   def __init__(self, embed_size: int, inner_size: Optional[int]):
     super(FeedForwardLayer, self).__init__()
     self.embed_size = embed_size
-    self.inner_size = inner_size if inner_size is not None else embed_size
+    self.inner_size = inner_size if inner_size is not None else embed_size * 2
 
     self.fc1 = nn.Linear(in_features=self.embed_size, out_features=self.inner_size, bias=True)
     self.fc2 = nn.Linear(in_features=self.inner_size, out_features=self.embed_size, bias=True)
