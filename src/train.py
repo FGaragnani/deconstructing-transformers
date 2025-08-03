@@ -16,10 +16,10 @@ def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data
 
   model.train()
   if pretrain_seca:
-    train_SECA(model.seca, optim.Adam(model.seca.parameters(), lr=5e-5), train_data_loader, epochs * 10, verbose)
+    train_SECA(model.seca, optim.Adam(model.seca.parameters(), lr=5e-5), train_data_loader, 500, verbose)
     test_SECA(model.seca, test_data_loader, verbose)
 
-  optimizer = optim.Adam(model.parameters(), lr=1e-4)
+  optimizer = optim.AdamW(model.parameters(), lr=1e-4)
   criterion = nn.MSELoss()
 
   ret_train_loss = 0.0
@@ -41,16 +41,16 @@ def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data
         if random.random() < teacher_forcing_ratio:
           Y = torch.cat([Y, model.seca.encode(y_batch[:, step].unsqueeze(1))], dim=1)
         else:
-          Y = torch.cat([Y, output], dim=1)
+          Y = torch.cat([Y, output.unsqueeze(1)], dim=1)
         y = model.seca.decode(output)
-        loss = criterion(y, y_batch[:, step].unsqueeze(-1))
+        loss = criterion(y, y_batch[:, step])
         loss = torch.sqrt(loss)  # Use RMSE
         total_loss = total_loss + loss
 
       total_loss.backward()
       optimizer.step()
 
-      epoch_loss += loss.item()
+      epoch_loss += total_loss.item()
 
     if (epoch + 1) % 5 == 0:
       teacher_forcing_ratio *= 0.9
@@ -111,20 +111,20 @@ def train_encoder_model(model: EncoderOnlyModel, epochs: int, train_data_loader:
 
       for step in range(model.output_len):
         y = model.single_forward(X_batch)
-        X_batch = X_batch[:, 1:]  # Remove the first element, to keep the sequence length consistent
+        X_batch = X_batch[:, 1:]
         if random.random() < teacher_forcing_ratio:
           X_batch = torch.cat([X_batch, model.seca.encode(y_batch[:, step].unsqueeze(1))], dim=1)
         else:
           X_batch = torch.cat([X_batch, y.unsqueeze(1)], dim=1)
         y = model.seca.decode(y)
-        loss = criterion(y, y_batch[:, step].unsqueeze(-1))
+        loss = criterion(y, y_batch[:, step])
         loss = torch.sqrt(loss)  # Use RMSE
         total_loss = total_loss + loss
 
       total_loss.backward()
       optimizer.step()
 
-      epoch_loss += loss.item()
+      epoch_loss += total_loss.item()
 
     if (epoch + 1) % 5 == 0:
       teacher_forcing_ratio *= 0.9
