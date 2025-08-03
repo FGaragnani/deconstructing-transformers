@@ -11,11 +11,12 @@
 	\begin{table}[h!]
 		\centering
 		\caption*{Models' architecture}
-		\begin{tabular}{@{}lccccc@{}}
+		\begin{tabular}{@{}lcccccc@{}}
 			\midrule[0.2pt]
-			& \textbf{Enc. Blocks} & \textbf{Dec. Blocks} & \textbf{Pos. Encoding} & \textbf{Embedding} & \textbf{Output Steps} \\
+			& \textbf{Enc. Blocks} & \textbf{Dec. Blocks} & \textbf{Pos. Encoding} & \textbf{Embedding} & \textbf{Output Steps} & \textbf{N° Heads} \\
 			\midrule[0.2pt]
-			\textbf{Model 1} & 1 & 1 & Learnable & 8 & 4 \\
+			\textbf{Model 1} & 1 & 1 & Learnable & 8 & 4 & 2 \\
+			\textbf{Model 2} & 2 & 2 & Learnable & 32 & 4 & 4 \\
 			\addlinespace[16pt]
 		\end{tabular}
 	\end{table}
@@ -37,14 +38,17 @@
 			\midrule[1pt]
 			& \textbf{Finance} & \textbf{Macro} & \textbf{Micro} & \textbf{Industry} & \textbf{Demographic} \\
 			\midrule[0.2pt]
-			Train Loss & 0.4248 & 0.1124 & 0.6787 & 0.7141 & 0.1186 \\
-			Test Loss  & 0.1458 & 0.1177 & 0.1321 & 0.1772 & 0.1419 \\[4pt]
+			Train Loss & 0.4347 & 0.1698 & 0.6798 & 0.6970 & 0.1448 \\
+			Test Loss  & 0.1670 & 0.1484 & 0.1325 & 0.1805 & 0.1828 \\[4pt]
 			ID         & 1321 & 1041 & 840 & 873 & 1345 \\
 		\end{tabular}
 	\end{table}
 	
 	\begin{figure}[htbp]
 		\includegraphics[width=520pt]{model1.png}
+	\end{figure}
+	\begin{figure}[htbp]
+		\includegraphics[width=520pt]{model2.png}
 	\end{figure}
 	
 \end{document}
