@@ -18,7 +18,6 @@ def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data
   if pretrain_seca:
     train_SECA(model.seca, optim.Adam(model.seca.parameters(), lr=5e-5), train_data_loader, epochs * 10, verbose)
     test_SECA(model.seca, test_data_loader, verbose)
-    model.seca.unfreeze()
 
   optimizer = optim.Adam(model.parameters(), lr=1e-4)
   criterion = nn.MSELoss()
