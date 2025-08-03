@@ -70,7 +70,7 @@ def train_SECA(model: ScalarExpansionContractiveAutoencoder, optimizer: optim.Op
         X = X.to(device)
         h, y = model(X)
         # loss = model.loss(X, y, h)
-        loss = torch.mean(torch.abs(X - y))
+        loss = torch.sum(torch.abs(X - y))
         optimizer.zero_grad()
         loss.backward()
         loss_value += loss.item()
@@ -98,7 +98,7 @@ def test_SECA(model: ScalarExpansionContractiveAutoencoder, data_loader: DataLoa
     X = X.to(device)
     h, y = model(X)
     # loss = model.loss(X, y, h)
-    loss = torch.mean(torch.abs(X - y))
+    loss = torch.sum(torch.abs(X - y))
     loss_value += loss.item()
 
   if verbose:
