@@ -43,7 +43,7 @@ class TransformerLikeModel(nn.Module):
 
     Y = self.pe(Y)
     y = self.decoder((Y, Z))[0]
-    y = self.output(y)  # Remove the extra unsqueeze(1)
+    y = self.output(y)
 
     return y
 
@@ -53,8 +53,8 @@ class TransformerLikeModel(nn.Module):
   """
   def forward(self, X: torch.Tensor):
 
-    batch_size, seq_length, _ = X.shape  # X has shape [batch, seq_len, 1]
-    Y = self.cls_token.expand((batch_size, 1, self.embed_size))  # Start with just one CLS token
+    batch_size, seq_length, _ = X.shape
+    Y = self.cls_token.expand((batch_size, 1, self.embed_size))
 
     Z = self.seca.encode(X)
     Z = self.pe(Z)
@@ -63,9 +63,9 @@ class TransformerLikeModel(nn.Module):
     preds = []
 
     for _ in range(self.output_len):
-      Y_tok = self.pe(Y)
-      y = self.decoder((Y_tok, Z))[0]
-      y = self.output(y)  # y is the last token output
+      Y = self.pe(Y)
+      y = self.decoder((Y, Z))[0]
+      y = self.output(y)
       Y = torch.cat([Y, y.unsqueeze(1)], dim=1)
       preds.append(self.seca.decode(y))
 
@@ -111,4 +111,5 @@ class EncoderOnlyModel(nn.Module):
     Z = self.seca.encode(input)
     Z = self.pe(Z)
     Z = self.encoder(Z)
-    return Z
+    output = self.output(Z)
+    return output
