@@ -34,6 +34,12 @@ class ScalarExpansionContractiveAutoencoder(nn.Module):
     for param in self.parameters():
       param.requires_grad = True
 
+  def start(self):
+    W_I = self.encoder.weight.data.clone()  # shape: [embed_size, input_size]
+    norm_sq = torch.norm(W_I, p=2) ** 2
+    W_O = W_I / norm_sq
+    self.decoder.weight.data.copy_(W_O.T)
+
   """
     Compare with: https://icml.cc/2011/papers/455_icmlpaper.pdf
   """
