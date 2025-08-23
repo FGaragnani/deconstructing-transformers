@@ -16,8 +16,7 @@ def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data
 
   model.train()
   if pretrain_seca:
-    train_SECA(model.seca, optim.Adam(model.seca.parameters(), lr=5e-5), train_data_loader, 500, verbose)
-    test_SECA(model.seca, test_data_loader, verbose)
+    model.seca.start()
     model.seca.unfreeze()
 
   optimizer = optim.AdamW(model.parameters(), lr=1e-4)
@@ -53,8 +52,8 @@ def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data
 
       epoch_loss += total_loss.item()
 
-    if (epoch + 1) % 5 == 0:
-      teacher_forcing_ratio *= 0.9
+    if (epoch + 1) % 3 == 0:
+      teacher_forcing_ratio *= 0.8
 
     ret_train_loss = epoch_loss / len(train_data_loader)
 
