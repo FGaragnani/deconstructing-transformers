@@ -91,7 +91,7 @@ def create_airline_datasets(sequence_length: int = 12, prediction_length: int = 
 
 def main():
     NUM_HEADS = 2
-    EMBED_SIZE = 8
+    EMBED_SIZE = 12
     ENCODER_SIZE = 1
     DECODER_SIZE = 1
     SEQUENCE_LENGTH = 12
