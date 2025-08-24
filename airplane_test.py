@@ -102,12 +102,10 @@ def main():
     datasets, original_series = create_airline_datasets(
         sequence_length=SEQUENCE_LENGTH,
         prediction_length=PREDICTION_LENGTH,
-        normalization=Normalization.RAW
+        normalization=Normalization.MIN_MAX
     )
     
     fig, axes = plt.subplots(3, 1, figsize=(12, 12))
-    
-    fig.suptitle("Airline Passenger Data: Single Normalization")
     
     years = np.arange(1949, 1961, 1/12)[:len(original_series)]
     axes[0].plot(years, original_series, 'b-', linewidth=2)
@@ -118,11 +116,11 @@ def main():
     loss_results = []
     
     train_size = int(0.8 * len(datasets))
-    test_size = len(datasets) - train_size
-    train_dataset, test_dataset = torch.utils.data.random_split(datasets, [train_size, test_size])
+    train_dataset = torch.utils.data.Subset(datasets, range(0, train_size))
+    test_dataset = torch.utils.data.Subset(datasets, range(train_size, len(datasets)))
 
     train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=4, shuffle=True)
 
     torch.manual_seed(42)
     model = TransformerLikeModel(
@@ -144,8 +142,8 @@ def main():
     
     train_loss, test_loss = train_transformer_model(
         model, 
-        epochs=150, 
-        teacher_forcing_ratio=0.95, 
+        epochs=200, 
+        teacher_forcing_ratio=0.85, 
         verbose=True,
         train_data_loader=train_loader, 
         test_data_loader=test_loader
@@ -177,16 +175,38 @@ def main():
             [X_np[-1]] + list(pred_np),
             'r--', label='Predicted', linewidth=2, marker='^'
         )
-        axes[1].set_title('Forecast')
+        axes[1].set_title('Forecast in Testing')
         axes[1].legend()
         axes[1].grid(True, alpha=0.3)
         
-        axes[2].bar(['Initial', 'Final'], [initial_loss, test_loss], 
-                     color=['red', 'green'], alpha=0.7)
-        axes[2].set_title('Loss')
-        axes[2].set_ylabel('MSE Loss')
+        axes[2].plot(range(len(original_series)), original_series, 'b-', label='Original Series', linewidth=2)
         
-    print(f"✅ Train Loss = {train_loss:.6f}, Test Loss = {test_loss:.6f}")
+        # Plot the test sequence in green
+        train_size = int(0.8 * len(original_series))
+        axes[2].plot(
+            range(train_size, len(original_series)),
+            original_series[train_size:],
+            'g-', label='Test Series', linewidth=2
+        )
+        
+        model.eval()
+        with torch.no_grad():
+            predictions = []
+            for i in range(0, len(original_series) - SEQUENCE_LENGTH, PREDICTION_LENGTH):
+                input_seq = torch.tensor(original_series[i:i + SEQUENCE_LENGTH].reshape(-1, 1), dtype=torch.float32).unsqueeze(0)
+                pred = model.forward(input_seq).squeeze().numpy()
+                predictions.extend(pred)
+        
+        prediction_series = np.array(predictions)
+        prediction_series = np.concatenate((np.full(SEQUENCE_LENGTH, np.nan), prediction_series))
+        
+        axes[2].plot(range(len(prediction_series)), prediction_series, 'r--', label='Predicted Series', linewidth=2)
+        axes[2].set_title('Original vs Predicted Series')
+        axes[2].set_ylabel('Passengers')
+        axes[2].legend()
+        axes[2].grid(True, alpha=0.3)
+        
+    print(f"Train Loss = {train_loss:.6f}, Test Loss = {test_loss:.6f}")
     
     plt.tight_layout()
     plt.show()
