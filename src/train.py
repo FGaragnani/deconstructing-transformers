@@ -19,7 +19,8 @@ def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data
     model.seca.start()
     model.seca.unfreeze()
 
-  optimizer = optim.AdamW(model.parameters(), lr=1e-4)
+  optimizer = optim.AdamW(model.parameters(), lr=5e-3)
+  scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.1)
   criterion = nn.MSELoss()
 
   ret_train_loss = 0.0
@@ -27,6 +28,7 @@ def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data
 
   for epoch in range(epochs):
     epoch_loss = 0
+    scheduler.step()
 
     for X_batch, y_batch in train_data_loader:
       X_batch, y_batch = X_batch.to(device), y_batch.to(device)
