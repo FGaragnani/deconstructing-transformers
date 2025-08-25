@@ -47,11 +47,20 @@ class Output(nn.Module):
         hidden_dim = hidden_dim or embed_dim
 
         self.head = nn.Sequential(
+           nn.Linear(embed_dim, embed_dim),
+           nn.LayerNorm(embed_dim)
+        )
+
+        """
+        Old Version
+        -----------
+        self.head = nn.Sequential(
             nn.LayerNorm(embed_dim),
             nn.Linear(embed_dim, hidden_dim),
             nn.ReLU(),
             nn.Linear(hidden_dim, embed_dim)
         )
+        """
 
     def forward(self, X: torch.Tensor) -> torch.Tensor:
         X = self.head(X[:, -1, :])
