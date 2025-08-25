@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.optim as optim
 import random
 
-from src.seca import train_SECA, test_SECA
 from src.model import TransformerLikeModel, EncoderOnlyModel
 from torch.utils.data import DataLoader
 
@@ -86,14 +85,14 @@ def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data
   return ret_train_loss, ret_test_loss
 
 def train_encoder_model(model: EncoderOnlyModel, epochs: int, train_data_loader: DataLoader, test_data_loader: DataLoader, verbose: bool = True,
-                teacher_forcing_ratio: float = 1.0) -> Tuple[float, float]:
+                teacher_forcing_ratio: float = 1.0, pretrain_seca: bool = True) -> Tuple[float, float]:
   device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
   model.to(device)
 
   model.train()
-  train_SECA(model.seca, optim.Adam(model.seca.parameters(), lr=5e-5), train_data_loader, epochs * 3, verbose)
-  test_SECA(model.seca, test_data_loader, verbose)
-  model.seca.unfreeze()
+  if pretrain_seca:
+    model.seca.start()
+    model.seca.unfreeze()
 
   optimizer = optim.Adam(model.parameters(), lr=1e-4)
   criterion = nn.MSELoss()
