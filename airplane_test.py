@@ -96,6 +96,9 @@ def main():
     DECODER_SIZE = 1
     SEQUENCE_LENGTH = 12
     PREDICTION_LENGTH = 4
+    EPOCHS = 200
+    BATCH_SIZE = 32
+    DROPOUT = 0.1
     
     torch.manual_seed(42)
 
@@ -119,8 +122,8 @@ def main():
     train_dataset = torch.utils.data.Subset(datasets, range(0, train_size))
     test_dataset = torch.utils.data.Subset(datasets, range(train_size, len(datasets)))
 
-    train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=4, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=True)
 
     torch.manual_seed(42)
     model = TransformerLikeModel(
@@ -131,7 +134,8 @@ def main():
         num_head_enc=NUM_HEADS,
         num_head_dec_1=NUM_HEADS,
         num_head_dec_2=NUM_HEADS,
-        positional_embedding_method="learnable"
+        positional_embedding_method="learnable",
+        dropout=DROPOUT
     )
     
     model.eval()
@@ -141,8 +145,8 @@ def main():
         initial_loss = torch.nn.MSELoss()(initial_pred, y_sample).item()
     
     train_loss, test_loss = train_transformer_model(
-        model, 
-        epochs=200, 
+        model=model, 
+        epochs=EPOCHS, 
         teacher_forcing_ratio=0.85, 
         verbose=True,
         train_data_loader=train_loader, 
