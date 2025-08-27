@@ -10,8 +10,8 @@ class ScalarExpansionContractiveAutoencoder(nn.Module):
     self.input_size = input_size
     self.lam = lam
 
-    self.encoder = nn.Linear(in_features=input_size, out_features=embed_size, bias=False)
-    self.decoder = nn.Linear(in_features=embed_size, out_features=input_size, bias=False)
+    self.encoder = nn.Linear(in_features=input_size, out_features=embed_size, bias=True)
+    self.decoder = nn.Linear(in_features=embed_size, out_features=input_size, bias=True)
 
   def encode(self, X: torch.Tensor):
     X = self.encoder(X)
