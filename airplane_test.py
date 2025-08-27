@@ -95,7 +95,7 @@ def main():
     ENCODER_SIZE = 1
     DECODER_SIZE = 1
     SEQUENCE_LENGTH = 12
-    PREDICTION_LENGTH = 4
+    PREDICTION_LENGTH = 1
     EPOCHS = 200
     BATCH_SIZE = 32
     DROPOUT = 0.1
@@ -118,7 +118,7 @@ def main():
 
     loss_results = []
     
-    train_size = int(0.8 * len(datasets))
+    train_size = int(len(datasets)-SEQUENCE_LENGTH)
     train_dataset = torch.utils.data.Subset(datasets, range(0, train_size))
     test_dataset = torch.utils.data.Subset(datasets, range(train_size, len(datasets)))
 
