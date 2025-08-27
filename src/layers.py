@@ -27,7 +27,7 @@ class MultiHeadAttentionLayer(nn.Module):
         self.W_V = nn.Linear(embed_size, embed_size)
         self.W_O = nn.Linear(embed_size, embed_size)
 
-  def forward(self, Q_K_V: tuple[torch.Tensor, torch.Tensor, torch.Tensor]):
+  def forward(self, Q_K_V: tuple[torch.Tensor, torch.Tensor, torch.Tensor], return_attention: bool = False):
         Q, K, V = Q_K_V
         batch_size, seq_length = Q.shape[0:2]
 
@@ -53,11 +53,14 @@ class MultiHeadAttentionLayer(nn.Module):
           # Mask future positions (upper triangle)
           mask = torch.triu(torch.ones(q_seq_len, k_seq_len), diagonal=1).to(A.device)
           A = A.masked_fill(mask == 1, float('-inf'))
-        A = F.softmax(A, dim=-1)
-        A = torch.matmul(A, V)
+        attention_weights = F.softmax(A, dim=-1)
+        A = torch.matmul(attention_weights, V)
 
         # Concatenating heads
         A = A.transpose(1, 2).contiguous().reshape(batch_size, -1, self.embed_size)
+
+        if return_attention:
+           return self.W_O(A), attention_weights
 
         return self.W_O(A)
 
@@ -66,7 +69,7 @@ class MultiHeadAttentionLayer(nn.Module):
   Feed-forward layer
 """
 class FeedForwardLayer(nn.Module):
-  def __init__(self, embed_size: int, inner_size: Optional[int]):
+  def __init__(self, embed_size: int, inner_size: Optional[int], dropout: float = 0.0):
     super(FeedForwardLayer, self).__init__()
     self.embed_size = embed_size
     self.inner_size = inner_size if inner_size is not None else embed_size * 2
