@@ -49,16 +49,26 @@ class DecoderModule(nn.Module):
     return (X, Z)
   
 class Output(nn.Module):
-    def __init__(self, embed_dim: int, hidden_dim: Optional[int] = None):
-        super().__init__()
-        hidden_dim = hidden_dim or embed_dim
+  def __init__(self, embed_dim: int, hidden_dim: Optional[int] = None):
+    super().__init__()
+    hidden_dim = hidden_dim or embed_dim
 
-        self.head = nn.Sequential(
-            nn.LayerNorm(embed_dim),
-            nn.Linear(embed_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, embed_dim)
-        )
-    def forward(self, X: torch.Tensor) -> torch.Tensor:
-        X = self.head(X[:, -1, :])
-        return X
+    self.head = nn.Sequential(
+      nn.Linear(embed_dim, hidden_dim),
+      nn.GELU(),
+      nn.Linear(hidden_dim, embed_dim),
+    )
+
+    self.scale_net = nn.Linear(embed_dim, embed_dim)
+    self.bias_net = nn.Linear(embed_dim, embed_dim)
+
+  def forward(self, X: torch.Tensor, context: torch.Tensor) -> torch.Tensor:
+    """Forward. If `context` (batch, embed_dim) is provided, predict scale/bias from it;
+    otherwise use learned per-dimension params.
+    """
+    head_in = X[:, -1, :]
+    out = self.head(head_in)
+
+    s = torch.sigmoid(self.scale_net(context))
+    b = self.bias_net(context)
+    return out * s + b
