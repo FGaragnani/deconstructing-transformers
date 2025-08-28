@@ -22,7 +22,7 @@ def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data
     model.seca.start()
   model.seca.freeze()
 
-  optimizer = optim.AdamW(model.parameters(), lr=1e-3)
+  optimizer = optim.AdamW(model.parameters(), lr=1e-2)
   scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.5)
   criterion = nn.MSELoss()
 
@@ -31,6 +31,7 @@ def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data
 
   for epoch in range(epochs):
     epoch_loss = 0
+    scheduler.step()
 
     if early_stopping and epoch == 0:
       best_val_loss = float('inf')
@@ -63,7 +64,6 @@ def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data
       total_loss.backward()
       torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
       optimizer.step()
-      scheduler.step()
 
       epoch_loss += total_loss.item()
 
