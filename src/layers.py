@@ -50,7 +50,7 @@ class MultiHeadAttentionLayer(nn.Module):
         A /= (self.head_dim ** 0.5)
         if self.mask:
           q_seq_len, k_seq_len = Q.size(-2), K.size(-2)
-          # Mask future positions (upper triangle)
+          # Mask future positions
           mask = torch.triu(torch.ones(q_seq_len, k_seq_len), diagonal=1).to(A.device)
           A = A.masked_fill(mask == 1, float('-inf'))
         attention_weights = F.softmax(A, dim=-1)
