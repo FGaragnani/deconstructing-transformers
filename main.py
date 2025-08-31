@@ -34,17 +34,19 @@ def main():
     torch.manual_seed(42)
 
     OUTPUT_LEN = 18
-    EMBED_SIZE = 10
-    NUM_HEADS = 2
+    EMBED_SIZE = 36
+    NUM_HEADS = 4
     ENCODER_SIZE = 1
     DECODER_SIZE = 1
-    BATCH_SIZE = 32
+    BATCH_SIZE = 16
+    EPOCHS = 400
+    DROPOUT = 0.15
 
     datasets: List[Tuple[DatasetTimeSeries, DatasetTimeSeries]] = parse_whole_dataset_from_xls("M3C.xls", SheetType.MONTHLY, output_len=OUTPUT_LEN, preprocessing=PreprocessingTimeSeries.MIN_MAX)
     results: List[Result] = []
 
     for idx, (train_dataset, test_dataset) in enumerate(datasets):
-        results[idx] = Result(num_models=2)
+        results.append(Result(num_models=2))
 
         print(f"Training on dataset: {train_dataset.category} (ID: {train_dataset.id})")
         print(f"Number of training samples: {len(train_dataset)}, Number of testing samples: {len(test_dataset)}")
@@ -56,12 +58,13 @@ def main():
             output_len=OUTPUT_LEN,
             num_head_enc=NUM_HEADS,
             num_head_dec_1=NUM_HEADS,
-            num_head_dec_2=NUM_HEADS
+            num_head_dec_2=NUM_HEADS,
+            dropout=DROPOUT,
         )
         train_loader, test_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True), DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
         train_loss, test_loss = train_transformer_model(
             model=model, 
-            epochs=400, 
+            epochs=EPOCHS, 
             train_data_loader=train_loader, 
             test_data_loader=test_loader, 
             verbose=True, 
@@ -74,26 +77,38 @@ def main():
             preds = model(X_batch)
             all_preds.append(preds.detach().cpu().numpy())
         all_preds = np.concatenate(all_preds, axis=0)
-        results[idx].set_predictions(0, all_preds.flatten().tolist())
+        # Get ground-truth test targets for reference
+        _, y_test_np = test_dataset.np_datasets
 
         clf = RandomForestRegressor(n_estimators=100, random_state=42)
         X_np, y_np = train_dataset.np_datasets
-        print("Train X shape:", train_dataset.np_datasets[0].shape)
-        print("Train y shape:", train_dataset.np_datasets[1].shape)
-        print("Test X shape:", test_dataset.np_datasets[0].shape)
-        print("Test y shape:", test_dataset.np_datasets[1].shape)
         clf.fit(X_np, y_np)
-        y_p = clf.predict(X_np)
-        train_rmse = np.sqrt(np.mean((y_p - y_np) ** 2))    # RMSE
+        y_p_train = clf.predict(X_np)
+        train_rmse = np.sqrt(np.mean((y_p_train - y_np) ** 2))    # RMSE
 
         X_np, y_np = test_dataset.np_datasets
-        y_p = clf.predict(X_np)
-        test_rmse = np.sqrt(np.mean((y_p - y_np) ** 2))    # RMSE
-        results[idx][1] = (train_rmse, test_rmse)
-        results[idx].set_predictions(1, y_p.flatten().tolist())
+        y_p_test = clf.predict(X_np)
+        test_rmse = np.sqrt(np.mean((y_p_test - y_np) ** 2))    # RMSE
 
-        print(f"Transformer - Train RMSE: {results[idx][0][0]:.4f}, Test RMSE: {results[idx][0][1]:.4f}")
-        print(f"Random Forest - Train RMSE: {results[idx][1][0]:.4f}, Test RMSE: {results[idx][1][1]:.4f}")
+        results[idx][1] = (train_rmse, test_rmse)
+        results[idx].set_predictions(1, y_p_test.flatten().tolist())
+
+        with open("results_log.txt", "a", encoding="utf-8") as logf:
+            logf.write(f"Dataset: {train_dataset.category} (ID: {train_dataset.id})\n")
+            logf.write(f"Transformer - Train RMSE: {results[idx][0][0]:.4f}, Test RMSE: {results[idx][0][1]:.4f}\n")
+            logf.write(f"Random Forest - Train RMSE: {results[idx][1][0]:.4f}, Test RMSE: {results[idx][1][1]:.4f}\n")
+            logf.write(f"Saved predictions file: preds_{idx}.npz\n")
+
+            logf.write("Transformer predictions (shape {}):\n".format(all_preds.shape))
+            logf.write(np.array2string(all_preds, precision=4, separator=', ', max_line_width=2000, threshold=1000000) + "\n")
+
+            logf.write("Forest predictions (shape {}):\n".format(y_p_test.shape))
+            logf.write(np.array2string(y_p_test, precision=4, separator=', ', max_line_width=2000, threshold=1000000) + "\n")
+
+            logf.write("Ground-truth test targets (shape {}):\n".format(y_test_np.shape))
+            logf.write(np.array2string(y_test_np, precision=4, separator=', ', max_line_width=2000, threshold=1000000) + "\n")
+
+            logf.write("\n")
 
     with open("results.pkl", "wb") as f:
         pickle.dump(results, f)
