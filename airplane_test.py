@@ -96,16 +96,16 @@ def create_airline_datasets(sequence_length: int = 12, prediction_length: int = 
     return datasets, original_series
 
 def main():
-    NUM_HEADS = 4
-    EMBED_SIZE = 24
+    NUM_HEADS = 2
+    EMBED_SIZE = 12
     ENCODER_SIZE = 1
     DECODER_SIZE = 1
-    SEQUENCE_LENGTH = 16
-    PREDICTION_LENGTH = 1
-    EPOCHS = 200
+    SEQUENCE_LENGTH = 12
+    PREDICTION_LENGTH = 2
+    EPOCHS = 400
     BATCH_SIZE = 16
     DROPOUT = 0.00
-    TRAIN_PERCENTAGE = 0.80
+    TRAIN_PERCENTAGE = 0.916
     DELTA = False
 
     torch.manual_seed(42)
@@ -116,17 +116,18 @@ def main():
         normalization=Normalization.MIN_MAX
     )
     
-    fig, axes = plt.subplots(3, 1, figsize=(12, 12))
+    fig, axes = plt.subplots(1, 1, figsize=(12, 12))
     
+    """
     years = np.arange(1949, 1961, 1/12)[:len(original_series)]
     axes[0].plot(years, original_series, 'b-', linewidth=2)
     axes[0].set_title('Original Data (1949-1960)')
     axes[0].set_ylabel('Passengers')
     axes[0].grid(True, alpha=0.3)
-
-    loss_results = []
+    """
     
     train_size = int(TRAIN_PERCENTAGE * len(datasets))
+    print(f"Train size: {train_size}, Test size: {len(datasets) - train_size}")
     train_dataset = torch.utils.data.Subset(datasets, range(0, train_size))
     test_dataset = torch.utils.data.Subset(datasets, range(train_size, len(datasets)))
 
@@ -144,8 +145,6 @@ def main():
         num_head_dec_2=NUM_HEADS,
         dropout=DROPOUT
     )
-    
-    model.eval()
     
     train_loss, test_loss = train_transformer_model(
         model=model, 
@@ -167,19 +166,20 @@ def main():
         y_np = y_plot[0].squeeze().numpy()
         pred_np = pred_plot[0].squeeze().numpy()
 
+        """
         plot_forecast_window(X_np, y_np, pred_np, delta=DELTA, ax=axes[1])
         axes[1].set_title('Forecast in Testing')
         axes[1].legend()
         axes[1].grid(True, alpha=0.3)
-
-        axes[2].plot(range(len(original_series)), original_series, 'b-', label='Original Series', linewidth=2)
-
+        
+        axes.plot(range(len(original_series)), original_series, 'b-', label='Original Series', linewidth=2)
         train_size = int(TRAIN_PERCENTAGE * len(original_series))
-        axes[2].plot(
+        axes.plot(
             range(train_size, len(original_series)),
             original_series[train_size:],
             'g-', label='Test Series', linewidth=2
         )
+        """
 
         model.eval()
         with torch.no_grad():
@@ -197,9 +197,9 @@ def main():
                 if flat_preds.size > 0:
                     prediction_series[SEQUENCE_LENGTH:SEQUENCE_LENGTH+len(flat_preds)] = flat_preds
 
-            plot_series_with_predictions(original_series, prediction_series, train_percentage=TRAIN_PERCENTAGE, ax=axes[2])
-            axes[2].set_title('Original vs Predicted Series')
-            axes[2].set_ylabel('Passengers')
+            plot_series_with_predictions(original_series, prediction_series, train_percentage=TRAIN_PERCENTAGE, ax=axes)
+            axes.set_title('Original vs Predicted Series')
+            axes.set_ylabel('Passengers')
         
     print(f"Train Loss = {train_loss:.6f}, Test Loss = {test_loss:.6f}")
     
