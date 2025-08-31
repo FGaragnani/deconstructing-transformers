@@ -27,6 +27,9 @@ class MultiHeadAttentionLayer(nn.Module):
         self.W_V = nn.Linear(embed_size, embed_size)
         self.W_O = nn.Linear(embed_size, embed_size)
 
+  def get_attention_matrix(self, head: int):
+     return self.W_Q.weight[head*self.head_dim:(head+1)*self.head_dim, :], self.W_K.weight[head*self.head_dim:(head+1)*self.head_dim, :], self.W_V.weight[head*self.head_dim:(head+1)*self.head_dim, :]
+
   def forward(self, Q_K_V: tuple[torch.Tensor, torch.Tensor, torch.Tensor], return_attention: bool = False):
         Q, K, V = Q_K_V
         batch_size, seq_length = Q.shape[0:2]
