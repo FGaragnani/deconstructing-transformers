@@ -80,7 +80,7 @@ def main():
         # Get ground-truth test targets for reference
         _, y_test_np = test_dataset.np_datasets
 
-        clf = RandomForestRegressor(n_estimators=100, random_state=42)
+        clf = RandomForestRegressor(n_estimators=250, random_state=42)
         X_np, y_np = train_dataset.np_datasets
         clf.fit(X_np, y_np)
         y_p_train = clf.predict(X_np)
