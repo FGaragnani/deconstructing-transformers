@@ -18,7 +18,7 @@ class SheetType(Enum):
         elif self == SheetType.QUARTERLY:
             return 4 * 2
         elif self == SheetType.MONTHLY:
-            return 12
+            return 12 * 2
         else:
             raise ValueError("Invalid SheetType")
 
