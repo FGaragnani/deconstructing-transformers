@@ -22,7 +22,7 @@ def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data
     model.seca.start()
   model.seca.freeze()
 
-  optimizer = optim.AdamW(model.parameters(), lr=1e-2)
+  optimizer = optim.AdamW(model.parameters(), lr=5e-3)
   scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.5)
   criterion = nn.MSELoss()
 
