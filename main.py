@@ -42,7 +42,7 @@ def main():
     DECODER_SIZE = 1
     BATCH_SIZE = 16
     EPOCHS = 400
-    DROPOUT = 0.15
+    DROPOUT = 0.05
 
     datasets: List[Tuple[DatasetTimeSeries, DatasetTimeSeries]] = parse_whole_dataset_from_xls("M3C.xls", SheetType.MONTHLY, input_len=INPUT_LEN, output_len=OUTPUT_LEN, preprocessing=PreprocessingTimeSeries.MIN_MAX)
     results: List[Result] = []
