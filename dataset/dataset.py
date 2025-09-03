@@ -7,6 +7,8 @@ from torch.utils.data import TensorDataset, Dataset
 from enum import Enum
 from typing import Tuple, List
 
+INPUT_LEN = 12
+
 class SheetType(Enum):
     YEARLY = 0
     QUARTERLY = 1
@@ -18,7 +20,7 @@ class SheetType(Enum):
         elif self == SheetType.QUARTERLY:
             return 4 * 2
         elif self == SheetType.MONTHLY:
-            return 12 * 2
+            return INPUT_LEN
         else:
             raise ValueError("Invalid SheetType")
 
@@ -110,9 +112,17 @@ def parse_dataset_from_df(df: pd.DataFrame, sheet_type: SheetType, row: int, out
     category = str(data_rows.iloc[0, 3]).rstrip()
     series = data_rows.iloc[0, 6:].to_numpy(dtype=np.float32)
     series = series[~np.isnan(series)]
-    train_series = series[:int(len(series) * split)]
 
-    test_series = np.concatenate([series[int(len(series) * split) - timesteps:int(len(series) * split)], series[int(len(series) * split):]])
+    min_needed = timesteps + output_len
+    if len(series) >= min_needed:
+        train_series = series[: len(series) - output_len]
+        test_series = series[-min_needed:]
+    else:
+        train_series = series[:int(len(series) * split)]
+        test_series = np.concatenate([
+            series[int(len(series) * split) - timesteps:int(len(series) * split)],
+            series[int(len(series) * split):]
+        ])
 
     train_dataset = DatasetTimeSeries(train_series, sheet_type, index, category, output_len, preprocessing)
     test_dataset = DatasetTimeSeries(test_series, sheet_type, index, category, output_len, preprocessing)
@@ -123,7 +133,10 @@ def parse_dataset_from_xls(file_path: str, sheet_type: SheetType, row: int, outp
     df = pd.read_excel(file_path, sheet_name=sheet_type.value, header=None)
     return parse_dataset_from_df(df, sheet_type, row, output_len, preprocessing, split)
 
-def parse_whole_dataset_from_xls(file_path: str, sheet_type: SheetType, output_len: int, preprocessing: PreprocessingTimeSeries, split: float = 0.75, numpy: bool = False) -> List[Tuple[DatasetTimeSeries, DatasetTimeSeries]]:
+def parse_whole_dataset_from_xls(file_path: str, sheet_type: SheetType, output_len: int, preprocessing: PreprocessingTimeSeries, split: float = 0.75, numpy: bool = False, input_len: int = 12) -> List[Tuple[DatasetTimeSeries, DatasetTimeSeries]]:
+    
+    INPUT_LEN = input_len
+    
     df = pd.read_excel(file_path, sheet_name=sheet_type.value, header=None)
     datasets = []
 
