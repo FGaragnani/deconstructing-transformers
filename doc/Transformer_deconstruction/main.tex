@@ -629,13 +629,6 @@ Despite the limited data and restrictive configuration, the transformer is highl
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Computational results} \label{sec:results}
 
-\begin{figure}
-    \centering
-    \includegraphics[width=0.95\linewidth]{airlines.png}
-    \caption{The predictions of the model on the full airline series, comprising 132 training data-points and 12 evaluation points.}
-    \label{fig:airlines}
-\end{figure}
-
 This section presents results obtained using our minimalist transformer architecture in forecasting well-known univariate benchmark data series.
 
 First successive processing stages are showcased on the archetypal airline passenger data series \citep{BJ70}, then we present illustrative quantitative results on standard forecasting benchmark instances.
@@ -650,26 +643,58 @@ The series was preprocessed only by a standard min-max normalization, then it wa
 
 Next comes multi-head attention. We used 2 heads, and for each head we set $d_k = d_v = \frac{12}{2} = 6$. Therefore all matrices $W^h_Q$, $W^h_K$ and $W^h_V$ had dimensions $12 \times 6$. These provide the bases for computing the attention function, where each $h-th$ head gives rise to the matrix $A^h=\frac{Q_hK'_h}{d_h} \in \mathbb{R}^{n \times n}$, in our case $A^h \in \mathbb{R}^{12 \times 12}$. The successive {\em softmax} function does not change its dimensionality. After multiplying by $V_h$ we obtain the output of each head, of dimension $12 \times 6$. All outputs are then concatenated by row, giving rise to a matrix $A \in \mathbb{R}^{12 \times 12}$. The input dimension is then kept, when the output attention matrix is multiplied by matrix $W_O \in \mathbb{R}^{hd_v \times m}$ - in our case, of dimension $12 \times 12$.
 
+\begin{figure}
+	\centering
+	\includegraphics[width=0.90\linewidth]{airlines.png}
+	\caption{The predictions of the model on the full airline series, comprising 132 training data-points and 12 evaluation points.}
+	\label{fig:airlines}
+\end{figure}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Benchmark results} \label{subsec:benchmark}
 
-Computational results, see \ref{tab:tableboh}
+Our work aimed to provide a basic, simple architecture that could be used to fully understand the internal functioning and possibly form the basis for improvements, rather than a best-of-class architecture. However, it is important to validate its effectiveness in order to determine how representative it is of the possibilities offered by the transformer approach to data series forecasting. To this end, we ran both our system and a standard random forest forecaster, the RandomForestRegressor from scikit-learn \cite{GEW06}, on a standard forecasting benchmark.
+
+The benchmark used consisted of the monthly series of the M3 forecasting competition \cite{MH00}. The M3 dataset includes a diverse collection of time series across different domains and frequencies, including yearly, quarterly, monthly, and other intervals. The monthly data subset includes 1428 real world time series collected at monthly intervals covering a wide range of domains, classified as:
+\begin{itemize}
+	\item Macroeconomics (e.g., unemployment rates, inflation, industrial production),
+	\item Microeconomics (e.g., sales, orders, inventory levels for individual companies),
+	\item Industry (e.g., combined production, sales, or demand in a broader industrial sector, not just a single firm)
+	\item Finance (e.g., stock prices, exchange rates, interest rates),
+	\item Demographics (e.g., population statistics, birth/death rates),
+	\item Others, i.e., diverse, real-world time series that don’t belong to traditional economic or financial domains (e.g., energy consumption, transportation data)
+\end{itemize}
+
+The length of the monthly series varies, typically ranging from 48 to 126 observations (i.e., 4 to over 10 years of data) and for each series, participants were asked to forecast the next 18 months. We used the same forecast horizon in our tests.
+
+We ran each model on all the benchmark series, computing the RMSE on both the training and test sets. To determine whether the difference in forecast effectiveness was significant, we conducted a Mann–Whitney U-test on the RMSE results for each aggregate separately. Table \ref{tab:aggregate} shows the results of the comparison aggregated over the type feature. The columns show:
+\begin{itemize}
+	\item {\it type}: the type of the aggregate,
+	\item {\it num}: the number of series in the aggregate,
+	\item {\it train}: number of series where the transformer had a lower RMSE on the training set,
+	\item {\it test}: number of series where the transformer had a lower RMSE on the number of series where the transformer had a lower RMSE on the training set,
+	\item {\it perc}: percentage of aggregate series where the transformer had a lower RMSE on the training set
+	\item {\it pval}: p value of the Mann-Whitney U test.
+\end{itemize}
 
 \begin{table}[H]
-\caption{This is a table caption. Tables should be placed in the main text near to the first time they are cited.}
-\label{tab:tableboh}
+\caption{Minimalistic transformer and random forest, aggregate results}
+\label{tab:aggregate}
 \centering
 %% \tablesize{} %% You can specify the fontsize here, e.g., \tablesize{\footnotesize}. If commented out \small will be used.
-\begin{tabular}{ccc}
+\begin{tabular}{cccccc}
 \toprule
-\textbf{Title 1}	& \textbf{Title 2}	& \textbf{Title 3}\\
+{\bf type} & {\bf num} & {\bf train} & {\bf test} & {\bf perc} & {\bf pval}\\
 \midrule
-entry 1		& data			& data\\
-entry 2		& data			& data\\
+MICRO       & 334 & 3 &  95 & 28.44 & 0.000\\
+INDUSTRY    & 334 & 3 & 123 & 36.83 & 0.042\\
+MACRO       & 312 & 3 & 101 & 32.37 & 0.021\\
+FINANCE     & 145 & 1 &  68 & 46.90 & {\bf 0.247}\\
+DEMOGRAPHIC & 111 & 3 &  33 & 29.73 & 0.021\\
+OTHER       &  52 & 0 &  29 & 55.77 & {\bf 0.661}\\
 \bottomrule
 \end{tabular}
 \end{table}
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusions} \label{sec:conclusions}

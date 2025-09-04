@@ -124,4 +124,14 @@ PyTorch Transformer,  2025.
   \url{https://docs.pytorch.org/docs/stable/generated/torch.nn.Transformer.html},
   last accessed in 08.08.2025.
 
+\bibitem[Geurts et~al.()Geurts, Ernst, and Wehenkel]{GEW06}
+Geurts, P.; Ernst, D.; Wehenkel, L.
+
+\bibitem[Makridakis and Hibon(2000)]{MH00}
+Makridakis, S.; Hibon, M.
+\newblock The M3-Competition: results, conclusions and implications.
+\newblock {\em International Journal of Forecasting} {\bf 2000}, {\em
+  16},~451--476.
+\newblock The M3- Competition.
+
 \end{thebibliography}
