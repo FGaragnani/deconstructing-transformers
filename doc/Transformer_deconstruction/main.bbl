@@ -1,0 +1,127 @@
+\begin{thebibliography}{999}
+
+\bibitem[Cun et~al.(1997)Cun, Bottou, and Bengio]{LBB97}
+Cun, Y.L.; Bottou, L.; Bengio, Y.
+\newblock Reading checks with multilayer graph transformer networks.
+\newblock In Proceedings of the 1997 IEEE International Conference on
+  Acoustics, Speech, and Signal Processing,  1997, Vol.~1, pp. 151--154 vol.1.
+
+\bibitem[Vaswani et~al.(2017)Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez,
+  Kaiser, and Polosukhin]{VSPU17}
+Vaswani, A.; Shazeer, N.; Parmar, N.; Uszkoreit, J.; Jones, L.; Gomez, A.N.;
+  Kaiser, L.u.; Polosukhin, I.
+\newblock Attention is All you Need.
+\newblock In Proceedings of the Advances in Neural Information Processing
+  Systems; Guyon, I.; Luxburg, U.V.; Bengio, S.; Wallach, H.; Fergus, R.;
+  Vishwanathan, S.; Garnett, R., Eds. Curran Associates, Inc.,  2017, Vol.~30.
+
+\bibitem[Hochreiter and Schmidhuber(1997)]{HS97}
+Hochreiter, S.; Schmidhuber, J.
+\newblock Long Short-Term Memory.
+\newblock {\em Neural Computation} {\bf 1997}, {\em 9},~1735–1780.
+
+\bibitem[Chung et~al.(2014)Chung, Gulcehre, Cho, and Bengio]{CGCB14}
+Chung, J.; Gulcehre, C.; Cho, K.; Bengio, Y.
+\newblock Empirical Evaluation of Gated Recurrent Neural Networks on Sequence
+  Modeling,  2014.
+\newblock cite arxiv:1412.3555Comment: Presented in NIPS 2014 Deep Learning and
+  Representation Learning Workshop.
+
+\bibitem[Box and Jenkins(1970)]{BJ70}
+Box, G.; Jenkins, G.
+\newblock {\em Time Series Analysis: Forecasting and Control}; Holden-Day
+  series in time series analysis and digital processing, Holden-Day,  1970.
+
+\bibitem[Holt(1957)]{H57}
+Holt, C.C.
+\newblock Forecasting trends and seasonals by exponentially weighted moving
+  averages.
+\newblock {\em ONR Memorandum} {\bf 1957}, {\em 52},~5--10.
+
+\bibitem[Winters(1960)]{W60}
+Winters, P.R.
+\newblock Forecasting Sales by Exponentially Weighted Moving Averages.
+\newblock {\em Management Science} {\bf 1960}, {\em 6},~324--342.
+
+\bibitem[Zhou et~al.(2021)Zhou, Zhang, Peng, Zhang, Li, Xiong, and
+  Zhang]{ZZPZ21}
+Zhou, H.; Zhang, S.; Peng, J.; Zhang, S.; Li, J.; Xiong, H.; Zhang, W.
+\newblock Informer: Beyond Efficient Transformer for Long Sequence Time-Series
+  Forecasting,  2021,  \href{http://arxiv.org/abs/2012.07436}{{\normalfont
+  [arXiv:cs.LG/2012.07436]}}.
+
+\bibitem[Wu et~al.(2022)Wu, Xu, Wang, and Long]{WXWL22}
+Wu, H.; Xu, J.; Wang, J.; Long, M.
+\newblock Autoformer: Decomposition Transformers with Auto-Correlation for
+  Long-Term Series Forecasting,  2022,
+  \href{http://arxiv.org/abs/2106.13008}{{\normalfont
+  [arXiv:cs.LG/2106.13008]}}.
+
+\bibitem[Zhou et~al.(2022)Zhou, Ma, Wen, Wang, Sun, and Jin]{ZMWW22}
+Zhou, T.; Ma, Z.; Wen, Q.; Wang, X.; Sun, L.; Jin, R.
+\newblock {FED}former: Frequency Enhanced Decomposed Transformer for Long-term
+  Series Forecasting.
+\newblock In Proceedings of the Proceedings of the 39th International
+  Conference on Machine Learning; Chaudhuri, K.; Jegelka, S.; Song, L.;
+  Szepesvari, C.; Niu, G.; Sabato, S., Eds. PMLR,  17--23 Jul 2022, Vol. 162,
+  {\em Proceedings of Machine Learning Research}, pp. 27268--27286.
+
+\bibitem[Nie et~al.(2023)Nie, Nguyen, Sinthong, and Kalagnanam]{patchTST}
+Nie, Y.; Nguyen, N.H.; Sinthong, P.; Kalagnanam, J.
+\newblock A Time Series is Worth 64 Words: Long-term Forecasting with
+  Transformers,  2023,  \href{http://arxiv.org/abs/2211.14730}{{\normalfont
+  [arXiv:cs.LG/2211.14730]}}.
+
+\bibitem[Wen et~al.(2023)Wen, Zhou, Zhang, Chen, Ma, Yan, and Sun]{WZZC23}
+Wen, Q.; Zhou, T.; Zhang, C.; Chen, W.; Ma, Z.; Yan, J.; Sun, L.
+\newblock Transformers in time series: a survey.
+\newblock In Proceedings of the Proceedings of the Thirty-Second International
+  Joint Conference on Artificial Intelligence,  2023, IJCAI '23.
+
+\bibitem[Ahmed et~al.(2023)Ahmed, Nielsen, Tripathi, Siddiqui, P., and
+  G.]{ANTS23}
+Ahmed, S.; Nielsen, I.; Tripathi, A.; Siddiqui, S.; P., R.R.; G., R.
+\newblock Transformers in Time-Series Analysis: A Tutorial.
+\newblock {\em Circuits Syst Signal Processing} {\bf 2023}, {\em
+  42},~7433–7466.
+
+\bibitem[Su et~al.(2025)Su, Zuo, Li, Wang, Zhao, and Huang]{SZLW25}
+Su, L.; Zuo, X.; Li, R.; Wang, X.; Zhao, H.; Huang, B.
+\newblock A systematic review for transformer-based long-term series
+  forecasting.
+\newblock {\em Artificial Intelligence Review} {\bf 2025}, {\em
+  58},~1573--7462.
+
+\bibitem[Lim et~al.(2021)Lim, Sercan, Loeff, and Pfister]{LSNP21}
+Lim, B.; Sercan, O.; Loeff, N.; Pfister, T.
+\newblock Temporal Fusion Transformers for interpretable multi-horizon time
+  series forecasting.
+\newblock {\em International Journal of Forecasting} {\bf 2021}, {\em
+  37},~1748--1764.
+
+\bibitem[Liu et~al.(2024)Liu, Hu, Zhang, Wu, Wang, Ma, and Long]{LHZW24}
+Liu, Y.; Hu, T.; Zhang, H.; Wu, H.; Wang, S.; Ma, L.; Long, M.
+\newblock iTransformer: Inverted Transformers Are Effective for Time Series
+  Forecasting.
+\newblock In Proceedings of the The Twelfth International Conference on
+  Learning Representations,  2024.
+
+\bibitem[Garagnani(2025)]{G25}
+Garagnani, F.
+\newblock deconstructing-transformers,  2025.
+\newblock \url{https://github.com/FGaragnani/deconstructing-transformers}, last
+  accessed in 08.08.2025.
+
+\bibitem[{Google}(2025)]{googletrends2025}
+{Google}.
+\newblock Google Trends.
+\newblock \url{https://trends.google.com},  2025.
+\newblock Accessed: 2025-08-27.
+
+\bibitem[PyT(2025)]{PyTorch25}
+PyTorch Transformer,  2025.
+\newblock
+  \url{https://docs.pytorch.org/docs/stable/generated/torch.nn.Transformer.html},
+  last accessed in 08.08.2025.
+
+\end{thebibliography}
