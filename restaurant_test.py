@@ -11,63 +11,12 @@ import seaborn as sns
 from src.model import TransformerLikeModel
 from src.train import train_transformer_model
 
-class Normalization(Enum):
-    RAW = "raw"
-    MIN_MAX = "min_max"
-    STANDARD = "standard"
-    LOG = "log"
-    LOG_MIN_MAX = "log_min_max"
-
-    def initialize_values(self, max_val: float = 0, min_val: float = 0, std_val: float = 0, mean_val: float = 0):
-        self._max_val: float = max_val
-        self._min_val: float = min_val
-        self._std_val: float = std_val
-        self._mean_val: float = mean_val
-
-    def normalize(self, series: np.ndarray) -> np.ndarray:
-        if self == Normalization.RAW:
-            return series
-        elif self == Normalization.MIN_MAX:
-            self.initialize_values(max_val=series.max(), min_val=series.min())
-            return (series - self._min_val) / (self._max_val - self._min_val)
-        elif self == Normalization.STANDARD:
-            self.initialize_values(mean_val=series.mean(), std_val=series.std())
-            return (series - self._mean_val) / self._std_val
-        elif self == Normalization.LOG:
-            return np.log(series + 1)
-        elif self == Normalization.LOG_MIN_MAX:
-            log_series = np.log(series + 1)
-            self.initialize_values(max_val=log_series.max(), min_val=log_series.min())
-            return (log_series - self._min_val) / (self._max_val - self._min_val)
-        else:
-            raise ValueError("Unknown normalization method")
-        
-    def convert(self, value: float) -> float:
-        if self == Normalization.RAW:
-            return value
-        elif self == Normalization.MIN_MAX:
-            return value * (self._max_val - self._min_val) + self._min_val
-        elif self == Normalization.STANDARD:
-            return value * self._std_val + self._mean_val
-        elif self == Normalization.LOG:
-            return np.exp(value) - 1
-        elif self == Normalization.LOG_MIN_MAX:
-            return (np.exp(value) - 1) * (self._max_val - self._min_val) + self._min_val
-        else:
-            raise ValueError("Unknown normalization method")
-
-def create_restaurant_datasets(Xtrain_length: int = 12, Ytrain_length: int = 4, normalization: Normalization = Normalization.STANDARD) -> Tuple[TensorDataset, np.ndarray]:
-    """
-       Create training and testing datasets from the airline passenger data.
-
-       :param Xtrain_length: Length of the input sequences
-       :param Ytrain_length: Length of the prediction sequences
-       :param normalization: Normalization method to apply
-
-       :return: A tuple containing the training/testing datasets and the original series
-    """
+def create_restaurant_datasets(Xtrain_length: int = 12, Ytrain_length: int = 4) -> Tuple[TensorDataset, np.ndarray]:
     timeseries = pd.read_csv("ristorantiGTrend.csv",usecols=[1]).values
-    timeseries = normalization.normalize(timeseries)
+    timeseries = timeseries[:36]
+    min_val = np.min(timeseries)
+    max_val = np.max(timeseries)
+    timeseries = (timeseries - min_val) / (max_val - min_val)
 
     datasets = []
     for i in range(0, len(timeseries) - Xtrain_length - Ytrain_length + 1):
@@ -87,16 +36,19 @@ def main():
     EMBED_SIZE    = 4
     ENCODER_SIZE  = 1
     DECODER_SIZE  = 1
+    BATCH_SIZE    = 16
     XTRAIN_LENGTH = 7
     YTRAIN_LENGTH = 1
     SEASONALITY   = 7
+    DROPOUT       = 0.00
+    nEpochs       = 150
+    DELTA         = False
     
     torch.manual_seed(995)
 
     datasets, original_series = create_restaurant_datasets(
         Xtrain_length = XTRAIN_LENGTH,
-        Ytrain_length = YTRAIN_LENGTH,
-        normalization = Normalization.MIN_MAX
+        Ytrain_length = YTRAIN_LENGTH
     )
     
     fig, axes = plt.subplots(1, 1, figsize=(8,6))
@@ -111,11 +63,9 @@ def main():
     train_size    = int(len(datasets)-SEASONALITY)
     train_dataset = torch.utils.data.Subset(datasets, range(0, train_size))
     test_dataset  = torch.utils.data.Subset(datasets, range(train_size, len(datasets)))
+    train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+    test_loader  = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=True)
 
-    train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
-    test_loader  = DataLoader(test_dataset, batch_size=4, shuffle=True)
-
-    torch.manual_seed(42)
     model = TransformerLikeModel(
         embed_size   = EMBED_SIZE,
         encoder_size = ENCODER_SIZE,
@@ -124,7 +74,7 @@ def main():
         num_head_enc = NUM_HEADS,
         num_head_dec_1=NUM_HEADS,
         num_head_dec_2=NUM_HEADS,
-        positional_embedding_method="learnable"
+        dropout       =DROPOUT
     )
     
     model.eval()
@@ -133,15 +83,18 @@ def main():
         initial_pred = model.forward(X_sample)
         initial_loss = torch.nn.MSELoss()(initial_pred, y_sample).item()
     
-    nEpochs = 250
     train_loss, test_loss = train_transformer_model(
         model, 
         epochs = nEpochs,
-        teacher_forcing_ratio = 0.85,
+        teacher_forcing_ratio = 0.00,
         verbose = True,
         train_data_loader = train_loader,
-        test_data_loader  = test_loader
-    )
+        test_data_loader  = test_loader,
+        pretrain_seca = True,
+        check_losses = True,
+        delta = DELTA,
+        early_stopping = False
+        )
     
     loss_results.append({
         'final_train_loss': train_loss,
@@ -152,6 +105,7 @@ def main():
     model.eval()
 
     with torch.no_grad():
+        '''
         X_plot, y_plot = next(iter(test_loader))
         pred_plot = model.forward(X_plot)
         
@@ -177,18 +131,20 @@ def main():
         axes.legend()
         axes.grid(True, alpha=0.3)
         plt.show()
+        '''
         
         fig, axes = plt.subplots(1, 1, figsize=(9,6))
         axes.plot(range(len(original_series)), original_series, 'b-', label='Original Series', linewidth=2)
         
         # Plot the test sequence in green
-        train_size = int(0.8 * len(original_series))
+        train_size = int(len(original_series)-SEASONALITY)
         axes.plot(
             range(train_size, len(original_series)),
             original_series[train_size:],
             'g-', label='Test Series', linewidth=2
         )
         
+        # forecast di tutto il testset
         model.eval()
         with torch.no_grad():
             predictions = []

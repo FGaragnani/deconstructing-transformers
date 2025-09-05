@@ -107,7 +107,6 @@ def main():
     DROPOUT = 0.00
     TRAIN_PERCENTAGE = 0.916
     DELTA = False
-
     torch.manual_seed(42)
 
     datasets, original_series = create_airline_datasets(
