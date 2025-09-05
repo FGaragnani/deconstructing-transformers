@@ -47,7 +47,7 @@ def someplots():
             print(test)
          if (line_num % 10 == 0):
             serie = dfM3[dfM3.Series == f"N{id}"]
-            arrdata = np.array(serie.iloc[0, 6:].dropna())
+            arrdata = np.array(serie.dropna().iloc[0, -18:])
             range_val = arrdata.max() - arrdata.min()
             arrdata = (arrdata - arrdata.min()) / range_val
             plt.figure(figsize=(9,6))
