@@ -37,24 +37,27 @@ def someplots():
             categ = elem[1]
             print(f"Line {line_num}: {elem[1]} {elem[3]}")
          elif (line_num % 10 == 5):
-            transf = eval(line)
+            transf: list = eval(line)
             print(transf)
          elif (line_num % 10 == 7):
-            rf = eval(line)
+            rf: list = eval(line)
             print(rf)
          elif (line_num % 10 == 9):
-            test = eval(line)
+            test: list = eval(line)
             print(test)
          elif (line_num % 10 == 0):
             serie = dfM3[dfM3.Series == f"N{id}"]
             arrdata = np.array(serie.iloc[0].dropna().iloc[6:-18])
             range_val = arrdata.max() - arrdata.min()
             arrdata = (arrdata - arrdata.min()) / range_val
+            transf.insert(0, arrdata[-1]) # add last real value
+            rf.insert(0, arrdata[-1])
+            test.insert(0, arrdata[-1])
             plt.figure(figsize=(9,6))
             plt.plot(arrdata)
-            plt.plot(range(len(arrdata), len(arrdata) + 18),np.array(transf),label="transformer")
-            plt.plot(range(len(arrdata), len(arrdata) + 18),np.array(rf),label="random forest")
-            plt.plot(range(len(arrdata), len(arrdata) + 18),np.array(test),label="test")
+            plt.plot(range(len(arrdata) - 1, len(arrdata) + 18),np.array(transf),label="transformer")
+            plt.plot(range(len(arrdata) - 1, len(arrdata) + 18),np.array(rf),label="random forest")
+            plt.plot(range(len(arrdata) - 1, len(arrdata) + 18),np.array(test),label="test")
             plt.legend()
             plt.title(f"{categ} - {id}")
             plt.show()
