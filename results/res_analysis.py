@@ -52,12 +52,13 @@ def someplots():
             arrdata = (arrdata - arrdata.min()) / range_val
             plt.figure(figsize=(9,6))
             plt.plot(arrdata)
-            plt.plot(range(len(arrdata)-18,len(arrdata)),np.array(transf),label="transformer")
-            plt.plot(range(len(arrdata)-18,len(arrdata)),np.array(rf),label="random forest")
-            plt.plot(range(len(arrdata)-18,len(arrdata)),np.array(test),label="test")
+            plt.plot(range(len(arrdata), len(arrdata) + 18),np.array(transf),label="transformer")
+            plt.plot(range(len(arrdata), len(arrdata) + 18),np.array(rf),label="random forest")
+            plt.plot(range(len(arrdata), len(arrdata) + 18),np.array(test),label="test")
             plt.legend()
             plt.title(f"{categ} - {id}")
             plt.show()
+            plt.waitforbuttonpress()
    return
    
 def main():
