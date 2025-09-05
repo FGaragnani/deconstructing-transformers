@@ -5,37 +5,126 @@ from src.model import TransformerLikeModel
 from dataset.dataset import parse_whole_dataset_from_xls, SheetType, PreprocessingTimeSeries, DatasetTimeSeries
 
 from torch.utils.data import DataLoader
+from sklearn.ensemble import RandomForestRegressor
 from typing import List, Tuple, Dict
+import numpy as np
+import pickle
+import random
 
-OUTPUT_LEN = 4
+class Result:
+
+    def __init__(self, num_models: int):
+        self.num_models = num_models
+        self.train_loss = [float('inf') for _ in range(num_models)]
+        self.test_loss = [float('inf') for _ in range(num_models)]
+        self.predictions: List[List[float]] = [[] for _ in range(num_models)]
+
+    def __getitem__(self, idx: int) -> Tuple[float, float]:
+        return self.train_loss[idx], self.test_loss[idx]
+
+    def __setitem__(self, idx: int, value: Tuple[float, float]):
+        self.train_loss[idx], self.test_loss[idx] = value
+
+    def get_predictions(self, idx: int) -> List[float]:
+        return self.predictions[idx]
+    
+    def set_predictions(self, idx: int, preds: List[float]):
+        self.predictions[idx] = preds
 
 def main():
     torch.manual_seed(42)
 
-    datasets: List[Tuple[DatasetTimeSeries, DatasetTimeSeries]] = parse_whole_dataset_from_xls("M3C.xls", SheetType.QUARTERLY, output_len=OUTPUT_LEN, preprocessing=PreprocessingTimeSeries.NORMALIZE)
+    OUTPUT_LEN = 18
+    INPUT_LEN = 24
+    EMBED_SIZE = 36
+    NUM_HEADS = 4
+    ENCODER_SIZE = 1
+    DECODER_SIZE = 1
+    BATCH_SIZE = 16
+    EPOCHS = 400
+    DROPOUT = 0.05
 
-    best_dataset: Tuple[DatasetTimeSeries, DatasetTimeSeries] = datasets[0]
-    best_losses: Dict[str, Tuple[float, float]] = {}
+    datasets: List[Tuple[DatasetTimeSeries, DatasetTimeSeries]] = parse_whole_dataset_from_xls("M3C.xls", SheetType.MONTHLY, input_len=INPUT_LEN, output_len=OUTPUT_LEN, preprocessing=PreprocessingTimeSeries.MIN_MAX)
+    results: List[Result] = []
+    random.shuffle(datasets)
+    datasets = sorted(datasets, key=lambda dataset_tuple : dataset_tuple[0].category)
+    last_category = datasets[0][0].category
+    indices = []
 
-    for idx, (train_dataset, test_dataset) in enumerate(datasets):
-        if train_dataset.category not in best_losses.keys():
-            best_losses[train_dataset.category] = (float('inf'), float('inf'))
+    while True:
+        for train_dataset, test_dataset in datasets:
+            if train_dataset.id in indices or last_category == train_dataset.category:
+                continue
+            results.append(Result(num_models=2))
+            last_category = train_dataset.category
+            indices.append(train_dataset.id)
 
-        best_train_loss, best_test_loss = best_losses[train_dataset.category]
-        print(f"Training on dataset: {train_dataset.category} (ID: {train_dataset.id})")
-        print(f"Number of training samples: {len(train_dataset)}, Number of testing samples: {len(test_dataset)}")
-    
-        model: TransformerLikeModel = TransformerLikeModel(embed_size=8, encoder_size=1, decoder_size=1, output_len=OUTPUT_LEN, num_head_enc=2, positional_embedding_method="learnable")
-        train_loader, test_loader = DataLoader(train_dataset, batch_size=1, shuffle=True), DataLoader(test_dataset, batch_size=1, shuffle=False)
-        train_loss, test_loss = train_transformer_model(model=model, epochs=30, train_data_loader=train_loader, test_data_loader=test_loader, verbose=False, pretrain_seca=True)
-        if test_loss < best_test_loss:
-            best_losses[train_dataset.category] = (train_loss, test_loss)
-            best_dataset = (train_dataset, test_dataset)
-            print(f"Train Loss: {train_loss:.4f}, Test Loss: {test_loss:.4f}\n")
+            print(f"Training on dataset: {train_dataset.category} (ID: {train_dataset.id})")
+            print(f"Number of training samples: {len(train_dataset)}, Number of testing samples: {len(test_dataset)}")
 
-    print(f"\nBest dataset: {best_dataset[0].category} (ID: {best_dataset[0].id})")
-    for category, (best_train_loss, best_test_loss) in best_losses.items():
-        print(f"Category: {category}, Best Train Loss: {best_train_loss:.4f}, Best Test Loss: {best_test_loss:.4f}")
+            model: TransformerLikeModel = TransformerLikeModel(
+                embed_size=EMBED_SIZE,
+                encoder_size=ENCODER_SIZE,
+                decoder_size=DECODER_SIZE,
+                output_len=OUTPUT_LEN,
+                num_head_enc=NUM_HEADS,
+                num_head_dec_1=NUM_HEADS,
+                num_head_dec_2=NUM_HEADS,
+                dropout=DROPOUT,
+            )
+            train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+            test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
+            train_loss, test_loss = train_transformer_model(
+                model=model, 
+                epochs=EPOCHS, 
+                train_data_loader=train_loader, 
+                test_data_loader=test_loader, 
+                verbose=True, 
+                pretrain_seca=True,
+                early_stopping=True,
+                early_stopping_patience=5
+            )
+            results[-1][0] = (train_loss ** 0.5, test_loss ** 0.5)     # RMSE
+
+            all_preds = []
+            for i, (X_batch, _) in enumerate(test_loader):
+                preds = model(X_batch)
+                p_np = preds.detach().cpu().numpy()
+                all_preds.append(p_np)
+            all_preds = np.concatenate(all_preds, axis=0)
+            _, y_test_np = test_dataset.np_datasets
+
+            clf = RandomForestRegressor(n_estimators=250, random_state=42)
+            X_np, y_np = train_dataset.np_datasets
+            clf.fit(X_np, y_np)
+            y_p_train = clf.predict(X_np)
+            train_rmse = np.sqrt(np.mean((y_p_train - y_np) ** 2))    # RMSE
+
+            X_np, y_np = test_dataset.np_datasets
+            y_p_test = clf.predict(X_np)
+            test_rmse = np.sqrt(np.mean((y_p_test - y_np) ** 2))    # RMSE
+
+            results[-1][1] = (train_rmse, test_rmse)
+            results[-1].set_predictions(1, y_p_test.flatten().tolist())
+
+            with open("results_log.txt", "a", encoding="utf-8") as logf:
+                logf.write(f"Dataset: {train_dataset.category} (ID: {train_dataset.id})\n")
+                logf.write(f"Transformer - Train RMSE: {results[-1][0][0]:.4f}, Test RMSE: {results[-1][0][1]:.4f}\n")
+                logf.write(f"Random Forest - Train RMSE: {results[-1][1][0]:.4f}, Test RMSE: {results[-1][1][1]:.4f}\n")
+
+                logf.write("Transformer predictions (shape {}):\n".format(all_preds.shape))
+                logf.write(np.array2string(all_preds, precision=4, separator=', ', max_line_width=2000, threshold=1000000) + "\n")
+
+                logf.write("Forest predictions (shape {}):\n".format(y_p_test.shape))
+                logf.write(np.array2string(y_p_test, precision=4, separator=', ', max_line_width=2000, threshold=1000000) + "\n")
+
+                logf.write("Ground-truth test targets (shape {}):\n".format(y_test_np.shape))
+                logf.write(np.array2string(y_test_np, precision=4, separator=', ', max_line_width=2000, threshold=1000000) + "\n")
+
+                logf.write("\n")
+
+    with open("results.pkl", "wb") as f:
+        pickle.dump(results, f)
 
 if __name__ == "__main__":
     main()

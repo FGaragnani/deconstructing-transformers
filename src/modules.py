@@ -63,8 +63,8 @@ class Output(nn.Module):
     self.bias_net = nn.Linear(embed_dim, embed_dim)
 
   def forward(self, X: torch.Tensor, context: torch.Tensor) -> torch.Tensor:
-    """Forward. If `context` (batch, embed_dim) is provided, predict scale/bias from it;
-    otherwise use learned per-dimension params.
+    """
+      Predict scale/bias from context.
     """
     head_in = X[:, -1, :]
     out = self.head(head_in)

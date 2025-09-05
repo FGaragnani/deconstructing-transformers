@@ -7,17 +7,19 @@ from src.train import train_transformer_model
 
 import matplotlib.pyplot as plt
 
-SEQUENCE_LENGTH = 4
-PREDICTION_LENGTH = 1
-EMBED_SIZE = 24
+SEQUENCE_LENGTH = 7
+PREDICTION_LENGTH = 7
+EMBED_SIZE = 4
 ENCODER_SIZE = 1
 DECODER_SIZE = 1
 NUM_HEADS = 2
-BATCH_SIZE = 16
-EPOCHS = 400
-DROPOUT = 0.00
-TRAIN_PERCENTAGE = 0.80
+BATCH_SIZE = 2
+EPOCHS = 500
+DROPOUT = 0.05
+TRAIN_PERCENTAGE = 0.75
+SEED = 42
 DELTA = False
+EARLY_STOPPING = False
 
 class RistorantiDataset(Dataset):
     def __init__(self, series, seq_len, pred_len):
@@ -40,17 +42,21 @@ def main():
     df = pd.read_csv('ristorantiGTrend.csv')
     series = df.iloc[:, 1].values.astype(np.float32)
 
+    series = series[:35]
+    print("Timesteps: ", len(series))
     min_val = np.min(series)
     max_val = np.max(series)
     series = (series - min_val) / (max_val - min_val)
 
     dataset = RistorantiDataset(series, SEQUENCE_LENGTH, PREDICTION_LENGTH)
 
-    torch.manual_seed(42)
+    torch.manual_seed(SEED)
 
     split_idx = int(TRAIN_PERCENTAGE * len(dataset))
     train_set = torch.utils.data.Subset(dataset, range(split_idx))
     test_set = torch.utils.data.Subset(dataset, range(split_idx, len(dataset)))
+    print(f"Train set size: {len(train_set)}, Test set size: {len(test_set)}")
+
     train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True)
     test_loader = DataLoader(test_set, batch_size=BATCH_SIZE, shuffle=True)
 
@@ -73,9 +79,9 @@ def main():
         verbose=True,
         teacher_forcing_ratio=0.00,
         pretrain_seca=True,
-        check_losses=True,
+        check_losses=EARLY_STOPPING,
         delta=DELTA,
-        early_stopping=False
+        early_stopping=EARLY_STOPPING
     )
 
     model.eval()
@@ -121,6 +127,8 @@ def main():
         plt.grid(True, alpha=0.3)
         plt.tight_layout()
         plt.show()
+
+    model.save_model("ristoranti_model.pth")
 
 if __name__ == "__main__":
     main()
