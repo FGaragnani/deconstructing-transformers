@@ -59,8 +59,9 @@ def someplots():
             plt.title(f"{categ} - {id}")
             plt.show()
    return
+   
 def main():
-   #aggregates()
+   aggregates()
    someplots()
    return
 
