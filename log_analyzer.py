@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from scipy.stats import mannwhitneyu
 import re
 
@@ -6,7 +6,7 @@ FILE_NAME = "results_log.txt"
 
 
 class Result:
-    def __init__(self, id: int = None, category: str = None, train_t: float = None, train_f: float = None, test_t: float = None, test_f: float = None):
+    def __init__(self, id: Optional[int] = None, category: Optional[str] = None, train_t: Optional[float] = None, train_f: Optional[float] = None, test_t: Optional[float] = None, test_f: Optional[float] = None):
         self.id = id
         self.category = category
         self.train_t = train_t
@@ -51,7 +51,7 @@ if __name__ == "__main__":
                 current_result.test_f = float(nums[1])
             continue
     
-    categories: List[str] = list(set([result.category for result in results]))
+    categories: List[str] = list(set([result.category for result in results if result.category is not None]))
     
     train_arr_t: List[float] = []
     test_arr_t: List[float] = []
@@ -60,11 +60,11 @@ if __name__ == "__main__":
     
     for category in categories:
         part_results = [result for result in results if result.category == category]
-        train_total_tr = sum([result.train_t for result in part_results]) / len(part_results)
-        test_total_tr = sum([result.test_t for result in part_results]) / len(part_results)
-        train_total_rf = sum([result.train_f for result in part_results]) / len(part_results)
-        test_total_rf = sum([result.test_f for result in part_results]) / len(part_results)
-        
+        train_total_tr = sum([result.train_t if result.train_t is not None else 0 for result in part_results]) / len(part_results)
+        test_total_tr = sum([result.test_t if result.test_t is not None else 0 for result in part_results]) / len(part_results)
+        train_total_rf = sum([result.train_f if result.train_f is not None else 0 for result in part_results]) / len(part_results)
+        test_total_rf = sum([result.test_f if result.test_f is not None else 0 for result in part_results]) / len(part_results)
+
         train_arr_t.append(train_total_tr)
         train_arr_f.append(train_total_rf)
         test_arr_t.append(test_total_tr)
