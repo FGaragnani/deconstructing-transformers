@@ -96,7 +96,6 @@ def someplots():
             plt.legend()
             plt.title(f"{categ} - {id}")
             plt.show()
-            plt.waitforbuttonpress()
    return
    
 def main():
