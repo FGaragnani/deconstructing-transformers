@@ -140,7 +140,7 @@ def parse_whole_dataset_from_xls(file_path: str, sheet_type: SheetType, output_l
     df = pd.read_excel(file_path, sheet_name=sheet_type.value, header=None)
     datasets = []
 
-    for row in range(2, len(df)):
+    for row in range(1,len(df)):
         try:
             train_dataset, test_dataset = parse_dataset_from_df(df, sheet_type, row, output_len, preprocessing, split)
             if len(test_dataset) > 0 and len(train_dataset) > 0:

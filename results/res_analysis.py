@@ -38,13 +38,13 @@ def build_csv():
    
 
 def aggregates():
-   df = pd.read_csv("results/res_monthly.csv")
+   df = pd.read_csv("res_monthly.csv")
    unique_types = df['type'].unique()
    countTrain = (df['tr_train_RMSE'] < df['rf_train_RMSE']).sum()
    countTest = (df['tr_test_RMSE'] < df['rf_test_RMSE']).sum()
    print(f"n={len(df)} train {countTrain} test {countTest}")
 
-   dfM3 = pd.read_excel("M3C.xls", sheet_name="M3Month")
+   dfM3 = pd.read_excel("../M3C.xls", sheet_name="M3Month")
 
    for typ in unique_types:
       dfType = df[df.type == typ]
@@ -62,9 +62,9 @@ def aggregates():
    return
 
 def someplots():
-   dfM3 = pd.read_excel("M3C.xls", sheet_name="M3Month")
+   dfM3 = pd.read_excel("../M3C.xls", sheet_name="M3Month")
 
-   with open('results/serie.txt', 'r', encoding='utf-8') as file:
+   with open('serie.txt', 'r', encoding='utf-8') as file:
       for line_num, line in enumerate(file, 1):
          elem = [elem.strip() for elem in line.split(' ')]
          if(line_num % 10 == 1):
