@@ -100,7 +100,7 @@ def someplots():
    return
    
 def main():
-   build_csv()
+   # build_csv()
    aggregates()
    someplots()
    return
