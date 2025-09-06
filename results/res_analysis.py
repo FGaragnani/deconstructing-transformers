@@ -1,6 +1,41 @@
 import numpy as np, pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import mannwhitneyu
+import re
+
+def build_csv():
+   with open('results/results_log1.txt', 'r', encoding='utf-8') as file:
+      lines = file.readlines()
+   with open('results/res_monthly.csv', 'w', encoding='utf-8') as file:
+      file.write("id,type,tr_train_RMSE,tr_test_RMSE,rf_train_RMSE,rf_test_RMSE\n")
+      for i, line in enumerate(lines):
+
+         if line.startswith("Dataset:"):
+            parts = line.split()
+            categ = parts[1]
+            m = re.search(r"\(ID:\s*(\d+)\)", line)
+            if m:
+               id = int(m.group(1))
+               file.write(f"{id},{categ},")
+
+         elif line.startswith("Transformer - "):
+            m = re.search(r"Train\s*RMSE:\s*([0-9]*\.?[0-9]+)\s*,\s*Test\s*RMSE:\s*([0-9]*\.?[0-9]+)", line)
+            if m:
+               tr_train = float(m.group(1))
+               tr_test = float(m.group(2))
+               file.write(f"{tr_train:.4f},{tr_test:.4f},")
+            else:
+               print("ERROR in parsing Transformer line")
+
+         elif line.startswith("Random Forest - "):
+            m = re.search(r"Train\s*RMSE:\s*([0-9]*\.?[0-9]+)\s*,\s*Test\s*RMSE:\s*([0-9]*\.?[0-9]+)", line)
+            if m:
+               rf_train = float(m.group(1))
+               rf_test = float(m.group(2))
+               file.write(f"{rf_train:.4f},{rf_test:.4f}\n")
+            else:
+               print("ERROR in parsing RandomForest line")
+   
 
 def aggregates():
    df = pd.read_csv("results/res_monthly.csv")
@@ -65,6 +100,7 @@ def someplots():
    return
    
 def main():
+   build_csv()
    aggregates()
    someplots()
    return
