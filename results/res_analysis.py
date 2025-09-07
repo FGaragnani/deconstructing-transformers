@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 from scipy.stats import mannwhitneyu
 import re
 
+from sympy.printing.pretty.pretty_symbology import line_width
+
+
 def build_csv():
    with open('results/results_log1.txt', 'r', encoding='utf-8') as file:
       lines = file.readlines()
@@ -95,6 +98,22 @@ def someplots():
             plt.plot(range(len(arrdata) - 1, len(arrdata) + 18),np.array(test),label="test")
             plt.legend()
             plt.title(f"{categ} - {id}")
+            plt.show()
+            
+            arrdata = np.array(serie.iloc[0].dropna().iloc[6:])
+            minval = arrdata[-19:].min()
+            maxval = arrdata[-19:].max()
+            range_val = maxval - minval
+            testdata = np.array(test)[-18:]*range_val + minval
+            rfdata   = np.array(rf)[-18:]*range_val + minval
+            trdata   = np.array(transf)[-18:]*range_val + minval
+            plt.figure(figsize=(9,6))
+            plt.plot(arrdata,label="series")
+            plt.plot(range(len(arrdata) - 18, len(arrdata)),testdata,label="test",color="y",linewidth=5)
+            plt.plot(range(len(arrdata) - 18, len(arrdata)),rfdata,label="random forest",color="r")
+            plt.plot(range(len(arrdata) - 18, len(arrdata)),trdata,label="transformer",color="g")
+            plt.legend()
+            plt.title(f"{categ} - N{id}")
             plt.show()
    return
    
