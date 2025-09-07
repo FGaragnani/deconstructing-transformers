@@ -253,16 +253,6 @@ The matrix P can be either \textit{static}, remaining fixed during the training 
 
 In the proposed minimalist architecture, matrix $P \in \mathbb{R}^{7 \times 4}$ is an absolute, learnable positional encoding, in the restaurant use case consisting of 7 rows and 4 columns. This equates to further 28 parameters that need to be learned.
 
-$$
-P^T = 
-\begin{bmatrix}
- -0.6293 & -0.7571 & -0.4988 & -0.9708 & -1.1165 &  0.4899 &  0.5061 \\
-  0.3700 & -0.1533 & -0.2298 &  1.0685 &  0.2047 &  1.1688 &  0.1518 \\
-  0.4210 &  0.4065 & -0.2935 & -0.2282 & -1.0394 & -0.9300 & -1.2985 \\
-  0.8584 & -1.0690 &  0.3565 & -0.6471 &  0.9570 &  0.8161 & -1.0734
-\end{bmatrix}
-$$
-
 ~\\Lines \ref{enc:encoding-block1}-\ref{enc:encoding-block2}: (\textit{Encoding Blocks})
 
 The main loop of the algorithm repeats $n$ times a block of code called an {\it Encoding Block}. In it, matrix {\bf X} is first passed to a module implementing Multihead Attention (Lines \ref{enc:multihead1}-\ref{enc:multihead2}). The outputs of the heads are then concatenated and projected to keep the size consistent (Lines \ref{enc:concatenation}-\ref{enc:outproj}). Next, a residual connection with a normalization is applied (Line \ref{enc:addnorm1}). The output is then passed through a small feedforward network after which another residual connection and normalization are applied (Lines \ref{enc:ffn}-\ref{enc:addnorm2}).
@@ -294,40 +284,6 @@ Queries (the desired embeddings), keys (past information) and values (adapted pa
 ~\\Line \ref{enc:outproj}: since concatenation may modify the dimensionality, a final output projection $W^O \in \mathbb{R}^{hd_v \times m}$ is applied to ensure that the original size is kept $X' = A \cdot W^O$.
 
 ~\\In our architecture, we set $h = d_k = d_v = \frac{m}{2} = 2$. This produced six matrices, all of size $4 \times 2$, totaling $48$ more parameters to learn. The output matrix $W^O$ is, instead, of size $4 \times 4$. The learned parameters for the restaurant example are given below.
-\begin{align*}
-    W^1_q &=    \begin{bmatrix}
-                0.596 & -1.110 & 1.512 & 0.011 \\
-                0.768 & -0.201 & -0.149 & 0.941
-                \end{bmatrix}   \quad
-    W^2_q =     \begin{bmatrix}
-                0.182 & 1.118 & 0.137 & -0.102 \\
-                0.166 & -0.413 & -1.276 & 1.259
-                \end{bmatrix} \\
-    W^1_k &=    \begin{bmatrix}
-                     1.339 & -0.812 & 1.077 & 0.332 \\
-                    -1.298 & -0.333 & -0.304 & 0.378
-                \end{bmatrix} \quad
-    W^2_k =     \begin{bmatrix}
-                    -1.427 & 0.111 & -0.207 & -0.5870 \\
-                    1.485 & 0.555 & 0.561 & -1.182 
-                \end{bmatrix} \\
-    W^1_v &=     \begin{bmatrix}
-                    1.339 & -0.812 & 1.077 & 0.332 \\
-                    -1.298 & -0.333 & -0.304 & 0.378
-                \end{bmatrix} \quad
-    W^2_v =     \begin{bmatrix}
-                    0.016 & -0.613 & 0.161 & -0.264 \\
-                    -0.440 & 1.467 & -0.990 & -0.360
-                \end{bmatrix}
-\end{align*}
-$$
-    W^O = \begin{bmatrix}
-            0.5883 &  0.2314 & -0.3120 &  0.9704 \\
-            -0.2597 & -0.2973 &  0.0408 & -0.3421 \\
-            -0.0065 & -0.4276 & -0.2859 & -1.0913 \\
-            -0.0770 &  0.7207 &  0.0433 & -0.1555
-            \end{bmatrix}
-$$
 
 ~\\Lines \ref{enc:addnorm1}, \ref{enc:addnorm2}: (\textit{Add \& Norm})
 
@@ -373,69 +329,6 @@ The ReLU function is applied element-wise. The intermediate dimension $p$ is typ
 
 In our model, we set $p = 4 \times m = 16$, meaning a total number of $16 \times 4 \times 2 + (16 + 4) = 148$ parameters.
 Below are shown the values learned by the sample architecture.
-
-\begin{align*}
-    W_1^T &=
-\begin{bmatrix}
- 0.4196 & -0.8769 &  0.3610 & -0.0478 \\
--0.0640 & -0.0074 &  0.1623 &  0.0387 \\
--0.5033 &  0.0526 &  0.4721 & -0.0462 \\
--0.0235 & -0.0180 & -0.0918 &  0.0166 \\
--0.1677 &  0.0475 &  0.1042 & -0.0290 \\
--0.3696 & -0.4210 &  0.5562 &  0.1345 \\
- 0.1058 & -0.1836 & -0.0906 & -0.1468 \\
- 0.2463 &  0.2171 & -0.0282 &  0.0412 \\
- 0.2532 &  0.2173 & -0.0565 &  0.2351 \\
--0.0807 & -0.2376 &  0.1662 &  0.0452 \\
--0.4880 & -0.2997 &  0.1987 &  0.0231 \\
- 0.1958 & -0.0170 & -0.2829 & -0.0767 \\
- 0.0399 & -0.0465 & -0.0626 &  0.0403 \\
- 0.2329 &  0.2049 & -0.1548 & -0.0405 \\
--0.3543 & -0.4732 &  0.1578 &  0.3250 \\
--0.1712 & -0.0503 &  0.0477 & -0.1804
-\end{bmatrix}
- \quad
-    b_1 =   \begin{bmatrix}
--0.6151 \\
--0.3014 \\
--0.5325 \\
--0.2021 \\
--0.4317 \\
--0.1031 \\
--0.5842 \\
--0.1081 \\
--0.2168 \\
--0.6052 \\
--0.0827 \\
--0.4561 \\
--0.5228 \\
--0.3175 \\
--0.2039 \\
--0.4153
-\end{bmatrix} \\
-    W_2 &= 
-\begin{bmatrix}
- 0.4476 & -0.4134 & -0.0992 &  0.3374 \\
--0.2983 & -0.0121 & -0.0738 & -0.0373 \\
--0.2697 & -0.2605 &  0.2736 &  0.1703 \\
- 0.0031 &  0.1685 & -0.0202 &  0.2742 \\
--0.2344 &  0.0643 &  0.1967 & -0.0713 \\
- 0.0128 & -0.0973 & -0.2267 &  0.3215 \\
--0.0078 & -0.1763 &  0.1047 &  0.0694 \\
- 0.0417 & -0.0061 &  0.1713 & -0.1046 \\
--0.0631 &  0.2215 & -0.0927 & -0.1762 \\
--0.0458 & -0.2141 & -0.0208 &  0.0600 \\
--0.1016 & -0.1437 & -0.0314 &  0.2947 \\
- 0.0008 & -0.1836 &  0.0040 &  0.0332 \\
--0.0714 &  0.0968 & -0.2715 &  0.1422 \\
- 0.0879 &  0.0680 &  0.0728 & -0.2513 \\
- 0.3400 & -0.1222 & -0.0918 &  0.4382 \\
--0.0747 & -0.0262 & -0.0424 &  0.0557
-\end{bmatrix}
-    b_2 = \begin{bmatrix}
-    -0.0854 \\ 0.0029 \\ -0.0093 \\ 0.1207
-    \end{bmatrix}
-\end{align*}
 
 ~\\Line \ref{enc:output}: (\textit{Output})
 
@@ -749,6 +642,121 @@ In a research landscape often dominated by increasingly complex architectures, o
 \subsection[\appendixname~\thesubsection]{}
 The appendix is an optional section that can contain details and data supplemental to the main text---for example, explanations of experimental details that would disrupt the flow of the main text but nonetheless remain crucial to understanding and reproducing the research shown; figures of replicates for experiments of which representative data are shown in the main text can be added here if brief, or as Supplementary Data. Mathematical proofs of results not central to the paper can be added as an appendix.
 cite \ref{tab5}
+
+Matrix X ?
+
+matrix P transposed
+$$
+P^T = 
+\begin{bmatrix}
+	-0.6293 & -0.7571 & -0.4988 & -0.9708 & -1.1165 &  0.4899 &  0.5061 \\
+  	 0.3700 & -0.1533 & -0.2298 &  1.0685 &  0.2047 &  1.1688 &  0.1518 \\
+	 0.4210 &  0.4065 & -0.2935 & -0.2282 & -1.0394 & -0.9300 & -1.2985 \\
+	 0.8584 & -1.0690 &  0.3565 & -0.6471 &  0.9570 &  0.8161 & -1.0734
+\end{bmatrix}
+$$
+
+
+
+\begin{align*}
+	W^1_q &=    \begin{bmatrix}
+		0.596 & -1.110 & 1.512 & 0.011 \\
+		0.768 & -0.201 & -0.149 & 0.941
+	\end{bmatrix}   \quad
+	W^2_q =     \begin{bmatrix}
+		0.182 & 1.118 & 0.137 & -0.102 \\
+		0.166 & -0.413 & -1.276 & 1.259
+	\end{bmatrix} \\
+	W^1_k &=    \begin{bmatrix}
+		1.339 & -0.812 & 1.077 & 0.332 \\
+		-1.298 & -0.333 & -0.304 & 0.378
+	\end{bmatrix} \quad
+	W^2_k =     \begin{bmatrix}
+		-1.427 & 0.111 & -0.207 & -0.5870 \\
+		1.485 & 0.555 & 0.561 & -1.182 
+	\end{bmatrix} \\
+	W^1_v &=     \begin{bmatrix}
+		1.339 & -0.812 & 1.077 & 0.332 \\
+		-1.298 & -0.333 & -0.304 & 0.378
+	\end{bmatrix} \quad
+	W^2_v =     \begin{bmatrix}
+		0.016 & -0.613 & 0.161 & -0.264 \\
+		-0.440 & 1.467 & -0.990 & -0.360
+	\end{bmatrix}
+\end{align*}
+$$
+W^O = \begin{bmatrix}
+	0.5883 &  0.2314 & -0.3120 &  0.9704 \\
+	-0.2597 & -0.2973 &  0.0408 & -0.3421 \\
+	-0.0065 & -0.4276 & -0.2859 & -1.0913 \\
+	-0.0770 &  0.7207 &  0.0433 & -0.1555
+\end{bmatrix}
+$$
+
+
+\begin{align*}
+	W_1^T &=
+	\begin{bmatrix}
+		0.4196 & -0.8769 &  0.3610 & -0.0478 \\
+		-0.0640 & -0.0074 &  0.1623 &  0.0387 \\
+		-0.5033 &  0.0526 &  0.4721 & -0.0462 \\
+		-0.0235 & -0.0180 & -0.0918 &  0.0166 \\
+		-0.1677 &  0.0475 &  0.1042 & -0.0290 \\
+		-0.3696 & -0.4210 &  0.5562 &  0.1345 \\
+		0.1058 & -0.1836 & -0.0906 & -0.1468 \\
+		0.2463 &  0.2171 & -0.0282 &  0.0412 \\
+		0.2532 &  0.2173 & -0.0565 &  0.2351 \\
+		-0.0807 & -0.2376 &  0.1662 &  0.0452 \\
+		-0.4880 & -0.2997 &  0.1987 &  0.0231 \\
+		0.1958 & -0.0170 & -0.2829 & -0.0767 \\
+		0.0399 & -0.0465 & -0.0626 &  0.0403 \\
+		0.2329 &  0.2049 & -0.1548 & -0.0405 \\
+		-0.3543 & -0.4732 &  0.1578 &  0.3250 \\
+		-0.1712 & -0.0503 &  0.0477 & -0.1804
+	\end{bmatrix}
+	\quad
+	b_1 =   \begin{bmatrix}
+		-0.6151 \\
+		-0.3014 \\
+		-0.5325 \\
+		-0.2021 \\
+		-0.4317 \\
+		-0.1031 \\
+		-0.5842 \\
+		-0.1081 \\
+		-0.2168 \\
+		-0.6052 \\
+		-0.0827 \\
+		-0.4561 \\
+		-0.5228 \\
+		-0.3175 \\
+		-0.2039 \\
+		-0.4153
+	\end{bmatrix} \\
+	W_2 &= 
+	\begin{bmatrix}
+		0.4476 & -0.4134 & -0.0992 &  0.3374 \\
+		-0.2983 & -0.0121 & -0.0738 & -0.0373 \\
+		-0.2697 & -0.2605 &  0.2736 &  0.1703 \\
+		0.0031 &  0.1685 & -0.0202 &  0.2742 \\
+		-0.2344 &  0.0643 &  0.1967 & -0.0713 \\
+		0.0128 & -0.0973 & -0.2267 &  0.3215 \\
+		-0.0078 & -0.1763 &  0.1047 &  0.0694 \\
+		0.0417 & -0.0061 &  0.1713 & -0.1046 \\
+		-0.0631 &  0.2215 & -0.0927 & -0.1762 \\
+		-0.0458 & -0.2141 & -0.0208 &  0.0600 \\
+		-0.1016 & -0.1437 & -0.0314 &  0.2947 \\
+		0.0008 & -0.1836 &  0.0040 &  0.0332 \\
+		-0.0714 &  0.0968 & -0.2715 &  0.1422 \\
+		0.0879 &  0.0680 &  0.0728 & -0.2513 \\
+		0.3400 & -0.1222 & -0.0918 &  0.4382 \\
+		-0.0747 & -0.0262 & -0.0424 &  0.0557
+	\end{bmatrix}
+	b_2 = \begin{bmatrix}
+		-0.0854 \\ 0.0029 \\ -0.0093 \\ 0.1207
+	\end{bmatrix}
+\end{align*}
+
 
 \begin{table}[H] 
 	\caption{This is a table caption.\label{tab5}}
