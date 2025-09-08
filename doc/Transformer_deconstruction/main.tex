@@ -348,14 +348,14 @@ The general structure of the decoding module is represented by the pseudocode in
 	\SetKwInOut{Output}{Output}
 	\SetKw{KwGoTo}{go to}
 
-        \underline{procedure decoding({\bf Y},m,$h^1$,$h^2$)} 
+        \underline{procedure decoding({\bf Z},no,l,$h^1$,$h^2$)} 
         
         \Input{ Matrix {\bf Z} from encoding, $no$ num data series points in output, $l$ number of decoding blocks, $h^1$ and $h^2$ head numbers} 
         \Output{ A 2D matrix ${\bf Y}$}
         
         \tcp*{subscripts indicate rows, superscripts columns}
         \label{dec:start}
-        $\textbf{Y} = \textbf{0}_{k \times m}$ \; \label{dec:output}
+        $\textbf{Y} = \textbf{0}_{no \times m}$ \; \label{dec:output}
         \For{i = 0, \ldots, no} 
 	{       \label{dec:outer}
             \For{l times}
@@ -398,7 +398,7 @@ The general structure of the decoding module is represented by the pseudocode in
                 \label{dec:norm3}
             } \label{dec:decblock2}
             $Y_i = feedforward(Y_i)  * scale(\textbf{Z}) + bias(\textbf{Z})$\; \label{dec:finalproj}
-            $y_i$ = SECA$^{-1}$($Y^i$) \tcp*{Se l'output fosse un array di scalari allora si userebbe $SECA^{-1}$ (che essendo ora solo un vettore indicherei come v ad esempio) ma se rimane una matrice n x m allora non si usa... Dipende da cosa intendiamo per output del decoding}\;
+            $y_i$ = ($Y^i$)$W_o$
         } \label{dec:outer2}                     
     	\caption{The decoding module} 
     \label{algo:decoding}
