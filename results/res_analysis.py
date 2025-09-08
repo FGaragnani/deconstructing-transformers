@@ -111,13 +111,15 @@ def someplots():
             testdata = np.array(test)[-18:] * range_val + minval
             rfdata   = np.array(rf)[-18:] * range_val + minval
             trdata   = np.array(transf)[-18:] * range_val + minval
-            plt.figure(figsize=(9,6))
+            plt.rcParams.update({'font.size': 12})  # Set default font size
+            plt.figure(figsize=(12,5))
             plt.plot(arrdata,label="series")
-            plt.plot(range(len(arrdata) - 18, len(arrdata)),testdata,label="test",color="y",linewidth=5)
-            plt.plot(range(len(arrdata) - 18, len(arrdata)),rfdata,label="random forest",color="r")
-            plt.plot(range(len(arrdata) - 18, len(arrdata)),trdata,label="transformer",color="g")
+            #plt.plot(range(len(arrdata) - 18, len(arrdata)),testdata,label="test",color="y",linewidth=5)
+            plt.plot(range(len(arrdata) - 18, len(arrdata)),rfdata,".",label="random forest",color="r",linewidth=3)
+            plt.plot(range(len(arrdata) - 18, len(arrdata)),trdata,"--",label="transformer",color="g",linewidth=3)
             plt.legend()
             plt.title(f"{categ} - N{id}")
+            plt.ylim(min(arrdata)/1.01, max(arrdata)*1.01)
             plt.show()
    return
    
