@@ -264,9 +264,9 @@ All these steps are detailed in the following.
 
 ~\\Lines \ref{enc:multihead1}-\ref{enc:multihead2}: (\textit{Multihead Attention})
 
-This loop iterates a basic attention mechanism that dynamically weighs the contribution of each past point in the series when computing the representation of those under scrutiny. It computes a set of attention scores relating the "query" vector of the current point and "key" vectors of all past values. In our application, a query comes from the embedding of the last known observation while the keys correspond to those of all past observations. The resulting attention weights determine which past points matter most and the forecast is then given by a weighted sum of the corresponding values.
+This loop iterates a basic attention mechanism that dynamically weighs the contribution of each past point in the series when computing the representation of those under scrutiny. It computes a set of attention scores relating the "query" vector of the current point and "key" vectors of all sequence values. \#In our application, a query comes from the embedding of the last known observation while the keys correspond to those of all past observations.\# The resulting attention weights determine which points matter most and the forecast is then given by a weighted sum of the corresponding "value" vectors.
 
-Queries (the desired embeddings), keys (past information) and values (adapted past embeddings) are all represented by matrices, all with the same dimensions. At each iteration the corresponding set of query, key, and value is referred to as a \textit{head}. The matrices identified for the two heads used in our running example are reported in the appendix in table \ref{tab:matWq}.
+Queries (the elements currently focused on), keys (descriptors of the corresponding values), and values (the actual information) are all represented as matrices. Typically, queries and keys share the same inner dimension $d_k$, while values may have a different dimension $d_v$. At each iteration the corresponding set of query, key, and value is referred to as a \textit{head}. The matrices identified for the two heads used in our running example are reported in the appendix in table \ref{tab:matWq}.
 
 ~\\Line \ref{enc:qh}: generates the $h-th$ query matrix and projects the input embeddings into vectors that represent what we are looking for in the past. This is achieved by using a dynamic parameter matrix $W^h_q \in \mathbb{R}^{m \times d_k}$ that is learnt.
 
@@ -276,13 +276,13 @@ Queries (the desired embeddings), keys (past information) and values (adapted pa
 
 ~\\Line \ref{enc:dk}: initializes the scaling factor.
 
-~\\Line \ref{enc:attention1}: implements the first part of the attention function, in this case using the \textit{Scaled Dot-Product Attention} \cite{VSPU17}. The similarity between sequence elements is computed from $Q$ and $K$, the key matrix is transposed so that the dot product compares each feature of every query with the corresponding feature of every key. This initial $A$ matrix will contain similarity values $a_{ij} \in \mathbb{R}$ between every query vector and every key vector. 
+~\\Line \ref{enc:attention1}: implements the first part of the attention function, in this case using the \textit{Scaled Dot-Product Attention} \cite{VSPU17}. The similarity between sequence elements is computed from $Q$ and $K$ through a dot product. The key matrix is transposed so that the operation compares each feature of every query with the corresponding feature of every key. This initial $A$ matrix will contain similarity values $a_{ij} \in \mathbb{R}$ between every query vector and every key vector. 
 
-~\\Line \ref{enc:softmax}: transforms the similarity values into `probability' scores, the $\text{softmax}()$ operator is applied to all elements $a_{ij}$ every row: $ a_{ij} = e^{a_{ij}} / \sum_k e^{a_{kj}},\quad \forall i,j  = 1,\,...,\,n $. In this way, we get for every query vector, normalized weights of similarity towards key vectors. 
+~\\Line \ref{enc:softmax}: transforms the similarity values into `probability' scores. The $\text{softmax}()$ operator is applied to all elements $a_{ij}$ over every row: $a_{ij} = e^{a_{ij}} / \sum_k e^{a_{kj}},\quad \forall i,j  = 1,\,...,\,n $. In this way, we get for every query vector, normalized weights of similarity towards key vectors. 
 
-~\\Line \ref{enc:attention2}: completes the computation of the attention function by implementing a weighted sum of the value vectors, $X' = A \cdot V$, thereby aggregating information from the relevant past lags.
+~\\Line \ref{enc:attention2}: completes the computation of the attention function by implementing a weighted sum of the value vectors, $X' = A \cdot V$, thereby aggregating information from the relevant timesteps.
 
-~\\Line \ref{enc:concatenation}: lines \ref{enc:multihead1}-\ref{enc:multihead2} are repeated $k$ times, each time obtaining and attention matrix $A^h$, $h=1,\dots,k$. This line concatenates all these matrices in a single bigger one, $A = [A^1\;A^2\;...\;A^h]$. The matrix $A$ obtained for the running example is reported in the appendix as table \ref{tab:matA}.
+~\\Line \ref{enc:concatenation}: lines \ref{enc:multihead1}-\ref{enc:multihead2} are repeated $k$ times, each time obtaining an attention matrix $A^h$, $h=1,\dots,k$. This line concatenates all these matrices in a single bigger one, $A = [A^1\;A^2\;...\;A^h]$. The matrix $A$ obtained for the running example is reported in the appendix as table \ref{tab:matA}.
 
 ~\\Line \ref{enc:outproj}: since concatenation may modify the dimensionality, a final output projection $W^O \in \mathbb{R}^{hd_v \times m}$ is applied to ensure that the original size is kept $X' = A \cdot W^O$. 
 
