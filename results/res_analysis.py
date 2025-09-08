@@ -41,13 +41,13 @@ def build_csv():
    
 
 def aggregates():
-   df = pd.read_csv("res_monthly.csv")
+   df = pd.read_csv("results/res_monthly.csv")
    unique_types = df['type'].unique()
    countTrain = (df['tr_train_RMSE'] < df['rf_train_RMSE']).sum()
    countTest = (df['tr_test_RMSE'] < df['rf_test_RMSE']).sum()
    print(f"n={len(df)} train {countTrain} test {countTest}")
 
-   dfM3 = pd.read_excel("../M3C.xls", sheet_name="M3Month")
+   dfM3 = pd.read_excel("M3C.xls", sheet_name="M3Month")
 
    for typ in unique_types:
       dfType = df[df.type == typ]
@@ -65,9 +65,9 @@ def aggregates():
    return
 
 def someplots():
-   dfM3 = pd.read_excel("../M3C.xls", sheet_name="M3Month")
+   dfM3 = pd.read_excel("M3C.xls", sheet_name="M3Month")
 
-   with open('serie.txt', 'r', encoding='utf-8') as file:
+   with open('results/serie.txt', 'r', encoding='utf-8') as file:
       for line_num, line in enumerate(file, 1):
          elem = [elem.strip() for elem in line.split(' ')]
          if(line_num % 10 == 1):
@@ -85,28 +85,29 @@ def someplots():
             print(test)
          elif (line_num % 10 == 0):
             serie = dfM3[dfM3.Series == f"N{id}"]
-            arrdata = np.array(serie.iloc[0].dropna().iloc[6:-18])
+            arrdata = np.array(serie.iloc[0].dropna().iloc[6:])
             range_val = arrdata.max() - arrdata.min()
             arrdata = (arrdata - arrdata.min()) / range_val
+            arrdata = arrdata[:-18]
             transf.insert(0, arrdata[-1]) # add last real value
             rf.insert(0, arrdata[-1])
             test.insert(0, arrdata[-1])
             plt.figure(figsize=(9,6))
             plt.plot(arrdata)
-            plt.plot(range(len(arrdata) - 1, len(arrdata) + 18),np.array(transf),label="transformer")
-            plt.plot(range(len(arrdata) - 1, len(arrdata) + 18),np.array(rf),label="random forest")
-            plt.plot(range(len(arrdata) - 1, len(arrdata) + 18),np.array(test),label="test")
+            plt.plot(range(len(arrdata) - 1, len(arrdata) + 18),np.array(transf),label="transformer", color="g")
+            plt.plot(range(len(arrdata) - 1, len(arrdata) + 18),np.array(rf),label="random forest", color="r")
+            plt.plot(range(len(arrdata) - 1, len(arrdata) + 18),np.array(test),label="test", color="y")
             plt.legend()
             plt.title(f"{categ} - {id}")
             plt.show()
             
             arrdata = np.array(serie.iloc[0].dropna().iloc[6:])
-            minval = arrdata[-19:].min()
-            maxval = arrdata[-19:].max()
+            minval = arrdata.min()
+            maxval = arrdata.max()
             range_val = maxval - minval
-            testdata = np.array(test)[-18:]*range_val + minval
-            rfdata   = np.array(rf)[-18:]*range_val + minval
-            trdata   = np.array(transf)[-18:]*range_val + minval
+            testdata = np.array(test)[-18:] * range_val + minval
+            rfdata   = np.array(rf)[-18:] * range_val + minval
+            trdata   = np.array(transf)[-18:] * range_val + minval
             plt.figure(figsize=(9,6))
             plt.plot(arrdata,label="series")
             plt.plot(range(len(arrdata) - 18, len(arrdata)),testdata,label="test",color="y",linewidth=5)
