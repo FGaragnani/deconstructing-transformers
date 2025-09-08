@@ -17,10 +17,10 @@ class EncoderModule(nn.Module):
     self.norm2 = nn.LayerNorm(embed_size)
 
   def forward(self, X: torch.Tensor):
-    A = self.mha((X, X, X))
-    X = self.norm1(X + self.dropout(A))
-    F = self.ff(X)
-    X = self.norm2(X + self.dropout(F))
+    A = self.mha((X, X, X))               # multihead attention, concatenation, output projection
+    X = self.norm1(X + self.dropout(A))   # add and LayerNorm
+    F = self.ff(X)                        # feed-forward
+    X = self.norm2(X + self.dropout(F))   # add and LayerNorm
     return X
   
 class DecoderModule(nn.Module):
@@ -40,12 +40,12 @@ class DecoderModule(nn.Module):
 
   def forward(self, input: tuple[torch.Tensor, torch.Tensor]):
     X, Z = input
-    A = self.mha_1((X, X, X))
-    X = self.norm1(X + self.dropout(A))
-    A = self.mha_2((X, Z, Z))
-    X = self.norm2(X + self.dropout(A))
-    F = self.ff(X)
-    X = self.norm3(X + self.dropout(F))
+    A = self.mha_1((X, X, X))                 # multihead masked self-attention, concatenation, output projection
+    X = self.norm1(X + self.dropout(A))       # add and LayerNorm
+    A = self.mha_2((X, Z, Z))                 # multihead cross-attention, concatenation, output projection
+    X = self.norm2(X + self.dropout(A))       # add and LayerNorm
+    F = self.ff(X)                            # feed-forward
+    X = self.norm3(X + self.dropout(F))       # add and LayerNorm
     return (X, Z)
   
 class Output(nn.Module):
