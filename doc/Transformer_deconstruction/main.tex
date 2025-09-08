@@ -407,7 +407,7 @@ The general structure of the decoding module is represented by the pseudocode in
 
 ~\\Lines \ref{dec:start}-\ref{dec:output}: (\textit{Input})
 
-The Decoder takes the encoder output $Z \in \mathbb{R}^{n \times m}$ as its main input (Line \ref{dec:start}) and iteratively updates a sequence represented by matrix $\textbf{Y} \in \mathbb{R}^{o \times m}$, where each row $y_i$ represents the $i$-th output embedding. Initially, the matrix is zero-initialized (Line \ref{dec:output}). The sequence is then updated autoregressively, i.e., one timestep at a time with each new element depending on the previously generated ones.
+The Decoder takes the encoder output $Z \in \mathbb{R}^{n \times m}$ as its main input (Line \ref{dec:start}) and iteratively updates a sequence represented by matrix $\textbf{Y} \in \mathbb{R}^{no + 1 \times m}$, where each row $y_i$ represents the $i$-th output embedding, except for the first row which has a special row. Initially, the matrix is zero-initialized (Line \ref{dec:output}). The first row is set as the \texttt{<CLS>} token, a learnable embedding used in order to kick-start the learning process. The sequence is then updated autoregressively, i.e., one timestep at a time with each new element depending on the previously generated ones.
 
 ~\\Lines \ref{dec:decblock1}-\ref{dec:decblock2}: (\textit{Decoding Blocks})
 
