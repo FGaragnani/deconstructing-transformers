@@ -85,10 +85,9 @@ def someplots():
             print(test)
          elif (line_num % 10 == 0):
             serie = dfM3[dfM3.Series == f"N{id}"]
-            arrdata = np.array(serie.iloc[0].dropna().iloc[6:])
+            arrdata = np.array(serie.iloc[0].dropna().iloc[6:-18])
             range_val = arrdata.max() - arrdata.min()
             arrdata = (arrdata - arrdata.min()) / range_val
-            arrdata = arrdata[:-18]
             transf.insert(0, arrdata[-1]) # add last real value
             rf.insert(0, arrdata[-1])
             test.insert(0, arrdata[-1])
@@ -102,9 +101,11 @@ def someplots():
             plt.show()
             
             arrdata = np.array(serie.iloc[0].dropna().iloc[6:])
-            minval = arrdata.min()
-            maxval = arrdata.max()
+            
+            minval = arrdata[-30:].min()
+            maxval = arrdata[-30:].max()
             range_val = maxval - minval
+
             testdata = np.array(test)[-18:] * range_val + minval
             rfdata   = np.array(rf)[-18:] * range_val + minval
             trdata   = np.array(transf)[-18:] * range_val + minval
