@@ -176,13 +176,15 @@ s(t) = (& 44, 48, 51, 48, 50, 63, 66, 48, 53, 56, 52, 57, 70, 67, 56, 60, 62, 60
         & 63, 63, 78, 80, 63, 64, 67, 65, 70, 87, 84)\nonumber
 \end{align}
 
-The data processing cycle consists of three main phases: encoding, decoding, and learning. The following subsections provide details on each phase, the reader is referred to \cite{VSPU17} a more exhaustive exposition.
+The data processing cycle consists of three main phases: encoding, decoding, and learning. The following subsections provide details on each phase, the reader is referred to \cite{VSPU17} for a more exhaustive exposition.
 
 \subsection{Encoding} \label{subsec:encoding}
 
 The objective of the encoding component (i.e., the \textit{encoder}) in a Transformer architecture is to process an input sequence and convert the raw input into a contextually enriched representation that captures both local and global dependencies. This representation can then be used effectively by the rest of the model.
 
-The general structure of the encoding module is represented by the pseudocode in Algorithm \ref{algo:encoding}. The individual steps are detailed below. All intermediate numerical results obtained for the restaurant series case study are reported in appendix \ref{sec:appendix} to enable the interested reader to immediately grasp the dimensionalities and values involved in this tiny example, and possibly to follow the corresponding evolution of a run of the code provided in \cite{G25}. In the case of the running example we used the following argument values: $n$=7, $m$=4, $k$=2, $d_k$=$d_v$=2,$p$=16.
+The general structure of the encoding module is represented by the pseudocode in Algorithm \ref{algo:encoding}. All intermediate numerical results obtained for the restaurant series case study are reported in appendix \ref{sec:appendix} to enable the interested reader to immediately grasp the dimensionalities and values involved in this tiny example, and possibly to follow the corresponding evolution of a run of the code provided in \cite{G25}. In the case of the running example we used the following argument values: $n$=7, $m$=4, $k$=2, $d_k$=$d_v$=2, $p$=16.
+
+The individual steps are detailed below.
 
 \begin{algorithm2e}
 	\SetKwInOut{Input}{Input}
@@ -195,10 +197,10 @@ The general structure of the encoding module is represented by the pseudocode in
         \Output{ A 2D matrix $Z$}
         
         \tcp*{Input Projection}
-        \tcp*{transform the array {\bf s} into the 2D matrix (tensor) {\bf X}} 
+        \tcp*{transform the array {\bf s} into the 2D embedding matrix (tensor) {\bf X}} 
         \For{i = 0, \ldots, t} 
         {\label{enc:seca1}
-            Expand value $s_i$ into a row $X_i = s_iW_i$ \tcp*{CAE, content–addressable expansion} 
+            Expand value $s_i$ into a row $X_i = s_iW_i$
         }   \label{enc:seca2}
         \tcp*{Positional encoding}
         X' = X + P;\; \label{enc:positional}
