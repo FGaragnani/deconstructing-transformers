@@ -66,7 +66,7 @@ class MultiHeadAttentionLayer(nn.Module):
         if return_attention:
            return self.W_O(A), attention_weights
 
-        return self.W_O(A)
+        return self.W_O(A)                                           # output projection
 
 
 """
