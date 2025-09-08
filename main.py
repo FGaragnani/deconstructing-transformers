@@ -49,7 +49,7 @@ def main():
     indices = df.id.tolist()
 
     datasets: List[Tuple[DatasetTimeSeries, DatasetTimeSeries]] = parse_whole_dataset_from_xls("M3C.xls", SheetType.MONTHLY, input_len=INPUT_LEN, output_len=OUTPUT_LEN, preprocessing=PreprocessingTimeSeries.MIN_MAX)
-    datasets = [dataset for dataset in datasets if dataset[0].id not in indices]
+    datasets = [dataset for dataset in datasets if dataset[0].id in indices]
     results: List[Result] = []
 
     for train_dataset, test_dataset in datasets:
@@ -68,6 +68,8 @@ def main():
             num_head_dec_2=NUM_HEADS,
             dropout=DROPOUT,
         )
+        print("Number of trainable parameters: ", sum(p.numel() for p in model.parameters() if p.requires_grad))
+
         train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
         test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
 

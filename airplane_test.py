@@ -144,6 +144,8 @@ def main():
         num_head_dec_2=NUM_HEADS,
         dropout=DROPOUT
     )
+
+    print("Number of trainable parameters: ", sum(p.numel() for p in model.parameters() if p.requires_grad))
     
     train_loss, test_loss = train_transformer_model(
         model=model, 
