@@ -71,4 +71,4 @@ class Output(nn.Module):
 
     s = torch.sigmoid(self.scale_net(context))
     b = self.bias_net(context)
-    return out * s + b
+    return out * s + b                          # feedforward(Yj) * scale + bias
