@@ -355,7 +355,8 @@ The general structure of the decoding module is represented by the pseudocode in
         
         \tcp*{subscripts indicate rows, superscripts columns}
         \label{dec:start}
-        $\textbf{Y} = \textbf{0}_{no \times m}$ \; \label{dec:output}
+        $\textbf{Y} = \textbf{0}_{no + 1 \times m}$ \; 	\label{dec:output}
+        Let $Y^0 = \texttt{<CLS>}$ \;					\label{dec:cls}
         \For{i = 0, \ldots, no} 
 	{       \label{dec:outer}
             \For{l times}
@@ -397,8 +398,8 @@ The general structure of the decoding module is represented by the pseudocode in
                 Let $\textbf{Y} = LayerNorm(\textbf{Y} + F)$\;
                 \label{dec:norm3}
             } \label{dec:decblock2}
-            $Y_i = feedforward(Y_i)  * scale(\textbf{Z}) + bias(\textbf{Z})$\; \label{dec:finalproj}
-            $y_i$ = ($Y^i$)$W_o$
+            $Y_{i + 1} = feedforward(Y_{i + 1})  * scale(\textbf{Z}) + bias(\textbf{Z})$\; \label{dec:finalproj}
+            $y_i$ = ($Y^{i + 1}$)$W_o$
         } \label{dec:outer2}                     
     	\caption{The decoding module} 
     \label{algo:decoding}
