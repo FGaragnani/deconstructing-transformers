@@ -85,6 +85,7 @@ def someplots():
             print(test)
          elif (line_num % 10 == 0):
             serie = dfM3[dfM3.Series == f"N{id}"]
+            """
             arrdata = np.array(serie.iloc[0].dropna().iloc[6:-18])
             range_val = arrdata.max() - arrdata.min()
             arrdata = (arrdata - arrdata.min()) / range_val
@@ -99,6 +100,7 @@ def someplots():
             plt.legend()
             plt.title(f"{categ} - {id}")
             plt.show()
+            """
             
             arrdata = np.array(serie.iloc[0].dropna().iloc[6:])
             
