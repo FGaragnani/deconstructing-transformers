@@ -182,14 +182,14 @@ The data processing cycle consists of three main phases: encoding, decoding, and
 
 The objective of the encoding component (i.e., the \textit{encoder}) in a Transformer architecture is to process an input sequence and convert the raw input into a contextually enriched representation that captures both local and global dependencies. This representation can then be used effectively by the rest of the model.
 
-The general structure of the encoding module is represented by the pseudocode in Algorithm \ref{algo:encoding}. The individual steps are detailed below.
+The general structure of the encoding module is represented by the pseudocode in Algorithm \ref{algo:encoding}. The individual steps are detailed below. All intermediate numerical results obtained for the restaurant series case study are reported in appendix \ref{sec:appendix} to enable the interested reader to immediately grasp the dimensionalities and values involved in this tiny example, and possibly to follow the corresponding evolution of a run of the code provided in \cite{G25}. In the case of the running example we used the following argument values: $n$=7, $m$=4, $k$=2, $d_k$=$d_v$=2,$p$=16.
 
 \begin{algorithm2e}
 	\SetKwInOut{Input}{Input}
 	\SetKwInOut{Output}{Output}
 	\SetKw{KwGoTo}{go to}
 
-        \underline{procedure encoding(s,n,k)} \label{algo:encoding}
+        \underline{procedure encoding(s,n,m,k,$d_k$,$d_v$,$p$)} \label{algo:encoding}
         
         \Input{ A time series ${\bf s} = [s_i]$, $i=0,\,\ldots,\,t$}
         \Output{ A 2D matrix $Z$}
@@ -201,7 +201,7 @@ The general structure of the encoding module is represented by the pseudocode in
             Expand value $s_i$ into a row $X_i = s_iW_i$ \tcp*{CAE, content–addressable expansion} 
         }   \label{enc:seca2}
         \tcp*{Positional encoding}
-        X' = X + P\; \label{enc:positional}
+        X' = X + P;\; \label{enc:positional}
         
 	\For{n times}
 	{ \label{enc:encoding-block1}
@@ -209,19 +209,19 @@ The general structure of the encoding module is represented by the pseudocode in
             \For{h = 1, \dots, k}
             {	\label{enc:multihead1}
                 \tcp{attention}
-                Compute $Q^h=X'\cdot W_q^h$\; \label{enc:qh}
-                Compute $K^h=X'\cdot W_k^h$\; \label{enc:kh}
-                Compute $V^h=X'\cdot W_v^h$\; \label{enc:vh}
-                Let $d_k=$ num columns of $W^h_k$\; \label{enc:dk}
+                Compute $Q^h=X'\cdot W_q^h$;\; \label{enc:qh}
+                Compute $K^h=X'\cdot W_k^h$;\; \label{enc:kh}
+                Compute $V^h=X'\cdot W_v^h$;\; \label{enc:vh}
+                Let $d_k=$ num columns of $W^h_k$;\; \label{enc:dk}
                 Let $A^h = \dfrac{Q \cdot K^T}{\sqrt{d_k}}$; \tcp*{init attention function} \label{enc:attention1}
                 Let $A^h = softmax\left(A^h\right)$; \tcp*{softmax over all rows} \label{enc:softmax}
                 Let $A^h = A^h\cdot V^h$; \tcp*{completed attention function} \label{enc:attention2}
             } \label{enc:multihead2}
-            Let $A=concatenate(A^h)$, $h=0,\dots,k$\; \label{enc:concatenation}
-            Let $A = A \cdot W_O$ \tcp*{output projection} \; \label{enc:outproj} 
-            Let $X' = LayerNorm(X' + A)$\; \label{enc:addnorm1}
-            Let $F = feedforward(X')$ \tcp*{feedforward layer}\; \label{enc:ffn}
-            Let $X' = LayerNorm(X' + F)$\; \label{enc:addnorm2}
+            Let $A=concatenate(A^h)$, $h=0,\dots,k$;\; \label{enc:concatenation}
+            Let $A = A \cdot W_O$; \tcp*{output projection} \label{enc:outproj} 
+            Let $X' = LayerNorm(X' + A)$;\; \label{enc:addnorm1}
+            Let $F = feedforward(X')$; \tcp*{feedforward layer} \label{enc:ffn}
+            Let $X' = LayerNorm(X' + F)$;\; \label{enc:addnorm2}
         }   \label{enc:encoding-block2}                  
         Let $Z = X'$; \label{enc:output}
 	\caption{The encoding module}
@@ -264,7 +264,7 @@ All these steps are detailed in the following.
 
 This loop iterates a basic attention mechanism that dynamically weighs the contribution of each past point in the series when computing the representation of those under scrutiny. It computes a set of attention scores relating the "query" vector of the current point and "key" vectors of all past values. In our application, a query comes from the embedding of the last known observation while the keys correspond to those of all past observations. The resulting attention weights determine which past points matter most and the forecast is then given by a weighted sum of the corresponding values.
 
-Queries (the desired embeddings), keys (past information) and values (adapted past embeddings) are all represented by matrices, all with the same dimensions. At each iteration the corresponding set of query, key, and value is referred to as a \textit{head}.
+Queries (the desired embeddings), keys (past information) and values (adapted past embeddings) are all represented by matrices, all with the same dimensions. At each iteration the corresponding set of query, key, and value is referred to as a \textit{head}. The matrices identified for the two heads used in our running example are reported in the appendix in table \ref{tab:matWq}.
 
 ~\\Line \ref{enc:qh}: generates the $h-th$ query matrix and projects the input embeddings into vectors that represent what we are looking for in the past. This is achieved by using a dynamic parameter matrix $W^h_q \in \mathbb{R}^{m \times d_k}$ that is learnt.
 
@@ -274,17 +274,17 @@ Queries (the desired embeddings), keys (past information) and values (adapted pa
 
 ~\\Line \ref{enc:dk}: initializes the scaling factor.
 
-~\\Line \ref{enc:attention1}: implements the first part of the attention function, in this case using the \textit{Scaled Dot-Product Attention} \cite{VSPU17}. The similarity between sequence elements is computed from $Q$ and $K$, the key matrix is transposed so that the dot product compares each feature of every query with the corresponding feature of every key. This initial $A$ matrix will contain similarity values $a_{ij} \in \mathbb{R}$ between every query vector and every key vector.
+~\\Line \ref{enc:attention1}: implements the first part of the attention function, in this case using the \textit{Scaled Dot-Product Attention} \cite{VSPU17}. The similarity between sequence elements is computed from $Q$ and $K$, the key matrix is transposed so that the dot product compares each feature of every query with the corresponding feature of every key. This initial $A$ matrix will contain similarity values $a_{ij} \in \mathbb{R}$ between every query vector and every key vector. 
 
 ~\\Line \ref{enc:softmax}: transforms the similarity values into `probability' scores, the $\text{softmax}()$ operator is applied to all elements $a_{ij}$ every row: $ a_{ij} = e^{a_{ij}} / \sum_k e^{a_{kj}},\quad \forall i,j  = 1,\,...,\,n $. In this way, we get for every query vector, normalized weights of similarity towards key vectors. 
 
 ~\\Line \ref{enc:attention2}: completes the computation of the attention function by implementing a weighted sum of the value vectors, $X' = A \cdot V$, thereby aggregating information from the relevant past lags.
 
-~\\Line \ref{enc:concatenation}: lines \ref{enc:multihead1}-\ref{enc:multihead2} are repeated $k$ times, each time obtaining and attention matrix $A^h$, $h=1,\dots,k$. This line concatenates all these matrices in a single bigger one, $A = [A^1\;A^2\;...\;A^h]$.
+~\\Line \ref{enc:concatenation}: lines \ref{enc:multihead1}-\ref{enc:multihead2} are repeated $k$ times, each time obtaining and attention matrix $A^h$, $h=1,\dots,k$. This line concatenates all these matrices in a single bigger one, $A = [A^1\;A^2\;...\;A^h]$. The matrix $A$ obtained for the running example is reported in the appendix as table \ref{tab:matA}.
 
-~\\Line \ref{enc:outproj}: since concatenation may modify the dimensionality, a final output projection $W^O \in \mathbb{R}^{hd_v \times m}$ is applied to ensure that the original size is kept $X' = A \cdot W^O$.
+~\\Line \ref{enc:outproj}: since concatenation may modify the dimensionality, a final output projection $W^O \in \mathbb{R}^{hd_v \times m}$ is applied to ensure that the original size is kept $X' = A \cdot W^O$. 
 
-~\\In our architecture, we set $h = d_k = d_v = \frac{m}{2} = 2$. This produced six matrices, all of size $4 \times 2$, totaling $48$ more parameters to learn. The output matrix $W^O$ is, instead, of size $4 \times 4$. The learned parameters for the restaurant example are given below.
+~\\In our architecture, we set $h = d_k = d_v = \frac{m}{2} = 2$. This produced six matrices, all of size $4 \times 2$, totaling $48$ more parameters to learn. The output matrix $W^O$ is, instead, of size $4 \times 4$. Matrix $W^O$ for the running example is reported in table \ref{tab:matWO} of the appendix.
 
 ~\\Lines \ref{enc:addnorm1}, \ref{enc:addnorm2}: (\textit{Add \& Norm})
 
@@ -329,7 +329,7 @@ $$
 The ReLU function is applied element-wise. The intermediate dimension $p$ is typically chosen larger than $m$ to improve model capacity and generalization. 
 
 In our model, we set $p = 4 \times m = 16$, meaning a total number of $16 \times 4 \times 2 + (16 + 4) = 148$ parameters.
-Below are shown the values learned by the sample architecture.
+The values learned by the sample architecture is reported in the appendix in tables \ref{tab:matW1b1} and \ref{tab:matW2b2}.
 
 ~\\Line \ref{enc:output}: (\textit{Output})
 
@@ -559,7 +559,7 @@ The benchmark used consisted of the monthly series of the M3 forecasting competi
 	\item Others, i.e., diverse, real-world time series that don’t belong to traditional economic or financial domains (e.g., energy consumption, transportation data)
 \end{itemize}
 
-The length of the monthly series varies, typically ranging from 48 to 126 observations (i.e., 4 to over 10 years of data) and for each series, participants were asked to forecast the next 18 months. We used the same forecast horizon in our tests.
+The length of the monthly series varies, typically ranging from 48 to 126 observations (i.e., 4 to over 10 years of data) and for each series, participants were asked to forecast the next 18 months. We used this same forecast horizon in our tests, and the following argument values: $n$=???, $m$=???, $k$=???, $d_k$=$d_v$=???,$p$=???.
 
 We ran each model on all the benchmark series, computing the RMSE on both the training and test sets. To determine whether the difference in forecast effectiveness was significant, we conducted a Mann–Whitney U-test on the RMSE results for each aggregate separately. Table \ref{tab:aggregate} shows the results of the comparison aggregated over the type feature. The columns show:
 \begin{itemize}
@@ -667,10 +667,9 @@ In a research landscape often dominated by increasingly complex architectures, o
 \appendixtitles{no} % Leave argument "no" if all appendix headings stay EMPTY (then no dot is printed after "Appendix A"). If the appendix sections contain a heading then change the argument to "yes".
 \appendixstart
 \appendix
-\section[\appendixname~\thesection]{}
+\section[\appendixname~\thesection]{} \label{sec:appendix}
 %\subsection[\appendixname~\thesubsection]{}
 This appendix contains all values of the trained matrices obtained for the encoding of the running example described in section \ref{sec:transformer}.
-
 
 Table ~\ref{tab:matX} shows the first embedded matrix, $X$, which encodes the input series. The matrix has been transposed for the sake of compact presentation.
 
@@ -680,16 +679,15 @@ Table ~\ref{tab:matX} shows the first embedded matrix, $X$, which encodes the in
 	\label{tab:matX}
 	$
 	X^T = \begin{bmatrix}
-	   -0.6293 & -0.7571 & -0.4988 & -0.9708 & -1.1165 &  0.4899 &  0.5061 \\
-		0.3700 & -0.1533 & -0.2298 &  1.0685 &  0.2047 &  1.1688 &  0.1518 \\
-		0.4210 &  0.4065 & -0.2935 & -0.2282 & -1.0394 & -0.9300 & -1.2985 \\
-		0.8584 & -1.0690 &  0.3565 & -0.6471 &  0.9570 &  0.8161 & -1.0734
+	   X & X & X & X & X & X &  X \\
+	   X & X & X & X & X & X &  X \\
+	   X & X & X & X & X & X &  X \\
+	   X & X & X & X & X & X &  X 
 	\end{bmatrix}
 	$
 \end{table}
 
 Table ~\ref{tab:matP} shows the positional encoding matrix, $P$. The matrix has been transposed for the sake of compact presentation.
-
 
 \begin{table}[ht]
 	\centering
@@ -705,10 +703,11 @@ Table ~\ref{tab:matP} shows the positional encoding matrix, $P$. The matrix has 
 	$
 \end{table}
 
+Table \ref{tab:matWq} presents the query matrices $W^1_q$ and $W^2_q$, the key matrices $W^1_k$ and $W^2_k$ and the value matrices $W^1_v$ and $W^2_v$ for the two heads used in the restaurant running example.
 
 \begin{table}[ht]
 	\centering
-	\caption{Matrices $W^1_q$ and $W^2_q$}
+	\caption{Query, key and value matrices.}
 	\label{tab:matWq}
 	
 	\begin{tabular}{rlrl}  % two centered columns
@@ -728,15 +727,16 @@ Table ~\ref{tab:matP} shows the positional encoding matrix, $P$. The matrix has 
 		0.166 & -0.413 & -1.276 & 1.259
 		\end{bmatrix}
 		$
-	\end{tabular}	
-\end{table}
-
-\begin{table}[ht]
-	\centering
-	\caption{Matrices $W^1_k$ and $W^2_k$}
-	\label{tab:matWk}
-	
-	\begin{tabular}{rlrl}  
+%	\end{tabular}	
+%\end{table}
+%
+%\begin{table}[ht]
+%	\centering
+%	\caption{Matrices $W^1_k$ and $W^2_k$}
+%	\label{tab:matWk}
+%	
+%	\begin{tabular}{rlrl}  
+\\
 		$W^1_k$ = & 
 		$
 		\begin{bmatrix}
@@ -752,15 +752,16 @@ Table ~\ref{tab:matP} shows the positional encoding matrix, $P$. The matrix has 
 1.485 & 0.555 & 0.561 & -1.182 
 		\end{bmatrix}
 		$
-	\end{tabular}	
-\end{table}
-
-\begin{table}[ht]
-	\centering
-	\caption{Matrices $W^1_v$ and $W^2_v$}
-	\label{tab:matWv}
-	
-	\begin{tabular}{rlrl}  
+%	\end{tabular}	
+%\end{table}
+%
+%\begin{table}[ht]
+%	\centering
+%	\caption{Matrices $W^1_v$ and $W^2_v$}
+%	\label{tab:matWv}
+%	
+%	\begin{tabular}{rlrl}  
+\\
 		$W^1_v$ = & 
 		$
 		\begin{bmatrix}
@@ -782,7 +783,22 @@ Table ~\ref{tab:matP} shows the positional encoding matrix, $P$. The matrix has 
 
 \begin{table}[ht]
 	\centering
-	\caption{Matrix $WO$.}
+	\caption{The matrix $A$ obtained.}
+	\label{tab:matA}
+	$
+	A = \begin{bmatrix}
+		X & X & X & X & X & X &  X \\
+		X & X & X & X & X & X &  X \\
+		X & X & X & X & X & X &  X \\
+		X & X & X & X & X & X &  X 
+	\end{bmatrix}
+	$
+\end{table}
+
+
+\begin{table}[ht]
+	\centering
+	\caption{The matrix $WO$ used for dimensionality reduction of the running example.}
 	\label{tab:matWO}
 	$
 	W^O =   \begin{bmatrix}
@@ -796,8 +812,8 @@ Table ~\ref{tab:matP} shows the positional encoding matrix, $P$. The matrix has 
 
 \begin{table}[ht]
 	\centering
-	\caption{Matrices $W_1$ and $b_1$}
-	\label{tab:matWb}
+	\caption{Feedforward network, weights of the internal layer.}
+	\label{tab:matW1b1}
 	
 	\begin{tabular}{rlrl}  
 		$W_1^T$ = & 
@@ -849,8 +865,8 @@ Table ~\ref{tab:matP} shows the positional encoding matrix, $P$. The matrix has 
 
 \begin{table}[ht]
 	\centering
-	\caption{Matrices $W_1$ and $b_1$}
-	\label{tab:matW2b}
+	\caption{Feedforward network, weights of the output layer.}
+	\label{tab:matW2b2}
 	
 	\begin{tabular}{rlrl}  
 		$W_2$ = & 
