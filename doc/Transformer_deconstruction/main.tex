@@ -231,7 +231,7 @@ The individual steps are detailed below.
 
 ~\\(\textit{Input arguments})
 
-The input consists of the data series to be forecast, in our case, it is an array $s \in \mathbb{R}^n$ and of two control hyperparameters, $n$ and $k$.
+The input consists of the data series to be forecast, in our case, it is an array $s \in \mathbb{R}^n$ and of seven control hyperparameters.
 
 For the restaurant time series, we applied a straightforward preprocessing step: \textit{min-max} normalization of the raw data. Subsequently, each sequence was constructed using a sliding window of length $n = 7$ over the series.
 
@@ -239,7 +239,7 @@ For the restaurant time series, we applied a straightforward preprocessing step:
 
 Single scalar values for each single timestep may not be expressive enough to capture contextual information. Each data point is projected into a higher-dimensional space where nonlinear dependencies between features can be easier to identify. 
 
-In our minimalist transformer model the projections, also known as {\em embeddings}, were obtained by multiplying each datapoint by a real-valued vector initialized as a random gaussian vector, whose values can later be learned. In this way, a matrix $X \in \mathbb{R}^{n\times m}$ is computed, which contains, for each original timestep, its $m$-dimensional representation.
+In our minimalist transformer model the projections, also known as {\em embeddings}, were obtained by multiplying each datapoint by a real-valued vector initialized as a random gaussian vector. These values can later be learned. In this way, a matrix $X \in \mathbb{R}^{n\times m}$ is computed, which contains, for each original timestep, its $m$-dimensional representation.
 
 In the restaurant series, the projections were based on vectors of 4 values, obtaining a set of matrices, each of which with $n=7$ rows and $m=4$ columns, leaving $4$ parameters to be learned for the projection vector. Each matrix {\bf X} represents a window over the input time series, the first of these matrices is presented in the appendix as table \ref{tab:matX}.
 
