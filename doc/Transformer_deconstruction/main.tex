@@ -136,7 +136,7 @@ In this paper, our aim is to 'deconstruct' the forecasting process of transforme
 
 To validate our methodology, we implemented and evaluated a basic transformer-based model on a significant benchmark of univariate time series. These were selected from the well-known M forecasting competition benchmarks and included macro- and microeconomic, industrial, and demographic series with varying statistical properties. The work combines theoretical explanation with empirical validation to serve as a comprehensive guide to deconstructing transformer-based time series forecasting, providing a tutorial for newcomers and a reference for practitioners.
 
-The paper is structured as follows. Section \ref{sec:literature} reviews the related works in time series forecasting, with particular emphasis on recent advancements leveraging Transformer architectures. Section \ref{sec:transformer} presents the workflow of a minimalist Transformer module to produce a multipoint forecast for a univariate time series. Section ...
+The paper is structured as follows. Section \ref{sec:literature} reviews the related works in time series forecasting, with particular emphasis on recent advancements leveraging Transformer architectures. Section \ref{sec:transformer} presents the workflow of a minimalist Transformer module to produce a multipoint forecast for a univariate time series. Section \ref{sec:results} analyses some results in applying the described architecture on benchmark data series and comparing it with another standard methodology.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Related work} \label{sec:literature}
@@ -155,7 +155,7 @@ Autoformer \citep{WXWL22}, which integrates a series decomposition block within 
 
 FEDformer \citep{ZMWW22}, which incorporates Fourier transformations into the attention mechanism to better exploit frequency-domain characteristics.
 
-PatchTST \citep{patchTST}, which employs a splitting mechanism to time series, converting a sequence multiple timesteps - called patch - into a single token, enabling a vanilla Transformer architecture to capture long-term dependencies with fewer tokens. 
+PatchTST \citep{patchTST}, which employs a splitting mechanism to time series, converting multiple timesteps (i.e., a patch) into a single token, enabling a vanilla Transformer architecture to capture long-term dependencies with fewer tokens. 
 
 More recently, an explosion of adaptation has appeared, together with dedicated surveys and tutorials \cite{ WZZC23, ANTS23, SZLW25}. However, these models are often complex, incorporating multiple components such as static covariates, gating mechanisms, and probabilistic outputs. While these additions have shown empirical gains, they frequently obscure the core dynamics of the attention mechanism and make the models less accessible for analysis or adaptation.
 
