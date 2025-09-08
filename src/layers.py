@@ -40,24 +40,25 @@ class MultiHeadAttentionLayer(nn.Module):
         V = self.W_V(V)
 
         # Shape: (batch_size, seq_length, num_heads, embed_head_dim)
-        Q = Q.view(batch_size, -1, self.num_heads, self.head_dim)
-        K = K.view(batch_size, -1, self.num_heads, self.head_dim)
-        V = V.view(batch_size, -1, self.num_heads, self.head_dim)
+        Q = Q.view(batch_size, -1, self.num_heads, self.head_dim)   # The array of Q^h
+        K = K.view(batch_size, -1, self.num_heads, self.head_dim)   # The array of K^h
+        V = V.view(batch_size, -1, self.num_heads, self.head_dim)   # The array of V^h
 
         Q = Q.permute(0, 2, 1, 3)
         K = K.permute(0, 2, 1, 3)
         V = V.permute(0, 2, 1, 3)
 
         # Apply the attention function
-        A = torch.matmul(Q, K.transpose(-2, -1))
-        A /= (self.head_dim ** 0.5)
+        d_h: int = self.head_dim
+        A = torch.matmul(Q, K.transpose(-2, -1))                    # The array of A^h = (Q^h) x (K^h)^T
+        A /= (d_h ** 0.5)                                           # Scale by sqrt(d_h)  
         if self.mask:
           q_seq_len, k_seq_len = Q.size(-2), K.size(-2)
           # Mask future positions
           mask = torch.triu(torch.ones(q_seq_len, k_seq_len), diagonal=1).to(A.device)
-          A = A.masked_fill(mask == 1, float('-inf'))
-        attention_weights = F.softmax(A, dim=-1)
-        A = torch.matmul(attention_weights, V)
+          A = A.masked_fill(mask == 1, float('-inf'))               # mask future positions (for decoding)
+        attention_weights = F.softmax(A, dim=-1)                    # softmax() over the rows
+        A = torch.matmul(attention_weights, V)                      # A^h := (A^h) x (V^h)
 
         # Concatenating heads
         A = A.transpose(1, 2).contiguous().reshape(batch_size, -1, self.embed_size)
@@ -81,6 +82,8 @@ class FeedForwardLayer(nn.Module):
     self.fc2 = nn.Linear(in_features=self.inner_size, out_features=self.embed_size, bias=True)
 
   def forward(self, X: torch.Tensor):
+    # y = feedforward(X)
+
     y = F.relu(self.fc1(X))
     y = self.fc2(y)
     return y
