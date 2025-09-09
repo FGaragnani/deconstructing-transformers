@@ -259,9 +259,9 @@ The individual steps are detailed below.
             \For{h = 1, \dots, k}
             {	\label{enc:multihead1}
                 \tcp{attention}
-                Compute $Q^h=X'\cdot W_q^h$;\; \label{enc:qh}
-                Compute $K^h=X'\cdot W_k^h$;\; \label{enc:kh}
-                Compute $V^h=X'\cdot W_v^h$;\; \label{enc:vh}
+                Compute $Q^h=(X'\cdot W_q^h) + b_q^h$;\; \label{enc:qh}
+                Compute $K^h=(X'\cdot W_k^h) + b_k^h$;\; \label{enc:kh}
+                Compute $V^h=(X'\cdot W_v^h) + b_v^h$;\; \label{enc:vh}
                 Let $d_k=$ num columns of $W^h_k$;\; \label{enc:dk}
                 Let $A^h = \dfrac{Q \cdot K^T}{\sqrt{d_k}}$; \tcp*{init attention function} \label{enc:attention1}
                 Let $A^h = softmax\left(A^h\right)$; \tcp*{softmax over all rows} \label{enc:softmax}
@@ -316,11 +316,11 @@ This loop iterates a basic attention mechanism that dynamically weighs the contr
 
 Queries (the elements currently focused on), keys (descriptors of the corresponding values), and values (the actual information) are all represented as matrices. Typically, queries and keys share the same inner dimension $d_k$, while values may have a different dimension $d_v$. At each iteration the corresponding set of query, key, and value is referred to as a \textit{head}. The matrices identified for the two heads used in our running example are reported in the appendix in table \ref{tab:matWq}.
 
-~\\Line \ref{enc:qh}: generates the $h-th$ query matrix and projects the input embeddings into vectors that represent what we are looking for in the past. This is achieved by using a dynamic parameter matrix $W^h_q \in \mathbb{R}^{m \times d_k}$ that is learnt.
+~\\Line \ref{enc:qh}: generates the $h-th$ query matrix and projects the input embeddings into vectors that represent what we are looking for in the past. This is achieved by using a dynamic parameter matrix $W^h_q \in \mathbb{R}^{m \times d_k}$ and a bias array $b^h_q \in \mathbb{R}^{d_k}$ that are learnt.
 
-~\\Line \ref{enc:kh}: generates the $h-th$ key matrix and projects the input embeddings into vectors that represent the information content of each corresponding embedding. This is achieved by using a dynamic parameter matrix $W^h_k \in \mathbb{R}^{m \times d_k}$ that is learnt.
+~\\Line \ref{enc:kh}: generates the $h-th$ key matrix and projects the input embeddings into vectors that represent the information content of each corresponding embedding. This is achieved by using a dynamic parameter matrix $W^h_k \in \mathbb{R}^{m \times d_k}$ and a bias array $b^h_k \in \mathbb{R}^{d_k}$ that are learnt.
 
-~\\Line \ref{enc:vh}: generates the $h-th$ value matrix and projects the input embeddings into vectors that represent the relevant information of each available embedding. This is achieved by using a dynamic parameter matrix $W^h_v \in \mathbb{R}^{m \times d_v}$ that is learnt.
+~\\Line \ref{enc:vh}: generates the $h-th$ value matrix and projects the input embeddings into vectors that represent the relevant information of each available embedding. This is achieved by using a dynamic parameter matrix $W^h_v \in \mathbb{R}^{m \times d_v}$ and a bias array $b^h_v \in \mathbb{R}^{d_k}$ that are learnt.
 
 ~\\Line \ref{enc:dk}: initializes the scaling factor.
 
