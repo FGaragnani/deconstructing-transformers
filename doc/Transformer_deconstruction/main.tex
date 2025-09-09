@@ -481,7 +481,7 @@ The general procedure outlined above is explained in more detail below.
 The Masked Self-Attention mechanism works in the same way as a Multihead Attention function, but ensures that the generation of each successive sequence value can only consider the present or the past, never the future. This is achieved using a look-ahead mask that prevents feedback in time.
 The following operations are performed inside each loop (i.e. each head).
 
-~\\Line \ref{dec:selfproj}: generates the query, key and value matrices, projecting the already-generated embeddings into semantic vectors. This projection is achieved by using dynamic parameter matrices, which must be learnt.
+~\\Line \ref{dec:selfproj}: generates the query, key and value matrices, projecting the already-generated embeddings into semantic vectors. This projection is achieved by using dynamic parameter matrices and a dynamic bias array, both of which must be learnt.
 
 ~\\Line \ref{dec:scaled1}: computes the first part of the \textit{Scaled-Dot Product Attention} function.
 
