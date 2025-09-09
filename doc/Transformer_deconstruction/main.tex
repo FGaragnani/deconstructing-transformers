@@ -314,7 +314,7 @@ All these steps are detailed in the following.
 
 This loop iterates a basic attention mechanism that dynamically weighs the contribution of each past point in the series when computing the representation of those under scrutiny. It computes a set of attention scores relating the "query" vector of the current point and "key" vectors of all sequence values. \#In our application, a query comes from the embedding of the last known observation while the keys correspond to those of all past observations.\# The resulting attention weights determine which points matter most and the forecast is then given by a weighted sum of the corresponding "value" vectors.
 
-Queries (the elements currently focused on), keys (descriptors of the corresponding values), and values (the actual information) are all represented as matrices. Typically, queries and keys share the same inner dimension $d_k$, while values may have a different dimension $d_v$. At each iteration the corresponding set of query, key, and value is referred to as a \textit{head}. The matrices identified for the two heads used in our running example are reported in the appendix in table \ref{tab:matWq}.
+Queries (the elements currently focused on), keys (descriptors of the corresponding values), and values (the actual information) are all represented as matrices. Typically, queries and keys share the same inner dimension $d_k$, while values may have a different dimension $d_v$. At each iteration the corresponding set of query, key, and value is referred to as a \textit{head}. The matrices and the bias identified for the two heads used in our running example are reported in the appendix in tables \ref{tab:matWq} and \ref{tab:bias} .
 
 ~\\Line \ref{enc:qh}: generates the $h-th$ query matrix and projects the input embeddings into vectors that represent what we are looking for in the past. This is achieved by using a dynamic parameter matrix $W^h_q \in \mathbb{R}^{m \times d_k}$ and a bias array $b^h_q \in \mathbb{R}^{d_k}$ that are learnt.
 
@@ -592,7 +592,7 @@ When we apply our model to this series, setting aside the last 12 values for val
 
 The series was preprocessed only by a standard min-max normalization, then it was projected into embeddings of size $m = 12$. Employing only $n = 12$ timesteps at a time, we obtained $118$ matrices $X \in \mathbb{R}^{12 \times 12}$. Matrix $P$ used for positional embedding has the same dimensionality.
 
-Next comes multi-head attention. We used 2 heads, and for each head we set $d_k = d_v = \frac{12}{2} = 6$. Therefore all matrices $W^h_Q$, $W^h_K$ and $W^h_V$ had dimensions $12 \times 6$. These provide the bases for computing the attention function, where each $h-th$ head gives rise to the matrix $A^h=\frac{Q_hK'_h}{d_h} \in \mathbb{R}^{n \times n}$, in our case $A^h \in \mathbb{R}^{12 \times 12}$. The successive {\em softmax} function does not change its dimensionality. After multiplying by $V_h$ we obtain the output of each head, of dimension $12 \times 6$. All outputs are then concatenated by row, giving rise to a matrix $A \in \mathbb{R}^{12 \times 12}$. The input dimension is then kept, when the output attention matrix is multiplied by matrix $W_O \in \mathbb{R}^{hd_v \times m}$ - in our case, of dimension $12 \times 12$. In summary, the values used for the parameters were: $n$=12, $m$=12, $k$=2, $d_k$=$d_v$=6,$p$=36. The number of epochs set for learning was 400, the total number of parameters to learn in the transformer model resulted to be 6829. (da controllare)
+Next comes multi-head attention. We used 2 heads, and for each head we set $d_k = d_v = \frac{12}{2} = 6$. Therefore all matrices $W^h_Q$, $W^h_K$ and $W^h_V$ had dimensions $12 \times 6$. These provide the bases for computing the attention function, where each $h-th$ head gives rise to the matrix $A^h=\frac{Q_hK'_h}{d_h} \in \mathbb{R}^{n \times n}$, in our case $A^h \in \mathbb{R}^{12 \times 12}$. The successive {\em softmax} function does not change its dimensionality. After multiplying by $V_h$ we obtain the output of each head, of dimension $12 \times 6$. All outputs are then concatenated by row, giving rise to a matrix $A \in \mathbb{R}^{12 \times 12}$. The input dimension is then kept, when the output attention matrix is multiplied by matrix $W_O \in \mathbb{R}^{hd_v \times m}$ - in our case, of dimension $12 \times 12$. In summary, the values used for the parameters were: $n$=12, $m$=12, $k$=2,  $d_k$=$d_v$=6, $p$=48. The number of epochs set for learning was 400, the total number of parameters to learn in the transformer model resulted to be 6829. (da controllare)
 
 \begin{figure}
 	\centering
@@ -840,6 +840,7 @@ This appendix contains all values of the trained matrices obtained for the encod
 \begin{table}
 	\centering
 	\caption{The additive bias arrays learned for projection.}
+	\label{tab:bias}
 	\begin{tabular}{c c c c}
 		$b^{Q}_1 = \begin{bmatrix} -0.2886 \\ 0.0986 \end{bmatrix}$ 
 		& $b^{K}_1 = \begin{bmatrix} 0.0284 \\ -0.3107 \end{bmatrix}$ 
