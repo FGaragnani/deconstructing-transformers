@@ -199,15 +199,15 @@ The objective of the encoding component (i.e., the \textit{encoder}) in a Transf
 	\begin{tikzpicture}[node distance=6mm]
 	
 	\node (input) [block, fill=gray!10] {Input embeddings};
-	\node (pe) [block, fill=gray!10, below=of input] {+ Positional Encoding};
+	\node (pe) [block, fill=gray!10, below=of input] {+ Positional Encoding \\ \scriptsize (28)};
 	
 	
-	\node (mha) [mha, below=of pe] {Multi-Head Attention};
-	\node (add1) [addnorm, below=of mha] {Add \& Norm};
+	\node (mha) [mha, below=of pe] {Multi-Head Attention \\ \scriptsize (80)};
+	\node (add1) [addnorm, below=of mha] {Add \& Norm \par \scriptsize (8)};
 	
 	% Feedforward
-	\node (ff) [ff, below=of add1] {Feedforward Network};
-	\node (add2) [addnorm, below=of ff] {Add \& Norm};
+	\node (ff) [ff, below=of add1] {Feedforward Network \\ \scriptsize (148)};
+	\node (add2) [addnorm, below=of ff] {Add \& Norm \par \scriptsize (8)};
 	
 	% Output
 	\node (output) [block, fill=gray!10, below=of add2] {Output};
