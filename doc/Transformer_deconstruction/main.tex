@@ -198,7 +198,7 @@ The objective of the encoding component (i.e., the \textit{encoder}) in a Transf
 	\centering
 	\begin{tikzpicture}[node distance=6mm]
 	
-	\node (input) [block, fill=gray!10] {Input embeddings};
+	\node (input) [block, fill=gray!10] {Input embeddings \\ \scriptsize (8)};
 	\node (pe) [block, fill=gray!10, below=of input] {+ Positional Encoding \\ \scriptsize (28)};
 	
 	
@@ -226,7 +226,7 @@ The objective of the encoding component (i.e., the \textit{encoder}) in a Transf
 	\node[below=0mm of enclabel.south] {$\times n$};
 	
 	\end{tikzpicture}
-	\caption{The Encoding Process. Below each block, the total number of learnable parameters for the restaurant series example.}
+	\caption{The Encoding Process. For each block, the total number of learnable parameters for the restaurant series example is shown.}
 	\label{fig:enc}
 \end{figure}
 
@@ -248,7 +248,7 @@ The individual steps are detailed below.
         \tcp*{transform the array {\bf s} into the 2D embedding matrix (tensor) {\bf X}} 
         \For{i = 0, \ldots, t} 
         {\label{enc:seca1}
-            Expand value $s_i$ into a row $X_i = s_iW_i$
+            Expand value $s_i$ into a row $X_i = (s_iW_i) + b_i$
         }   \label{enc:seca2}
         \tcp*{Positional encoding}
         X' = X + P;\; \label{enc:positional}
@@ -287,9 +287,9 @@ For the restaurant time series, we applied a straightforward preprocessing step:
 
 Single scalar values for each single timestep may not be expressive enough to capture contextual information. Each data point is projected into a higher-dimensional space where nonlinear dependencies between features can be easier to identify. 
 
-In our minimalist transformer model the projections, also known as {\em embeddings}, were obtained by multiplying each datapoint by a real-valued vector initialized as a random gaussian vector. These values can later be learned. In this way, a matrix $X \in \mathbb{R}^{n\times m}$ is computed, which contains, for each original timestep, its $m$-dimensional representation.
+In our minimalist transformer model the projections, also known as {\em embeddings}, were obtained by multiplying each datapoint by a shared real-valued vector $s$ initialized as a random gaussian vector, and by adding a bias array $b_i$. These values can later be learned. In this way, a matrix $X \in \mathbb{R}^{n\times m}$ is computed, which contains, for each original timestep, its $m$-dimensional representation.
 
-In the restaurant series, the projections were based on vectors of 4 values, obtaining a set of matrices, each of which with $n=7$ rows and $m=4$ columns, leaving $4$ parameters to be learned for the projection vector. Each matrix {\bf X} represents a window over the input time series, the first of these matrices is presented in the appendix as table \ref{tab:matX}.
+In the restaurant series, the projections were based on vectors of 4 values, obtaining a set of matrices, each of which with $n=7$ rows and $m=4$ columns, leaving $4$ parameters to be learned for the projection vector, and other $4$ for the bias array. Each matrix {\bf X} represents a window over the input time series, the first of these matrices is presented in the appendix as table \ref{tab:matX}. The learned arrays $s, b_i$ are also shown in the appendix, as table \ref{tab:seca}.
 
 ~\\Line \ref{enc:positional}: (\textit{Positional Encoding})
 
@@ -447,7 +447,7 @@ The general structure of the decoding module is represented by the pseudocode in
                 \label{dec:norm3}
             } \label{dec:decblock2}
             $Y^{i + 1} = feedforward(Y^{i + 1})  * scale(\textbf{Z}) + bias(\textbf{Z})$\; \label{dec:finalproj}
-            $y_i$ = ($Y^{i + 1}$)$W_o$
+            $y_i$ = ($Y^{i + 1}$)$W_o + b_o$
         } \label{dec:outer2}                     
     	\caption{The decoding module} 
     \label{algo:decoding}
