@@ -287,9 +287,9 @@ For the restaurant time series, we applied a straightforward preprocessing step:
 
 Single scalar values for each single timestep may not be expressive enough to capture contextual information. Each data point is projected into a higher-dimensional space where nonlinear dependencies between features can be easier to identify. 
 
-In our minimalist transformer model the projections, also known as {\em embeddings}, were obtained by multiplying each datapoint by a shared real-valued vector $s$ initialized as a random gaussian vector, and by adding a bias array $b_i$. These values can later be learned. In this way, a matrix $X \in \mathbb{R}^{n\times m}$ is computed, which contains, for each original timestep, its $m$-dimensional representation.
+In our minimalist transformer model the projections, also known as {\em embeddings}, were obtained by multiplying each datapoint by a shared real-valued vector $W_i \in \mathbb{R}^m$ initialized as a random gaussian vector, and by adding a bias array $b_i \in \mathbb{R}^m$. These values can later be learned. In this way, a matrix $X \in \mathbb{R}^{n\times m}$ is computed, which contains, for each original timestep, its $m$-dimensional representation.
 
-In the restaurant series, the projections were based on vectors of 4 values, obtaining a set of matrices, each of which with $n=7$ rows and $m=4$ columns, leaving $4$ parameters to be learned for the projection vector, and other $4$ for the bias array. Each matrix {\bf X} represents a window over the input time series, the first of these matrices is presented in the appendix as table \ref{tab:matX}. The learned arrays $s, b_i$ are also shown in the appendix, as table \ref{tab:seca}.
+In the restaurant series, the projections were based on vectors of 4 values, obtaining a set of matrices, each of which with $n=7$ rows and $m=4$ columns, leaving $4$ parameters to be learned for the projection vector, and other $4$ for the bias array. Each matrix {\bf X} represents a window over the input time series, the first of these matrices is presented in the appendix as table \ref{tab:matX}. The learned arrays $W_i, b_i$ are also shown in the appendix, as table \ref{tab:seca}.
 
 ~\\Line \ref{enc:positional}: (\textit{Positional Encoding})
 
@@ -557,7 +557,7 @@ The backward pass implements the actual learning process by reversing the comput
 
 Learning is a computation-intensive phase and greatly benefits of GPU-optimized codes. In our minimalist architecture we delegated the backward computations to the relevant classes of PyTorch \cite{PyTorch25}.
 
-The embedding matrices $W_\text{in}$ and $W_{out}$ are initialized in a way such that $W_\text{in} \cdot W_\text{out} = 1$ - to represent exactly the same projection. Specifically, $W_\text{in}$ is initialized by drawing each of its elements from a uniform distribution, and $W_\text{out}$ is set to be $\dfrac{W_I}{||W_I||^2}$. Then, during training, they are set to change without any constraint.
+The embedding matrices $W_i$ and $W_o$ are initialized in a way such that $W_i \cdot W_o = 1$ - to represent exactly the same projection. Specifically, $W_i$ is initialized by drawing each of its elements from a uniform distribution, and $W_o$ is set to be $\dfrac{W_i}{||W_i||^2}$ - since the bias arrays $b_i, b_o$ are zero-initialized- Then, during training, they are set to change without any constraint.
 
 The training technique is as follows. The input sequence $\textbf{X}$ of fixed length $n$ is given to the model. The predicted element at the $i$-th timestep $\hat y_i$ is looked at, and the loss function between the ground truth element $y_i$ is computed. The employed loss is the MSE. The backpropagation step, which updates the internal parameters of the mode, follows. Then, with probability $p$, the $\textbf{Y}$ matrix is filled not with the predicted element $\hat y_i$ but with the actual one, $y_i$. The probability of that happening is gradually decreased during the training phase, in order to let the model be more reliant on its own predictions - as will it be during inference. In the case of the running example, the total number of parameters to learn in the transformer model resulted to be 737. 
 
@@ -741,6 +741,29 @@ This appendix contains all values of the trained matrices obtained for the encod
 			0.4822 & 0.5630 & 0.6237 & 0.5630 & 0.6035 & 0.8663 & 0.9269 \\
 			-0.1412 & -0.1238 & -0.1107 & -0.1238 & -0.1151 & -0.0585 & -0.0454
 		\end{bmatrix}
+	$
+\end{table}
+
+\begin{table}[ht]
+	\centering
+	\caption{The projection vectors used to convert each scalar timestep in an embedding, and viceversa.}
+	\label{tab:seca}
+	$
+	W_i = 	\begin{bmatrix}
+				0.8815 \\
+				-0.7336 \\
+				0.8692 \\
+				0.1872
+			\end{bmatrix} \;
+	b_i = 	\begin{bmatrix}
+				0.7388 \\ 0.1354 \\ 0.4822 \\ -0.1412
+			\end{bmatrix} \quad\;
+	W_o = 	\begin{bmatrix}
+				0.4186 \\ -0.3484 \\ 0.4128 \\ 0.0889
+			\end{bmatrix} \;
+	b_o = 	\begin{bmatrix}
+				-0.2304
+			\end{bmatrix}
 	$
 \end{table}
 
