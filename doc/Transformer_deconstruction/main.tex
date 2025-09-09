@@ -837,7 +837,22 @@ This appendix contains all values of the trained matrices obtained for the encod
 	\end{tabular}	
 \end{table}
 
-\noindent Table \ref{tab:matA} present the attention matrix as resulting after the multihead attention phase for the restaurant time series.
+\begin{table}
+	\centering
+	\caption{The additive bias arrays learned for projection.}
+	\begin{tabular}{c c c c}
+		$b^{Q}_1 = \begin{bmatrix} -0.2886 \\ 0.0986 \end{bmatrix}$ 
+		& $b^{K}_1 = \begin{bmatrix} 0.0284 \\ -0.3107 \end{bmatrix}$ 
+		& $b^{Q}_2 = \begin{bmatrix} 0.0400 \\ -0.0733 \end{bmatrix}$ 
+		& $b^{K}_2 = \begin{bmatrix} 0.3766 \\ -0.2808 \end{bmatrix}$ \\
+		$b^{V}_1 = \begin{bmatrix} -0.0369 \\ 0.0655 \end{bmatrix}$ 
+		& $b^{O}_1 = \begin{bmatrix} 0.1617 \\ -0.1503 \end{bmatrix}$ 
+		& $b^{V}_2 = \begin{bmatrix} 0.3832 \\ 0.1816 \end{bmatrix}$ 
+		& $b^{O}_2 = \begin{bmatrix} -0.2134 \\  0.2398 \end{bmatrix}$ \\
+	\end{tabular}
+\end{table}
+
+\noindent Table \ref{tab:matA} presents the attention matrix as resulting after the multihead attention phase for the restaurant time series.
 
 \begin{table}[ht]
 	\centering
@@ -853,11 +868,11 @@ This appendix contains all values of the trained matrices obtained for the encod
 	$
 \end{table}
 
-\noindent  Table \ref{tab:matWO} shows the matrix used to recover the needed dimensionality after the multihead attention computation.
+\noindent  Table \ref{tab:matWO} shows the matrix used to restore the needed dimensionality after the multihead attention computation.
 
 \begin{table}[ht]
 	\centering
-	\caption{The matrix $W^O$ used for dimensionality reduction of the running example.}
+	\caption{The matrix $W^O$ used for reprojection of the running example.}
 	\label{tab:matWO}
 	$
 	W^O =   \begin{bmatrix}
