@@ -68,6 +68,18 @@
 \usepackage{graphicx}
 \usepackage{amsmath}        % multiline formulas
 \usepackage{array}          % for better column control
+\usepackage{tikz}
+\usetikzlibrary{positioning,fit,arrows.meta,decorations.pathreplacing,calc}
+
+\tikzset{
+	block/.style={draw, rounded corners, thick, minimum width=3.2cm, minimum height=8mm, align=center, font=\sffamily},
+	mha/.style={block, fill=blue!6},
+	ff/.style={block, fill=green!6},
+	addnorm/.style={rectangle, draw, minimum height=5mm, inner sep=2pt, font=\scriptsize},
+	encbox/.style={draw, dashed, rounded corners, inner sep=6pt},
+	arrow/.style={-{Stealth[length=2mm,width=2mm]}, thick},
+	small/.style={font=\scriptsize}
+}
 
 \setlength{\headheight}{24.2pt}
 \SetAlgoNlRelativeSize{0}
@@ -181,6 +193,42 @@ The data processing cycle consists of three main phases: encoding, decoding, and
 \subsection{Encoding} \label{subsec:encoding}
 
 The objective of the encoding component (i.e., the \textit{encoder}) in a Transformer architecture is to process an input sequence and convert the raw input into a contextually enriched representation that captures both local and global dependencies. This representation can then be used effectively by the rest of the model.
+
+\begin{figure}
+	\centering
+	\begin{tikzpicture}[node distance=6mm]
+	
+	\node (input) [block, fill=gray!10] {Input embeddings};
+	\node (pe) [block, fill=gray!10, below=of input] {+ Positional Encoding};
+	
+	
+	\node (mha) [mha, below=of pe] {Multi-Head Attention};
+	\node (add1) [addnorm, below=of mha] {Add \& Norm};
+	
+	% Feedforward
+	\node (ff) [ff, below=of add1] {Feedforward Network};
+	\node (add2) [addnorm, below=of ff] {Add \& Norm};
+	
+	% Output
+	\node (output) [block, fill=gray!10, below=of add2] {Output};
+	
+	% Arrows
+	\draw[arrow] (input) -- (pe);
+	\draw[arrow] (pe) -- (mha);
+	\draw[arrow] (mha) -- (add1);
+	\draw[arrow] (add1) -- (ff);
+	\draw[arrow] (ff) -- (add2);
+	\draw[arrow] (add2) -- (output);
+	
+	% Box around the encoder block
+	\node[draw, dashed, rounded corners, fit=(mha) (add2), inner sep=6pt] (encbox) {};
+	\node[right=2mm of encbox.east] (enclabel) {Encoder Block};
+	\node[below=0mm of enclabel.south] {$\times n$};
+	
+	\end{tikzpicture}
+	\caption{The Encoding Process.}
+	\label{fig:enc}
+\end{figure}
 
 The general structure of the encoding module is represented by the pseudocode in Algorithm \ref{algo:encoding}. All intermediate numerical results obtained for the restaurant series case study are reported in appendix \ref{sec:appendix} to enable the interested reader to immediately grasp the dimensionalities and values involved in this tiny example, and possibly to follow the corresponding evolution of a run of the code provided in \cite{G25}. In the case of the running example we used the following argument values: $n$=7, $m$=4, $k$=2, $d_k$=$d_v$=2, $p$=16.
 
