@@ -412,9 +412,9 @@ The general structure of the decoding module is represented by the pseudocode in
                 \tcp*{Masked self-attention}
                 \For{j = 0, \dots, $h^1$}
                 {   \label{dec:self1}
-                    Compute $Q^j$ = $\textbf{Y}\cdot W_{q1}^j$,  \, 
-                            $K^j$ = $\textbf{Y}\cdot W_{k1}^j$,  \, 
-                            $V^j$ = $\textbf{Y}\cdot W_{v1}^j$   \;
+                    Let $Q^j$ = $(\textbf{Y}W_{q1}^j) + b_{q1}^j$,  \,\, 
+                            $K^j$ = $(\textbf{Y}W_{k1}^j) + b_{k1}^j$,  \,\, 
+                            $V^j$ = $(\textbf{Y}W_{v1}^j) + b_{v1}^j$   \;
                             \label{dec:selfproj}
                     Let $S^j = \dfrac{Q^j{K^j}^T}{\sqrt{d_k}}$\; \label{dec:scaled1}
                     Set $S_i^j=-\infty$ for all $i>j$; \tcp*{mask future positions}
@@ -428,9 +428,9 @@ The general structure of the decoding module is represented by the pseudocode in
                 \tcp*{Cross-attention}
                 \For{j = 0, \dots, $h^2$}
                 {   \label{dec:cross1}
-                    Compute $Q^j=Y\cdot W_{q2}^j$, \,
-                            $K^j=Z\cdot W_{k2}^j$, \, 
-                            $V^j=Z\cdot W_{v2}^j$\;
+                    Let $Q^j=(\textbf{Y}\cdot W_{q2}^j) + b_{q2}^j$, \,\,
+                            $K^j=(\textbf{Z}\cdot W_{k2}^j) + b_{k2}^j$, \,\, 
+                            $V^j=(\textbf{Z}\cdot W_{v2}^j) + b_{v2}^j$\;
                     \label{dec:crossproj}
                     Let $A^{j} = softmax\left(\dfrac{Q^j{K^j}^T}{\sqrt{d_k}}\right)V^j$\;
                     \label{dec:scaled2}
@@ -446,7 +446,7 @@ The general structure of the decoding module is represented by the pseudocode in
                 Let $\textbf{Y} = LayerNorm(\textbf{Y} + F)$\;
                 \label{dec:norm3}
             } \label{dec:decblock2}
-            $Y_{i + 1} = feedforward(Y_{i + 1})  * scale(\textbf{Z}) + bias(\textbf{Z})$\; \label{dec:finalproj}
+            $Y^{i + 1} = feedforward(Y^{i + 1})  * scale(\textbf{Z}) + bias(\textbf{Z})$\; \label{dec:finalproj}
             $y_i$ = ($Y^{i + 1}$)$W_o$
         } \label{dec:outer2}                     
     	\caption{The decoding module} 
