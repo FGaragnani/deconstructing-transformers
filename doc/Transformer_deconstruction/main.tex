@@ -198,7 +198,7 @@ The objective of the encoding component (i.e., the \textit{encoder}) in a Transf
 	\centering
 	\begin{tikzpicture}[node distance=6mm]
 	
-	\node (input) [block, fill=gray!10] {Input embeddings};
+	\node (input) [block, fill=gray!10] {Input embeddings \\ \scriptsize (8)};
 	\node (pe) [block, fill=gray!10, below=of input] {+ Positional Encoding \\ \scriptsize (28)};
 	
 	
@@ -226,7 +226,7 @@ The objective of the encoding component (i.e., the \textit{encoder}) in a Transf
 	\node[below=0mm of enclabel.south] {$\times n$};
 	
 	\end{tikzpicture}
-	\caption{The Encoding Process. Below each block, the total number of learnable parameters for the restaurant series example.}
+	\caption{The Encoding Process. For each block, the total number of learnable parameters for the restaurant series example is shown.}
 	\label{fig:enc}
 \end{figure}
 
@@ -248,7 +248,7 @@ The individual steps are detailed below.
         \tcp*{transform the array {\bf s} into the 2D embedding matrix (tensor) {\bf X}} 
         \For{i = 0, \ldots, t} 
         {\label{enc:seca1}
-            Expand value $s_i$ into a row $X_i = s_iW_i$
+            Expand value $s_i$ into a row $X_i = (s_iW_i) + b_i$
         }   \label{enc:seca2}
         \tcp*{Positional encoding}
         X' = X + P;\; \label{enc:positional}
@@ -259,9 +259,9 @@ The individual steps are detailed below.
             \For{h = 1, \dots, k}
             {	\label{enc:multihead1}
                 \tcp{attention}
-                Compute $Q^h=X'\cdot W_q^h$;\; \label{enc:qh}
-                Compute $K^h=X'\cdot W_k^h$;\; \label{enc:kh}
-                Compute $V^h=X'\cdot W_v^h$;\; \label{enc:vh}
+                Compute $Q^h=(X'\cdot W_q^h) + b_q^h$;\; \label{enc:qh}
+                Compute $K^h=(X'\cdot W_k^h) + b_k^h$;\; \label{enc:kh}
+                Compute $V^h=(X'\cdot W_v^h) + b_v^h$;\; \label{enc:vh}
                 Let $d_k=$ num columns of $W^h_k$;\; \label{enc:dk}
                 Let $A^h = \dfrac{Q \cdot K^T}{\sqrt{d_k}}$; \tcp*{init attention function} \label{enc:attention1}
                 Let $A^h = softmax\left(A^h\right)$; \tcp*{softmax over all rows} \label{enc:softmax}
@@ -287,9 +287,9 @@ For the restaurant time series, we applied a straightforward preprocessing step:
 
 Single scalar values for each single timestep may not be expressive enough to capture contextual information. Each data point is projected into a higher-dimensional space where nonlinear dependencies between features can be easier to identify. 
 
-In our minimalist transformer model the projections, also known as {\em embeddings}, were obtained by multiplying each datapoint by a real-valued vector initialized as a random gaussian vector. These values can later be learned. In this way, a matrix $X \in \mathbb{R}^{n\times m}$ is computed, which contains, for each original timestep, its $m$-dimensional representation.
+In our minimalist transformer model the projections, also known as {\em embeddings}, were obtained by multiplying each datapoint by a shared real-valued vector $W_i \in \mathbb{R}^m$ initialized as a random gaussian vector, and by adding a bias array $b_i \in \mathbb{R}^m$. These values can later be learned. In this way, a matrix $X \in \mathbb{R}^{n\times m}$ is computed, which contains, for each original timestep, its $m$-dimensional representation.
 
-In the restaurant series, the projections were based on vectors of 4 values, obtaining a set of matrices, each of which with $n=7$ rows and $m=4$ columns, leaving $4$ parameters to be learned for the projection vector. Each matrix {\bf X} represents a window over the input time series, the first of these matrices is presented in the appendix as table \ref{tab:matX}.
+In the restaurant series, the projections were based on vectors of 4 values, obtaining a set of matrices, each of which with $n=7$ rows and $m=4$ columns, leaving $4$ parameters to be learned for the projection vector, and other $4$ for the bias array. Each matrix {\bf X} represents a window over the input time series, the first of these matrices is presented in the appendix as table \ref{tab:matX}. The learned arrays $W_i, b_i$ are also shown in the appendix, as table \ref{tab:seca}.
 
 ~\\Line \ref{enc:positional}: (\textit{Positional Encoding})
 
@@ -314,13 +314,13 @@ All these steps are detailed in the following.
 
 This loop iterates a basic attention mechanism that dynamically weighs the contribution of each past point in the series when computing the representation of those under scrutiny. It computes a set of attention scores relating the "query" vector of the current point and "key" vectors of all sequence values. \#In our application, a query comes from the embedding of the last known observation while the keys correspond to those of all past observations.\# The resulting attention weights determine which points matter most and the forecast is then given by a weighted sum of the corresponding "value" vectors.
 
-Queries (the elements currently focused on), keys (descriptors of the corresponding values), and values (the actual information) are all represented as matrices. Typically, queries and keys share the same inner dimension $d_k$, while values may have a different dimension $d_v$. At each iteration the corresponding set of query, key, and value is referred to as a \textit{head}. The matrices identified for the two heads used in our running example are reported in the appendix in table \ref{tab:matWq}.
+Queries (the elements currently focused on), keys (descriptors of the corresponding values), and values (the actual information) are all represented as matrices. Typically, queries and keys share the same inner dimension $d_k$, while values may have a different dimension $d_v$. At each iteration the corresponding set of query, key, and value is referred to as a \textit{head}. The matrices and the bias identified for the two heads used in our running example are reported in the appendix in tables \ref{tab:matWq} and \ref{tab:bias} .
 
-~\\Line \ref{enc:qh}: generates the $h-th$ query matrix and projects the input embeddings into vectors that represent what we are looking for in the past. This is achieved by using a dynamic parameter matrix $W^h_q \in \mathbb{R}^{m \times d_k}$ that is learnt.
+~\\Line \ref{enc:qh}: generates the $h-th$ query matrix and projects the input embeddings into vectors that represent what we are looking for in the past. This is achieved by using a dynamic parameter matrix $W^h_q \in \mathbb{R}^{m \times d_k}$ and a bias array $b^h_q \in \mathbb{R}^{d_k}$ that are learnt.
 
-~\\Line \ref{enc:kh}: generates the $h-th$ key matrix and projects the input embeddings into vectors that represent the information content of each corresponding embedding. This is achieved by using a dynamic parameter matrix $W^h_k \in \mathbb{R}^{m \times d_k}$ that is learnt.
+~\\Line \ref{enc:kh}: generates the $h-th$ key matrix and projects the input embeddings into vectors that represent the information content of each corresponding embedding. This is achieved by using a dynamic parameter matrix $W^h_k \in \mathbb{R}^{m \times d_k}$ and a bias array $b^h_k \in \mathbb{R}^{d_k}$ that are learnt.
 
-~\\Line \ref{enc:vh}: generates the $h-th$ value matrix and projects the input embeddings into vectors that represent the relevant information of each available embedding. This is achieved by using a dynamic parameter matrix $W^h_v \in \mathbb{R}^{m \times d_v}$ that is learnt.
+~\\Line \ref{enc:vh}: generates the $h-th$ value matrix and projects the input embeddings into vectors that represent the relevant information of each available embedding. This is achieved by using a dynamic parameter matrix $W^h_v \in \mathbb{R}^{m \times d_v}$ and a bias array $b^h_v \in \mathbb{R}^{d_k}$ that are learnt.
 
 ~\\Line \ref{enc:dk}: initializes the scaling factor.
 
@@ -412,9 +412,9 @@ The general structure of the decoding module is represented by the pseudocode in
                 \tcp*{Masked self-attention}
                 \For{j = 0, \dots, $h^1$}
                 {   \label{dec:self1}
-                    Compute $Q^j$ = $\textbf{Y}\cdot W_{q1}^j$,  \, 
-                            $K^j$ = $\textbf{Y}\cdot W_{k1}^j$,  \, 
-                            $V^j$ = $\textbf{Y}\cdot W_{v1}^j$   \;
+                    Let $Q^j$ = $(\textbf{Y}W_{q1}^j) + b_{q1}^j$,  \,\, 
+                            $K^j$ = $(\textbf{Y}W_{k1}^j) + b_{k1}^j$,  \,\, 
+                            $V^j$ = $(\textbf{Y}W_{v1}^j) + b_{v1}^j$   \;
                             \label{dec:selfproj}
                     Let $S^j = \dfrac{Q^j{K^j}^T}{\sqrt{d_k}}$\; \label{dec:scaled1}
                     Set $S_i^j=-\infty$ for all $i>j$; \tcp*{mask future positions}
@@ -428,9 +428,9 @@ The general structure of the decoding module is represented by the pseudocode in
                 \tcp*{Cross-attention}
                 \For{j = 0, \dots, $h^2$}
                 {   \label{dec:cross1}
-                    Compute $Q^j=Y\cdot W_{q2}^j$, \,
-                            $K^j=Z\cdot W_{k2}^j$, \, 
-                            $V^j=Z\cdot W_{v2}^j$\;
+                    Let $Q^j=(\textbf{Y}\cdot W_{q2}^j) + b_{q2}^j$, \,\,
+                            $K^j=(\textbf{Z}\cdot W_{k2}^j) + b_{k2}^j$, \,\, 
+                            $V^j=(\textbf{Z}\cdot W_{v2}^j) + b_{v2}^j$\;
                     \label{dec:crossproj}
                     Let $A^{j} = softmax\left(\dfrac{Q^j{K^j}^T}{\sqrt{d_k}}\right)V^j$\;
                     \label{dec:scaled2}
@@ -446,8 +446,8 @@ The general structure of the decoding module is represented by the pseudocode in
                 Let $\textbf{Y} = LayerNorm(\textbf{Y} + F)$\;
                 \label{dec:norm3}
             } \label{dec:decblock2}
-            $Y_{i + 1} = feedforward(Y_{i + 1})  * scale(\textbf{Z}) + bias(\textbf{Z})$\; \label{dec:finalproj}
-            $y_i$ = ($Y^{i + 1}$)$W_o$
+            $Y^{i + 1} = feedforward(Y^{i + 1})  * scale(\textbf{Z}) + bias(\textbf{Z})$\; \label{dec:finalproj}
+            $y_i$ = ($Y^{i + 1}$)$W_o + b_o$
         } \label{dec:outer2}                     
     	\caption{The decoding module} 
     \label{algo:decoding}
@@ -481,7 +481,7 @@ The general procedure outlined above is explained in more detail below.
 The Masked Self-Attention mechanism works in the same way as a Multihead Attention function, but ensures that the generation of each successive sequence value can only consider the present or the past, never the future. This is achieved using a look-ahead mask that prevents feedback in time.
 The following operations are performed inside each loop (i.e. each head).
 
-~\\Line \ref{dec:selfproj}: generates the query, key and value matrices, projecting the already-generated embeddings into semantic vectors. This projection is achieved by using dynamic parameter matrices, which must be learnt.
+~\\Line \ref{dec:selfproj}: generates the query, key and value matrices, projecting the already-generated embeddings into semantic vectors. This projection is achieved by using dynamic parameter matrices and a dynamic bias array, both of which must be learnt.
 
 ~\\Line \ref{dec:scaled1}: computes the first part of the \textit{Scaled-Dot Product Attention} function.
 
@@ -557,9 +557,9 @@ The backward pass implements the actual learning process by reversing the comput
 
 Learning is a computation-intensive phase and greatly benefits of GPU-optimized codes. In our minimalist architecture we delegated the backward computations to the relevant classes of PyTorch \cite{PyTorch25}.
 
-The embedding matrices $W_\text{in}$ and $W_{out}$ are initialized in a way such that $W_\text{in} \cdot W_\text{out} = 1$ - to represent exactly the same projection. Specifically, $W_\text{in}$ is initialized by drawing each of its elements from a uniform distribution, and $W_\text{out}$ is set to be $\dfrac{W_I}{||W_I||^2}$. Then, during training, they are set to change without any constraint.
+The embedding matrices $W_i$ and $W_o$ are initialized in a way such that $W_i \cdot W_o = 1$ - to represent exactly the same projection. Specifically, $W_i$ is initialized by drawing each of its elements from a uniform distribution, and $W_o$ is set to be $\dfrac{W_i}{||W_i||^2}$ - since the bias arrays $b_i, b_o$ are zero-initialized. Then, during training, they are set to change without any constraint.
 
-The training technique is as follows. The input sequence $\textbf{X}$ of fixed length $n$ is given to the model. The predicted element at the $i$-th timestep $\hat y_i$ is looked at, and the loss function between the ground truth element $y_i$ is computed. The employed loss is the MSE. The backpropagation step, which updates the internal parameters of the mode, follows. Then, with probability $p$, the $\textbf{Y}$ matrix is filled not with the predicted element $\hat y_i$ but with the actual one, $y_i$. The probability of that happening is gradually decreased during the training phase, in order to let the model be more reliant on its own predictions - as will it be during inference. In the case of the running example, the total number of parameters to learn in the transformer model resulted to be 1189. 
+The training technique is as follows. The input sequence $\textbf{X}$ of fixed length $n$ is given to the model. The predicted element at the $i$-th timestep $\hat y_i$ is looked at, and the loss function between the ground truth element $y_i$ is computed. The employed loss is the MSE. The backpropagation step, which updates the internal parameters of the mode, follows. Then, with probability $p$, the $\textbf{Y}$ matrix is filled not with the predicted element $\hat y_i$ but with the actual one, $y_i$. The probability of that happening is gradually decreased during the training phase, in order to let the model be more reliant on its own predictions - as will it be during inference. In the case of the running example, the total number of parameters to learn in the transformer model resulted to be 737. 
 
 
 \subsection{Forecasting} \label{subsec:forecasting}
@@ -592,7 +592,7 @@ When we apply our model to this series, setting aside the last 12 values for val
 
 The series was preprocessed only by a standard min-max normalization, then it was projected into embeddings of size $m = 12$. Employing only $n = 12$ timesteps at a time, we obtained $118$ matrices $X \in \mathbb{R}^{12 \times 12}$. Matrix $P$ used for positional embedding has the same dimensionality.
 
-Next comes multi-head attention. We used 2 heads, and for each head we set $d_k = d_v = \frac{12}{2} = 6$. Therefore all matrices $W^h_Q$, $W^h_K$ and $W^h_V$ had dimensions $12 \times 6$. These provide the bases for computing the attention function, where each $h-th$ head gives rise to the matrix $A^h=\frac{Q_hK'_h}{d_h} \in \mathbb{R}^{n \times n}$, in our case $A^h \in \mathbb{R}^{12 \times 12}$. The successive {\em softmax} function does not change its dimensionality. After multiplying by $V_h$ we obtain the output of each head, of dimension $12 \times 6$. All outputs are then concatenated by row, giving rise to a matrix $A \in \mathbb{R}^{12 \times 12}$. The input dimension is then kept, when the output attention matrix is multiplied by matrix $W_O \in \mathbb{R}^{hd_v \times m}$ - in our case, of dimension $12 \times 12$. In summary, the values used for the parameters were: $n$=12, $m$=12, $k$=2, $d_k$=$d_v$=6,$p$=36. The number of epochs set for learning was 400, the total number of parameters to learn in the transformer model resulted to be 6829. (da controllare)
+Next comes multi-head attention. We used 2 heads, and for each head we set $d_k = d_v = \frac{12}{2} = 6$. Therefore all matrices $W^h_Q$, $W^h_K$ and $W^h_V$ had dimensions $12 \times 6$. These provide the bases for computing the attention function, where each $h-th$ head gives rise to the matrix $A^h=\frac{Q_hK'_h}{d_h} \in \mathbb{R}^{n \times n}$, in our case $A^h \in \mathbb{R}^{12 \times 12}$. The successive {\em softmax} function does not change its dimensionality. After multiplying by $V_h$ we obtain the output of each head, of dimension $12 \times 6$. All outputs are then concatenated by row, giving rise to a matrix $A \in \mathbb{R}^{12 \times 12}$. The input dimension is then kept, when the output attention matrix is multiplied by matrix $W_O \in \mathbb{R}^{hd_v \times m}$ - in our case, of dimension $12 \times 12$. In summary, the values used for the parameters were: $n$=12, $m$=12, $k$=2,  $d_k$=$d_v$=6, $p$=48. The number of epochs set for learning was 400, the total number of parameters to learn in the transformer model resulted to be 5413.
 
 \begin{figure}
 	\centering
@@ -616,7 +616,7 @@ The benchmark used consisted of the monthly series of the M3 forecasting competi
 	\item Others, i.e., diverse, real-world time series that don’t belong to traditional economic or financial domains (e.g., energy consumption, transportation data)
 \end{itemize}
 
-The length of the monthly series varies, typically ranging from 48 to 126 observations (i.e., 4 to over 10 years of data) and for each series, participants were asked to forecast the next 18 months. We used this same forecast horizon in our tests, and the following argument values: In summary, the values used for the parameters were: $n$=24, $m$=36, $k$=4, $d_k$=$d_v$=12,$p$=144. The number of epochs set for network learning was 400, the total number of parameters to learn in the transformer model resulted to be 49'861.
+The length of the monthly series varies, typically ranging from 48 to 126 observations (i.e., 4 to over 10 years of data) and for each series, participants were asked to forecast the next 18 months. We used this same forecast horizon in our tests, and the following argument values: In summary, the values used for the parameters were: $n$=24, $m$=36, $k$=4, $d_k$=$d_v$=12, $p$=144. The number of epochs set for network learning was 400, the total number of parameters to learn in the transformer model resulted to be 46'189.
 
 We ran each model on all the benchmark series, computing the RMSE on both the training and test sets. To determine whether the difference in forecast effectiveness was significant, we conducted a Mann–Whitney U-test on the RMSE results for each aggregate separately. Table \ref{tab:aggregate} shows the results of the comparison aggregated over the type feature. The columns show:
 \begin{itemize}
@@ -744,6 +744,29 @@ This appendix contains all values of the trained matrices obtained for the encod
 	$
 \end{table}
 
+\begin{table}[ht]
+	\centering
+	\caption{The projection vectors used to convert each scalar timestep in an embedding, and viceversa.}
+	\label{tab:seca}
+	$
+	W_i = 	\begin{bmatrix}
+				0.8815 \\
+				-0.7336 \\
+				0.8692 \\
+				0.1872
+			\end{bmatrix} \;
+	b_i = 	\begin{bmatrix}
+				0.7388 \\ 0.1354 \\ 0.4822 \\ -0.1412
+			\end{bmatrix} \quad\;
+	W_o = 	\begin{bmatrix}
+				0.4186 \\ -0.3484 \\ 0.4128 \\ 0.0889
+			\end{bmatrix} \;
+	b_o = 	\begin{bmatrix}
+				-0.2304
+			\end{bmatrix}
+	$
+\end{table}
+
 \noindent Table ~\ref{tab:matP} shows the positional encoding matrix, $P$. The matrix has been transposed for the sake of compact presentation.
 
 \begin{table}[ht]
@@ -837,7 +860,23 @@ This appendix contains all values of the trained matrices obtained for the encod
 	\end{tabular}	
 \end{table}
 
-\noindent Table \ref{tab:matA} present the attention matrix as resulting after the multihead attention phase for the restaurant time series.
+\begin{table}
+	\centering
+	\caption{The additive bias arrays learned for projection.}
+	\label{tab:bias}
+	\begin{tabular}{c c c c}
+		$b^{Q}_1 = \begin{bmatrix} -0.2886 \\ 0.0986 \end{bmatrix}$ 
+		& $b^{K}_1 = \begin{bmatrix} 0.0284 \\ -0.3107 \end{bmatrix}$ 
+		& $b^{Q}_2 = \begin{bmatrix} 0.0400 \\ -0.0733 \end{bmatrix}$ 
+		& $b^{K}_2 = \begin{bmatrix} 0.3766 \\ -0.2808 \end{bmatrix}$ \\
+		$b^{V}_1 = \begin{bmatrix} -0.0369 \\ 0.0655 \end{bmatrix}$ 
+		& $b^{O}_1 = \begin{bmatrix} 0.1617 \\ -0.1503 \end{bmatrix}$ 
+		& $b^{V}_2 = \begin{bmatrix} 0.3832 \\ 0.1816 \end{bmatrix}$ 
+		& $b^{O}_2 = \begin{bmatrix} -0.2134 \\  0.2398 \end{bmatrix}$ \\
+	\end{tabular}
+\end{table}
+
+\noindent Table \ref{tab:matA} presents the attention matrix as resulting after the multihead attention phase for the restaurant time series.
 
 \begin{table}[ht]
 	\centering
@@ -853,11 +892,11 @@ This appendix contains all values of the trained matrices obtained for the encod
 	$
 \end{table}
 
-\noindent  Table \ref{tab:matWO} shows the matrix used to recover the needed dimensionality after the multihead attention computation.
+\noindent  Table \ref{tab:matWO} shows the matrix used to restore the needed dimensionality after the multihead attention computation.
 
 \begin{table}[ht]
 	\centering
-	\caption{The matrix $W^O$ used for dimensionality reduction of the running example.}
+	\caption{The matrix $W^O$ used for reprojection of the running example.}
 	\label{tab:matWO}
 	$
 	W^O =   \begin{bmatrix}

@@ -67,6 +67,7 @@ def main():
             num_head_dec_1=NUM_HEADS,
             num_head_dec_2=NUM_HEADS,
             dropout=DROPOUT,
+            max_seq_length=INPUT_LEN
         )
         print("Number of trainable parameters: ", sum(p.numel() for p in model.parameters() if p.requires_grad))
 

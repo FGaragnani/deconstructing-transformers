@@ -69,6 +69,7 @@ def main():
         num_head_dec_1=NUM_HEADS,
         num_head_dec_2=NUM_HEADS,
         dropout=DROPOUT,
+        max_seq_length=SEQUENCE_LENGTH
     )
 
     train_transformer_model(
