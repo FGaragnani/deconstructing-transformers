@@ -91,10 +91,10 @@
 
 %=================================================================
 % Full title of the paper (Capitalized)
-\Title{Deconstructing transfomer-based time series forecasting}
+\Title{Deconstructing transformer-based time series forecasting}
 
 % MDPI internal command: Title for citation in the left column
-\TitleCitation{Deconstructing transfomer-based time series forecasting}
+\TitleCitation{Deconstructing transformer-based time series forecasting}
 
 % Author Orchid ID: enter ID or remove command
 \newcommand{\orcidauthorA}{0000-0002-1220-1235} % Add \orcidA{} behind the author's name
@@ -142,11 +142,13 @@ $^{2}$ \quad Department of Computer Science, University of Bologna; vittorio.man
 
 Time series forecasting is a key topic in data science and has a wide range of applications in areas such as economics, energy, healthcare, logistics and environmental monitoring. Accurate forecasting enables informed decision-making, efficient resource allocation and risk mitigation. Traditional statistical methods such as ARIMA and exponential smoothing have long been used for this purpose and often produce good results when the necessary assumptions are met. However, these methods often struggle to capture complex patterns and long-term dependencies in the data, an area in which deep learning methods, especially sequence models such as recurrent neural networks (RNNs), have often demonstrated superior performance.
 
-Transformer models, which were initially designed for natural language processing tasks, have recently shown remarkable success in understanding and generating sequential data, demonstrating their effectiveness in modelling long-range dependencies. Transformers are attention-based models that eliminate the need for recurrence and convolution, relying instead on a self-attention mechanism to capture global context across sequences. This architecture has had a revolutionary impact on NLP, and its application to time series forecasting is a rapidly growing area of research. Unlike natural language, time series are composed of continuous values and frequently exhibit seasonality, trends and influence from exogenous variables. While recent studies have proposed various adaptations of the transformer to address the unique properties of time series data, many of these models are treated as opaque black boxes. This means that there is limited clear understanding of how each component relates to temporal information and contributes to forecasting performance. Furthermore, the implementation details are frequently insufficiently specified, which makes reproducibility and interpretability challenging.
+Transformer models, which were initially designed for natural language processing tasks, have recently shown remarkable success in understanding and generating sequential data, demonstrating their effectiveness in modelling long-range dependencies. Transformers are attention-based models that eliminate the need for recurrence and convolution, relying instead on a self-attention mechanism to capture global context across sequences. This architecture has had a revolutionary impact on NLP, and its application to time series forecasting is a rapidly growing area of research. 
+
+Unlike natural language, time series are composed of continuous values and frequently exhibit seasonality, trends and influence from exogenous variables. While recent studies have proposed various adaptations of the transformer to address the unique properties of time series data, many of these models are treated as opaque black boxes. This means that there is limited clear understanding of how each component relates to temporal information and contributes to forecasting performance. Furthermore, the implementation details are frequently insufficiently specified, which makes reproducibility and interpretability challenging.
 
 In this paper, our aim is to 'deconstruct' the forecasting process of transformer-based models when applied to univariate time series. Our objective is to provide a transparent, modular and pedagogical account of how univariate time series are transformed and processed within these models to generate future trajectories. We describe each processing step in detail, including data normalization, input windowing, positional encoding, encoder and decoder architecture, training strategies, and prediction generation. We highlight both the theoretical basis and the practical design choices, showing how each element contributes to predictive accuracy and attempting to bridge the gap between theoretical advancements and practical implementation.
 
-To validate our methodology, we implemented and evaluated a basic transformer-based model on a significant benchmark of univariate time series. These were selected from the well-known M forecasting competition benchmarks and included macro- and microeconomic, industrial, and demographic series with varying statistical properties. The work combines theoretical explanation with empirical validation to serve as a comprehensive guide to deconstructing transformer-based time series forecasting, providing a tutorial for newcomers and a reference for practitioners.
+To validate our methodology, we implemented and evaluated a basic transformer-based model on a significant benchmark of univariate time series. These were selected from the well-known M forecasting competition benchmarks and included macro- and micro-economic, industrial, financial and demographic series with varying statistical properties. The work combines theoretical explanation with empirical validation to serve as a comprehensive guide to deconstructing transformer-based time series forecasting, providing a tutorial for newcomers and a reference for practitioners.
 
 The paper is structured as follows. Section \ref{sec:literature} reviews the related works in time series forecasting, with particular emphasis on recent advancements leveraging Transformer architectures. Section \ref{sec:transformer} presents the workflow of a minimalist Transformer module to produce a multipoint forecast for a univariate time series. Section \ref{sec:results} analyses some results in applying the described architecture on benchmark data series and comparing it with another standard methodology.
 
@@ -159,17 +161,19 @@ Indeed, RNNs can be effective in capturing long-term dependencies among data, bu
 
 Transformer architectures are immune from these drawbacks because they make no stationarity assumption and capture global dependencies in input sequences without relying on recurrence, instead leveraging self-attention mechanisms enabling direct modeling of long-range dependencies. This supports full parallelization during training and allows the model to focus on relevant time steps, regardless of their position in the sequence.
 
-A key challenge in applying transformers to univariate time series is the absence of the rich semantic tokens found in language. Unlike words in a sentence, time series values are continuous and lack discrete meaning, making it more difficult to learn meaningful attention patterns. Therefore, transformers need to be adapted for time series forecasting. Early adaptations of transformers for use with time series data include 
+A key challenge in applying transformers to univariate time series is the absence of the rich semantic tokens found in language. Unlike words in a sentence, time series values are continuous and lack discrete meaning, making it more difficult to learn meaningful attention patterns. Therefore, transformers need to be adapted for time series forecasting. Early adaptations of transformers for use with time series data include:
 
-Informer \citep{ZZPZ21}, which introduces a sparse self-attention mechanism to reduce the quadratic complexity of self-attention, making it more efficient for long sequence time series forecasting.
+\begin{description}
+	\item Informer \citep{ZZPZ21}, which introduces a sparse self-attention mechanism to reduce the quadratic complexity of self-attention, making it more efficient for long sequence time series forecasting.
 
-Autoformer \citep{WXWL22}, which integrates a series decomposition block within the transformer to separate trend and seasonal components obtaining a decomposition-based attention for better seasonal-trend modeling, improving interpretability and long-horizon forecasting accuracy.
+	\item Autoformer \citep{WXWL22}, which integrates a series decomposition block within the transformer to separate trend and seasonal components obtaining a decomposition-based attention for better seasonal-trend modeling, improving interpretability and long-horizon forecasting accuracy.
 
-FEDformer \citep{ZMWW22}, which incorporates Fourier transformations into the attention mechanism to better exploit frequency-domain characteristics.
+	\item FEDformer \citep{ZMWW22}, which incorporates Fourier transformations into the attention mechanism to better exploit frequency-domain characteristics.
 
-PatchTST \citep{patchTST}, which employs a splitting mechanism to time series, converting multiple timesteps (i.e., a patch) into a single token, enabling a vanilla Transformer architecture to capture long-term dependencies with fewer tokens. 
+	\item PatchTST \citep{patchTST}, which employs a splitting mechanism to time series, converting multiple timesteps (i.e., a patch) into a single token, enabling a vanilla Transformer architecture to capture long-term dependencies with fewer tokens. 
+\end{description}
 
-More recently, an explosion of adaptation has appeared, together with dedicated surveys and tutorials \cite{ WZZC23, ANTS23, SZLW25}. However, these models are often complex, incorporating multiple components such as static covariates, gating mechanisms, and probabilistic outputs. While these additions have shown empirical gains, they frequently obscure the core dynamics of the attention mechanism and make the models less accessible for analysis or adaptation.
+More recently, an explosion of adaptations has appeared, together with dedicated surveys and tutorials \cite{ WZZC23, ANTS23, SZLW25}. However, these models are often complex, incorporating multiple components such as static covariates, gating mechanisms, and probabilistic outputs. While these additions have shown empirical gains, they frequently obscure the core dynamics of the attention mechanism and make the models less accessible for analysis or adaptation.
 
 By contrast, there is interest in minimal Transformer implementations, which isolate the effectiveness of self-attention in forecasting tasks. Informer has already demonstrated that a simplified Transformer, devoid of specialized components, can outperform classical models and RNNs on certain benchmarks when properly tuned. Similarly, \citep{LSNP21} proposed the `Temporal Attention' module within a lightweight Transformer framework, demonstrating that attention over timesteps alone can achieve comparable performance on univariate series. Other studies, such as iTransformer \cite{LHZW24}, investigate how the performance of standard Transformers is affected by different initialization, normalization, or positional encoding strategies. This sheds light on the contribution of each component to forecasting accuracy.
 
@@ -180,7 +184,7 @@ This body of work highlights the growing interest in demystifying transformer-ba
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The transformer processing pipeline} \label{sec:transformer}
 
-This section describes the successive processing phases carried out by a minimalist transformer module to produce a multipoint forecast of a univariate data series. The relevant python code can be found in \cite{G25}. Successive processing stages are showcased on a tiny time series obtained by querying Google Trends \cite{googletrends2025} on the term "restaurant". The series shows a trend (at the time of writing, it is holiday season in Italy and interest in dining out is increasing) as well as seasonality, due to increased interest at weekends. We consider only 35 data points, 7 of which are kept for validation and 28 are used for training.
+This section describes the successive processing phases carried out by a minimalist transformer module to produce a multipoint forecast of a univariate data series. The relevant python code can be found in \cite{G25}. Successive processing stages are here showcased on a tiny time series obtained by querying Google Trends \cite{googletrends2025} on the term "restaurant". The series shows a trend (at the time of writing, it is holiday season in Italy and interest in dining out is increasing) as well as seasonality, due to increased interest at weekends. We consider only 35 data points, 7 of which are kept for validation and 28 are used for training.
 
 The series $s(t)$ is the following:
 \begin{align}
@@ -230,7 +234,7 @@ The objective of the encoding component (i.e., the \textit{encoder}) in a Transf
 	\label{fig:enc}
 \end{figure}
 
-The general structure of the encoding module is represented by the pseudocode in Algorithm \ref{algo:encoding}. All intermediate numerical results obtained for the restaurant series case study are reported in appendix \ref{sec:appendix} to enable the interested reader to immediately grasp the dimensionalities and values involved in this tiny example, and possibly to follow the corresponding evolution of a run of the code provided in \cite{G25}. In the case of the running example we used the following argument values: $n$=7, $m$=4, $k$=2, $d_k$=$d_v$=2, $p$=16.
+The general structure of the encoding module is represented by the pseudocode in Algorithm \ref{algo:encoding} and sketched in Figure \ref{fig:enc}. All intermediate numerical results obtained for the restaurant series case study are reported in appendix \ref{sec:appendix} to enable the interested reader to immediately grasp the dimensionalities and values involved in this tiny example, and possibly to follow the corresponding evolution of a run of the code provided in \cite{G25}. In the case of the running example we used the following argument values: $n$=7, $m$=4, $k$=2, $d_k$=$d_v$=2, $p$=16.
 
 The individual steps are detailed below.
 
@@ -279,7 +283,7 @@ The individual steps are detailed below.
 
 ~\\(\textit{Input arguments})
 
-The input consists of the data series to be forecast, in our case, it is an array $s \in \mathbb{R}^n$ and of seven control hyperparameters.
+The input consists of the data series to be forecast, in our case, it is an array $s \in \mathbb{R}^n$ and of six control hyperparameters.
 
 For the restaurant time series, we applied a straightforward preprocessing step: \textit{min-max} normalization of the raw data. Subsequently, each sequence was constructed using a sliding window of length $n = 7$ over the series.
 
@@ -378,7 +382,7 @@ $$
 
 The ReLU function is applied element-wise. The intermediate dimension $p$ is typically chosen larger than $m$ to improve model capacity and generalization. 
 
-In our model, we set $p = 4 \times m = 16$, meaning a total number of $16 \times 4 \times 2 + (16 + 4) = 148$ parameters.
+In our model, we set $p = 4 \times m = 16$, meaning a total number of $16 \times 4 \times 2 + (16 + 4) = 148$ parameters, as resulting also in Figure \ref{fig:enc}.
 The values learned by the sample architecture is reported in the appendix in tables \ref{tab:matW1b1} and \ref{tab:matW2b2}.
 
 ~\\Line \ref{enc:output}: (\textit{Output})
@@ -508,7 +512,7 @@ Each operation in the decoding stage is followed by a residual connection and a 
 
 ~\\Line \ref{dec:scaled2}: computes the attention function, using the already computed matrices.
 
-~\\As stated, the above operations are repeated $h^2$ times, getting $h^2$ attention outputs.
+~\\The above operations are repeated $h^2$ times, getting $h^2$ attention outputs.
 
 ~\\Line \ref{dec:concatenation2}: All the head's outputs are concatenated by the rows in a single matrix $\textbf{A}$.
 
@@ -553,9 +557,9 @@ The process is the standard neural learning process, flowing through three main 
     \item a {\it backward pass} where gradients of the loss with respect to the parameters are computed by backpropagation and parameters are updated using an optimization algorithm (usually a variant of gradient descent).
 \end{enumerate}
 
-The backward pass implements the actual learning process by reversing the computation flow that was used to make the forecast. A transformer's computation graph has many layers, including an embedding layer, multiple self-attention blocks (each with projections $W_Q, W_K, W_V, W_O$), feed-forward networks, layer norms, residual connections, etc. During backpropagation, the chain rule of calculus is applied to each layer, as with standard MLPs, and the gradient flows backwards through each operation. This means that the $W_Q, W_K, W_V, W_O$, feed-forward weights, embedding matrices and LayerNorm parameters all receive gradient-based updates depending on the value of the loss function.
+The backward pass implements the actual learning process by reversing the computation flow that was used to make the forecast, as presented in Figure \ref{fig:enc}. A transformer's computation graph has many layers, including an embedding layer, multiple self-attention blocks (each with projections $W_Q, W_K, W_V, W_O$), feed-forward networks, layer norms, residual connections, etc. During backpropagation, the chain rule of calculus is applied to each layer, as with standard MLPs, and the gradient flows backwards through each operation. This means that the $W_Q, W_K, W_V, W_O$, feed-forward weights, embedding matrices and LayerNorm parameters all receive gradient-based updates depending on the value of the loss function.
 
-Learning is a computation-intensive phase and greatly benefits of GPU-optimized codes. In our minimalist architecture we delegated the backward computations to the relevant classes of PyTorch \cite{PyTorch25}.
+Learning is a computationally intensive phase based on standard gradient descent optimizers and greatly benefits of GPU-optimized codes. In our minimalist architecture we delegated the backward computations to the relevant PyTorch classes  \cite{PyTorch25}.
 
 The embedding matrices $W_i$ and $W_o$ are initialized in a way such that $W_i \cdot W_o = 1$ - to represent exactly the same projection. Specifically, $W_i$ is initialized by drawing each of its elements from a uniform distribution, and $W_o$ is set to be $\dfrac{W_i}{||W_i||^2}$ - since the bias arrays $b_i, b_o$ are zero-initialized- Then, during training, they are set to change without any constraint.
 
@@ -582,7 +586,7 @@ Despite the limited data and restrictive configuration, the transformer is highl
 
 This section presents results obtained using our minimalist transformer architecture in forecasting well-known univariate benchmark data series.
 
-First successive processing stages are showcased on the archetypal airline passenger data series \citep{BJ70}, then we present illustrative quantitative results on standard forecasting benchmark instances.
+First, we showcase the successive processing stages on the archetypal airline passenger data series \citep{BJ70}. Then, we present illustrative quantitative results on standard forecasting benchmark instances.
 
 \subsection{The airline passengers test case} \label{subsec:airlines}
 
@@ -676,7 +680,7 @@ N2823 & OTHER       & 0.116 & 0.166 & 0.066 & 0.081 & 0.050 &  0.085\\
 \end{tabular}
 \end{table}
 
-Table ref{tab:bestworse} shows details of the instances in each category for which transformers achieved the best and worst test results compared to random forest. The columns of the table contain data that refer to scaled series and are:
+Table \ref{tab:bestworse} shows details of the instances in each category for which transformers achieved the best and worst test results compared to random forest. The columns of the table contain data that refer to scaled series and are:
 \begin{itemize}
 	\item {\it id}: the id of the data series in the M3 collection;
 	\item {\it type}: the category of the data series;
@@ -688,7 +692,7 @@ Table ref{tab:bestworse} shows details of the instances in each category for whi
 	\item {\it $\Delta$test}: the RMSE difference between transformers and random forest on the test part;
 \end{itemize}
 
-The results in the table confirm that the RMSE values are comparable in all cases and that there are never differences in the order of magnitude, with values remaining relatively low when even considering that they were computed on max-min scaled series. In all categories, the transformers achieved a lower RMSE in at least one series. Figures ref{fig:trbest} and ref{fig:trworse} show plots of the actual series and the forecasts of the transformers and the random forest in cases where the transformers performed better and worse than the random forest, respectively.
+The results in the table confirm that the RMSE values are comparable in all cases and that there are never differences in the order of magnitude, with values remaining relatively low when even considering that they were computed on max-min scaled series. In all categories, the transformers achieved a lower RMSE in at least one series. Figures \ref{fig:trbest} and \ref{fig:trworse} show plots of the actual series and the forecasts of the transformers and the random forest in cases where the transformers performed better and worse than the random forest, respectively.
 
 \begin{figure}
 	\centering
@@ -711,9 +715,7 @@ In this work, we present a minimalist transformer architecture that is specifica
 
 We evaluated our model using a set of standard forecasting benchmarks and compared its performance with that of a random forest forecaster. Although the minimalist transformer does not outperform the most sophisticated state-of-the-art models, it consistently achieves comparable accuracy, particularly for time series with long-term dependencies, where attention mechanisms can exploit global context more effectively than purely tree-based methods.
 
-Beyond raw predictive performance, our findings highlight two key outcomes.
-
-Clarity and accessibility. By explicitly exposing each functional step, our framework lowers the barrier for newcomers to the transformer literature and the field of time series forecasting.
+Beyond raw predictive performance, our findings highlight two key outcomes: clarity and accessibility. By explicitly exposing each functional step, our framework lowers the barrier for newcomers to the transformer literature and the field of time series forecasting.
 
 The robustness of the transformer paradigm is also evident, as even a stripped-down version of the model demonstrates stable forecasting ability. This suggests that many performance gains in advanced variants stem from relatively minor architectural refinements.
 

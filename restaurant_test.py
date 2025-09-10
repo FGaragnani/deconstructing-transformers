@@ -133,6 +133,7 @@ def main():
         plt.show()
         '''
         
+        plt.rcParams.update({'font.size': 12})  # Set default font size
         fig, axes = plt.subplots(1, 1, figsize=(9,6))
         axes.plot(range(len(original_series)), original_series, 'b-', label='Original Series', linewidth=2)
         

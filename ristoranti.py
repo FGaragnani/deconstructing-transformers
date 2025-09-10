@@ -114,12 +114,13 @@ def main():
             if len(predictions) > 0:
                 flat_preds = np.concatenate(predictions)
                 prediction_series[SEQUENCE_LENGTH:SEQUENCE_LENGTH+len(flat_preds)] = flat_preds
-
+        
+        plt.rcParams.update({'font.size': 14})  # Set default font size
         plt.figure(figsize=(14, 6))
         plt.plot(range(len(series)), series, 'b-', label='Standardized Input Series')
         test_start = len(series) - int((1 - TRAIN_PERCENTAGE) * len(series))
         plt.plot(range(test_start, len(series)), series[test_start:], 'g-', label='Test Series', linewidth=2)
-        plt.plot(range(len(series)), prediction_series, 'r--', label='Predicted Series')
+        plt.plot(range(len(series)), prediction_series, 'r--', linewidth=3, label='Predicted Series')
         plt.title('Original vs Predicted Series')
         plt.xlabel('Timestep')
         plt.ylabel('Standardized Value')
