@@ -114,8 +114,9 @@ def main():
         prediction_length=PREDICTION_LENGTH,
         normalization=Normalization.MIN_MAX
     )
-    
-    fig, axes = plt.subplots(1, 1, figsize=(12, 12))
+
+    plt.rcParams.update({'font.size': 14})  # Set default font size
+    fig, axes = plt.subplots(1, 1, figsize=(12, 6))
     
     """
     years = np.arange(1949, 1961, 1/12)[:len(original_series)]
@@ -142,7 +143,8 @@ def main():
         num_head_enc=NUM_HEADS,
         num_head_dec_1=NUM_HEADS,
         num_head_dec_2=NUM_HEADS,
-        dropout=DROPOUT
+        dropout=DROPOUT,
+        max_seq_length=SEQUENCE_LENGTH
     )
 
     print("Number of trainable parameters: ", sum(p.numel() for p in model.parameters() if p.requires_grad))
