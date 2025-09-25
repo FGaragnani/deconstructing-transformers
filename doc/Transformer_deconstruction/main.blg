@@ -5,53 +5,44 @@ Reallocating 'name_of_file' (item size: 1) to 17 items.
 The style file: Definitions/mdpi.bst
 Reallocating 'name_of_file' (item size: 1) to 13 items.
 Database file #1: bibliography.bib
-Warning--string name "“extremely" is undefined
---line 42 of file bibliography.bib
-I was expecting a `,' or a `}'---line 42 of file bibliography.bib
- :   title = “extremely 
- :                        randomized trees”,
-I'm skipping whatever remains of this entry
-Warning--empty title in GEW06
-Warning--empty journal in GEW06
 You've used 21 entries,
             2887 wiz_defined-function locations,
-            712 strings with 8162 characters,
-and the built_in function-call counts, 8909 in all, are:
-= -- 720
+            717 strings with 8214 characters,
+and the built_in function-call counts, 8979 in all, are:
+= -- 730
 > -- 639
 < -- 12
 + -- 283
 - -- 171
-* -- 744
-:= -- 1352
-add.period$ -- 60
+* -- 752
+:= -- 1362
+add.period$ -- 62
 call.type$ -- 21
 change.case$ -- 21
 chr.to.int$ -- 21
-cite$ -- 24
-duplicate$ -- 373
-empty$ -- 708
+cite$ -- 22
+duplicate$ -- 375
+empty$ -- 715
 format.name$ -- 215
-if$ -- 1905
+if$ -- 1923
 int.to.chr$ -- 1
 int.to.str$ -- 21
 missing$ -- 15
-newline$ -- 103
+newline$ -- 105
 num.names$ -- 64
-pop$ -- 270
+pop$ -- 263
 preamble$ -- 0
 purify$ -- 21
 quote$ -- 0
-skip$ -- 282
+skip$ -- 283
 stack$ -- 0
-substring$ -- 319
-swap$ -- 81
+substring$ -- 331
+swap$ -- 84
 text.length$ -- 5
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 144
-warning$ -- 2
-while$ -- 56
+warning$ -- 0
+while$ -- 57
 width$ -- 0
-write$ -- 256
-(There was 1 error message)
+write$ -- 261
