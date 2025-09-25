@@ -192,7 +192,44 @@ s(t) = (& 44, 48, 51, 48, 50, 63, 66, 48, 53, 56, 52, 57, 70, 67, 56, 60, 62, 60
         & 63, 63, 78, 80, 63, 64, 67, 65, 70, 87, 84)\nonumber
 \end{align}
 
-The data processing cycle consists of three main phases: encoding, decoding, and learning. The following subsections provide details on each phase, the reader is referred to \cite{VSPU17} for a more exhaustive exposition.
+The data processing cycle consists of three main phases: encoding, decoding, and learning. A view of the whole model can be seen in Figure \ref{fig:trans}. The following subsections provide details on each phase, the reader is referred to \cite{VSPU17} for a more exhaustive exposition.
+
+\begin{figure}
+	\centering
+	\begin{tikzpicture}[node distance=10mm, minimum width=22mm]
+		
+		% Encoder stack
+		\node (encin) [block, fill=gray!10] {Source Input Embeddings};
+		\node (enc) [block, fill=blue!10, below=of encin, minimum height=30mm] {Encoder \\ $\times n$};
+		\node (encout) [block, fill=gray!10, below=of enc] {Encoder Output};
+		
+		% Decoder stack
+		\node (decin) [block, fill=gray!10, right=20mm of encin] {Target Input Embeddings};
+		\node (dec) [block, fill=green!10, below=of decin, minimum height=40mm] {Decoder \\ $\times l$};
+		\node (decout) [block, fill=gray!10, below=of dec] {Decoder Output};
+		
+		% Arrows for Encoder
+		\draw[arrow] (encin) -- (enc);
+		\draw[arrow] (enc) -- (encout);
+		
+		% Arrows for Decoder
+		\draw[arrow] (decin) -- (dec);
+		\draw[arrow] (dec) -- (decout);
+		
+		% Cross connection: encoder output into decoder
+		\draw[arrow] (encout.east) -- ++(15mm,0) |- (dec.west);
+		\draw[dashed,->] (decout.east) -- ++(10mm,0) |- (decin.east)
+			node[pos=0.25,right] {\scriptsize Autoregressive};
+		
+		% Labels
+		\node[above=0mm of encin.north] {\textbf{Encoder Side}};
+		\node[above=0mm of decin.north] {\textbf{Decoder Side}};
+		
+	\end{tikzpicture}
+	\caption{The vanilla Transformer architecture.}
+	\label{fig:transformer}
+\end{figure}
+
 
 \subsection{Encoding} \label{subsec:encoding}
 

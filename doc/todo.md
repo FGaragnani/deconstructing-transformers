@@ -20,7 +20,7 @@
 - [ ] Increase font size of Figure 5
 - [ ] Increase font size of Figure 6
 - [ ] Increase font size of Figure 7
-- [ ] Add model diagram
+- [X] Add model diagram
 
 ## Other Experiments
 - [ ] A few long time series
