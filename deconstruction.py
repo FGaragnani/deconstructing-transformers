@@ -25,6 +25,7 @@ def main():
         num_head_dec_2=NUM_HEADS,
         num_head_enc=NUM_HEADS,
         output_len=PREDICTION_LENGTH,
+        max_seq_length=SEQUENCE_LENGTH,
     )
 
     torch.set_printoptions(profile="full")
@@ -68,6 +69,29 @@ def main():
     print("\nNumber of trainable parameters: ", sum(p.numel() for p in model.seca.parameters() if p.requires_grad))
     print(model.seca.decoder.weight)
 
+    print("\n\n")
+    print("Decoder")
+    print("-" * 30)
+    print("Number of trainable parameters: ", sum(p.numel() for p in model.decoder.parameters() if p.requires_grad))
+    layer = model.decoder[0]
+    print("Masked Multi-Head Attention")
+    print("Number of trainable parameters: ", sum(p.numel() for p in layer.mha_1.parameters() if p.requires_grad)) # type: ignore
+    print("\n")
+    print("Cross Multi-Head Attention")
+    print("Number of trainable parameters: ", sum(p.numel() for p in layer.mha_2.parameters() if p.requires_grad)) # type: ignore
+    print("\n")
+    print("FeedForward Layer")
+    print("Number of trainable parameters: ", sum(p.numel() for p in layer.ff.parameters() if p.requires_grad)) # type: ignore
+    print("\n")
+    print("Add & Norm 1")
+    print("Number of trainable parameters: ", sum(p.numel() for p in layer.norm1.parameters() if p.requires_grad)) # type: ignore
+    print("\n")
+    print("Add & Norm 2")
+    print("Number of trainable parameters: ", sum(p.numel() for p in layer.norm2.parameters() if p.requires_grad)) # type: ignore
+    print("\n")
+    print("Add & Norm 3")
+    print("Number of trainable parameters: ", sum(p.numel() for p in layer.norm3.parameters() if p.requires_grad)) # type: ignore
+    print("\n")
 
 if __name__ == "__main__":
     main()
