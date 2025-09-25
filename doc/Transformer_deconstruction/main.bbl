@@ -136,4 +136,19 @@ Makridakis, S.; Hibon, M.
   16},~451--476.
 \newblock The M3- Competition.
 
+\bibitem[Ansari et~al.(2024)Ansari, Stella, Turkmen, Zhang, Mercado, Shen,
+  Shchur, Rangapuram, Pineda~Arango, Kapoor, Zschiegner, Maddix, Mahoney,
+  Torkkola, Gordon~Wilson, Bohlke-Schneider, and Wang]{chronos}
+Ansari, A.F.; Stella, L.; Turkmen, C.; Zhang, X.; Mercado, P.; Shen, H.;
+  Shchur, O.; Rangapuram, S.S.; Pineda~Arango, S.; Kapoor, S.;  et~al.
+\newblock Chronos: Learning the Language of Time Series.
+\newblock {\em Transactions on Machine Learning Research} {\bf 2024}.
+
+\bibitem[Lin et~al.(2021)Lin, Koprinska, and Rana]{tcan}
+Lin, Y.; Koprinska, I.; Rana, M.
+\newblock Temporal Convolutional Attention Neural Networks for Time Series
+  Forecasting.
+\newblock In Proceedings of the Proceedings of the IEEE International Joint
+  Conference on Neural Networks (IJCNN),  2021.
+
 \end{thebibliography}
