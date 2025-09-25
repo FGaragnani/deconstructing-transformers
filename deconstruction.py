@@ -18,7 +18,7 @@ EARLY_STOPPING = False
 
 def main():
 
-    model: TransformerLikeModel = TransformerLikeModel.load_model("ristoranti_model.pth", TransformerLikeModel, embed_size=EMBED_SIZE,
+    model: TransformerLikeModel = TransformerLikeModel.load_model("ristoranti_model_dec.pth", TransformerLikeModel, embed_size=EMBED_SIZE,
         encoder_size=ENCODER_SIZE,
         decoder_size=DECODER_SIZE,
         num_head_dec_1=NUM_HEADS,
@@ -65,7 +65,8 @@ def main():
     print("CLS token")
     print("-" * 30)
     print(f"\tCLS token: {model.cls_token.data}")
-    print("\nNumber of trainable parameters: ", sum(p.numel() for p in model.parameters() if p.requires_grad))
+    print("\nNumber of trainable parameters: ", sum(p.numel() for p in model.seca.parameters() if p.requires_grad))
+    print(model.seca.decoder.weight)
 
 
 if __name__ == "__main__":
