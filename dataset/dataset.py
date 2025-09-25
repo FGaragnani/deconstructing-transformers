@@ -54,6 +54,7 @@ class DatasetTimeSeries(Dataset):
         self.category: str = category
 
         timesteps: int = sheet_type.to_recurrence()
+        self.original_series: np.ndarray = series
         self.tensor_dataset: TensorDataset = self.create_tensor_dataset(series, timesteps=timesteps, output_len=output_len, preprocessing=preprocessing) # type: ignore
         self.np_datasets: Tuple[np.ndarray, np.ndarray] = self.create_tensor_dataset(series, timesteps=timesteps, output_len=output_len, preprocessing=preprocessing, numpy=True) # type: ignore
 
