@@ -124,8 +124,10 @@ PyTorch Transformer,  2025.
   \url{https://docs.pytorch.org/docs/stable/generated/torch.nn.Transformer.html},
   last accessed in 08.08.2025.
 
-\bibitem[Geurts et~al.()Geurts, Ernst, and Wehenkel]{GEW06}
+\bibitem[Geurts et~al.(2006)Geurts, Ernst, and Wehenkel]{GEW06}
 Geurts, P.; Ernst, D.; Wehenkel, L.
+\newblock Extremely randomized trees.
+\newblock {\em Machine Learning} {\bf 2006}, {\em 63},~3--42.
 
 \bibitem[Makridakis and Hibon(2000)]{MH00}
 Makridakis, S.; Hibon, M.
