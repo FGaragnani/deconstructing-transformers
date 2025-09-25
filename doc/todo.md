@@ -2,7 +2,7 @@
 ---
 
 ## Comparison
-- [ ] Compare with Chronos
+- [X] Compare with Chronos
 - [ ] Compare with CNN Attention ([code](https://github.com/YangLIN1997/TCAN-IJCNN2021))
 - [ ] Compare with ARIMA
 - [ ] Compare with ETS

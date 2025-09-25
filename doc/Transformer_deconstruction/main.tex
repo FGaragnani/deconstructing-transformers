@@ -792,6 +792,33 @@ The results in the table confirm that the RMSE values are comparable in all case
 	\label{fig:trworse}
 \end{figure}
 
+Other comparisons have been performed against other models, complementing the Random Forest baseline and offering a broader perspective by including recent transformer-based approaches. These comprise the Chronos model \cite{chronos}, TCAN (Temporal Convolution Attention Network) \cite{tcan}, ARIMA and ETS. The RMSE test results are shown for the series outlined in Table \ref{tab:bestworse}.
+
+
+\begin{table}[H]
+	\caption{Minimalistic transformer and random forest, aggregate results, scaled data}
+	\label{tab:comparisons}
+	\centering
+	\begin{tabular}{c|ccccc}
+		\toprule
+		id   & trtest & chronos & tcan & arima & ets \\
+		\midrule
+		N1652 & 0.262 & 0.5238 & & & \\
+		N1546 & 0.526 & 0.4107 & & & \\
+		N1894 & 0.290 & 0.3803 & & & \\
+		N2047 & 0.667 & 0.4639 & & & \\
+		N2255 & 0.088 & 0.4095 & & & \\
+		N2492 & 0.626 & 0.3174 & & & \\
+		N2594 & 0.597 & 0.3647 & & & \\
+		N2658 & 0.656 & 0.3626 & & & \\
+		N2737 & 0.129 & 0.2117 & & & \\
+		N2758 & 1.007 & 0.4105 & & & \\
+		N2817 & 0.125 & 0.5384 & & & \\
+		N2823 & 0.166 & 0.4495 & & & \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusions} \label{sec:conclusions}
