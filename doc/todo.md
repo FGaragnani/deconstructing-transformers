@@ -17,7 +17,7 @@
 - [ ] Remove output projection
 
 ## Documentation
-- [ ] Increase font size of Figure 4
+- [X] Increase font size of Figure 4
 - [ ] Increase font size of Figure 5
 - [ ] Increase font size of Figure 6
 - [ ] Increase font size of Figure 7
