@@ -24,6 +24,6 @@
 - [X] Add model diagram
 
 ## Other Experiments
-- [ ] A few long time series
+- [X] A few long time series
 - [ ] Add time for training for the models
 - [ ] Interpretability: attention visualization
