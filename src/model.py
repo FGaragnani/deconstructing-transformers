@@ -7,7 +7,6 @@ from src.layers import PositionalEmbeddingLayer
 from src.modules import EncoderModule, DecoderModule, Output
 from typing import Optional, List
 
-
 class TransformerLikeModel(nn.Module):
   def __init__(self, embed_size: int, encoder_size: int = 6, decoder_size: int = 6, input_size: int = 1, hidden_ff_size_enc: Optional[int] = None, hidden_ff_size_dec: Optional[int] = None, num_head_enc: int = 8, num_head_dec_1: int = 8, num_head_dec_2: int = 8,
                 positional_embedding_method: str = "learnable", max_seq_length: int = 120, cls_token_method: str = "learnable", output_len: int = 6, seca: Optional[ScalarExpansionContractiveAutoencoder] = None, dropout: float = 0.0):
