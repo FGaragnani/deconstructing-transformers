@@ -7,16 +7,18 @@ from src.layers import PositionalEmbeddingLayer
 from src.modules import EncoderModule, DecoderModule, Output
 from typing import Optional, List
 
-
 class TransformerLikeModel(nn.Module):
   def __init__(self, embed_size: int, encoder_size: int = 6, decoder_size: int = 6, input_size: int = 1, hidden_ff_size_enc: Optional[int] = None, hidden_ff_size_dec: Optional[int] = None, num_head_enc: int = 8, num_head_dec_1: int = 8, num_head_dec_2: int = 8,
-                positional_embedding_method: str = "learnable", max_seq_length: int = 120, cls_token_method: str = "learnable", output_len: int = 6, seca: Optional[ScalarExpansionContractiveAutoencoder] = None, dropout: float = 0.0):
+                positional_embedding_method: str = "learnable", max_seq_length: int = 120, cls_token_method: str = "learnable", output_len: int = 6, seca: Optional[ScalarExpansionContractiveAutoencoder] = None, dropout: float = 0.0,
+                enc_use_addnorm: List[bool] = [True, True], use_pe: bool = True, use_out: bool = True):
     super(TransformerLikeModel, self).__init__()
 
     self.embed_size = embed_size
     self.input_size = input_size
     self.hidden_ff_size_enc = hidden_ff_size_enc if hidden_ff_size_enc is not None else embed_size * 4
     self.hidden_ff_size_dec = hidden_ff_size_dec if hidden_ff_size_dec is not None else embed_size * 4
+    self.use_pe = use_pe
+    self.use_out = use_out
 
     self.cls_token = nn.Parameter(torch.randn(1, 1, embed_size)) if cls_token_method == 'learnable' else nn.Parameter(torch.ones(1, 1, embed_size), requires_grad=False)
     self.output_len = output_len
@@ -24,7 +26,7 @@ class TransformerLikeModel(nn.Module):
     self.seca = ScalarExpansionContractiveAutoencoder(embed_size, input_size) if seca is None else seca
     self.pe = PositionalEmbeddingLayer(max(max_seq_length, output_len), embed_size, positional_embedding_method)
     self.encoder = nn.Sequential(*[
-        EncoderModule(embed_size, num_head_enc, self.hidden_ff_size_enc, dropout=dropout) for _ in range(encoder_size)
+        EncoderModule(embed_size, num_head_enc, self.hidden_ff_size_enc if self.hidden_ff_size_enc > 0 else None, dropout=dropout, use_addnorm_1=enc_use_addnorm[0], use_addnorm_2=enc_use_addnorm[1]) for _ in range(encoder_size)
     ])
     self.decoder = nn.Sequential(*[
         DecoderModule(embed_size, num_head_dec_1, num_head_dec_2, self.hidden_ff_size_dec, dropout=dropout) for _ in range(decoder_size)
@@ -39,13 +41,16 @@ class TransformerLikeModel(nn.Module):
     X, Y = input
 
     Z = self.seca.encode(X)
-    Z = self.pe(Z)
+    if self.use_pe:
+      Z = self.pe(Z)
     Z = self.encoder(Z)
 
-    Y = self.pe(Y)
+    if self.use_pe:
+      Y = self.pe(Y)
     y = self.decoder((Y, Z))[0]
-    context = Z.mean(dim=1)
-    y = self.output(y, context=context)
+    if self.use_out:
+      context = Z.mean(dim=1)
+      y = self.output(y, context=context)
 
     return y
 
@@ -59,16 +64,19 @@ class TransformerLikeModel(nn.Module):
     Y_tokens = self.cls_token.expand((batch_size, 1, self.embed_size))
 
     Z = self.seca.encode(X)
-    Z = self.pe(Z)
+    if self.use_pe:
+      Z = self.pe(Z)
     Z = self.encoder(Z)
 
     preds = []
 
     for _ in range(self.output_len):
-      Y_pe = self.pe(Y_tokens)
+      if self.use_pe:
+        Y_pe = self.pe(Y_tokens)
       y = self.decoder((Y_pe, Z))[0]
-      context = Z.mean(dim=1)
-      y = self.output(y, context=context)
+      if self.use_out:
+        context = Z.mean(dim=1)
+        y = self.output(y, context=context)
       Y_tokens = torch.cat([Y_tokens, y.unsqueeze(1)], dim=1)
       preds.append(self.seca.decode(y))
 

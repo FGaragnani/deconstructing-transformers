@@ -4,23 +4,30 @@ from src.layers import MultiHeadAttentionLayer, FeedForwardLayer
 from typing import Optional
 
 class EncoderModule(nn.Module):
-  def __init__(self, embed_size: int, head_num: int, hidden_ff_size: Optional[int], dropout: float = 0.0):
+  def __init__(self, embed_size: int, head_num: int, hidden_ff_size: Optional[int], dropout: float = 0.0, use_addnorm_1: bool = True, use_addnorm_2: bool = True):
     super(EncoderModule, self).__init__()
     self.embed_size = embed_size
     self.head_num = head_num
     self.hidden_ff_size = hidden_ff_size
     self.dropout = nn.Dropout(dropout)
+    self.use_addnorm_1 = use_addnorm_1
+    self.use_addnorm_2 = use_addnorm_2
 
     self.mha = MultiHeadAttentionLayer(embed_size, head_num)
     self.norm1 = nn.LayerNorm(embed_size)
-    self.ff = FeedForwardLayer(embed_size, hidden_ff_size)
+    if self.hidden_ff_size is not None:
+      self.ff = FeedForwardLayer(embed_size, hidden_ff_size)
+    else:
+      self.ff = nn.Identity()
     self.norm2 = nn.LayerNorm(embed_size)
 
   def forward(self, X: torch.Tensor):
-    A = self.mha((X, X, X))               # multihead attention, concatenation, output projection
-    X = self.norm1(X + self.dropout(A))   # add and LayerNorm
-    F = self.ff(X)                        # feed-forward
-    X = self.norm2(X + self.dropout(F))   # add and LayerNorm
+    A = self.mha((X, X, X))
+    if self.use_addnorm_1:
+      X = self.norm1(X + self.dropout(A))
+    F = self.ff(X)
+    if self.use_addnorm_2:              
+      X = self.norm2(X + self.dropout(F))
     return X
   
 class DecoderModule(nn.Module):
