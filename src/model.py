@@ -10,7 +10,7 @@ from typing import Optional, List
 class TransformerLikeModel(nn.Module):
   def __init__(self, embed_size: int, encoder_size: int = 6, decoder_size: int = 6, input_size: int = 1, hidden_ff_size_enc: Optional[int] = None, hidden_ff_size_dec: Optional[int] = None, num_head_enc: int = 8, num_head_dec_1: int = 8, num_head_dec_2: int = 8,
                 positional_embedding_method: str = "learnable", max_seq_length: int = 120, cls_token_method: str = "learnable", output_len: int = 6, seca: Optional[ScalarExpansionContractiveAutoencoder] = None, dropout: float = 0.0,
-                enc_use_addnorm: List[bool] = [True, True], use_pe: bool = True):
+                enc_use_addnorm: List[bool] = [True, True], use_pe: bool = True, use_out: bool = True):
     super(TransformerLikeModel, self).__init__()
 
     self.embed_size = embed_size
@@ -18,6 +18,7 @@ class TransformerLikeModel(nn.Module):
     self.hidden_ff_size_enc = hidden_ff_size_enc if hidden_ff_size_enc is not None else embed_size * 4
     self.hidden_ff_size_dec = hidden_ff_size_dec if hidden_ff_size_dec is not None else embed_size * 4
     self.use_pe = use_pe
+    self.use_out = use_out
 
     self.cls_token = nn.Parameter(torch.randn(1, 1, embed_size)) if cls_token_method == 'learnable' else nn.Parameter(torch.ones(1, 1, embed_size), requires_grad=False)
     self.output_len = output_len
@@ -47,8 +48,9 @@ class TransformerLikeModel(nn.Module):
     if self.use_pe:
       Y = self.pe(Y)
     y = self.decoder((Y, Z))[0]
-    context = Z.mean(dim=1)
-    y = self.output(y, context=context)
+    if self.use_out:
+      context = Z.mean(dim=1)
+      y = self.output(y, context=context)
 
     return y
 
@@ -72,8 +74,9 @@ class TransformerLikeModel(nn.Module):
       if self.use_pe:
         Y_pe = self.pe(Y_tokens)
       y = self.decoder((Y_pe, Z))[0]
-      context = Z.mean(dim=1)
-      y = self.output(y, context=context)
+      if self.use_out:
+        context = Z.mean(dim=1)
+        y = self.output(y, context=context)
       Y_tokens = torch.cat([Y_tokens, y.unsqueeze(1)], dim=1)
       preds.append(self.seca.decode(y))
 
