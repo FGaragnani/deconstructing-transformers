@@ -9,7 +9,8 @@ from typing import Optional, List
 
 class TransformerLikeModel(nn.Module):
   def __init__(self, embed_size: int, encoder_size: int = 6, decoder_size: int = 6, input_size: int = 1, hidden_ff_size_enc: Optional[int] = None, hidden_ff_size_dec: Optional[int] = None, num_head_enc: int = 8, num_head_dec_1: int = 8, num_head_dec_2: int = 8,
-                positional_embedding_method: str = "learnable", max_seq_length: int = 120, cls_token_method: str = "learnable", output_len: int = 6, seca: Optional[ScalarExpansionContractiveAutoencoder] = None, dropout: float = 0.0):
+                positional_embedding_method: str = "learnable", max_seq_length: int = 120, cls_token_method: str = "learnable", output_len: int = 6, seca: Optional[ScalarExpansionContractiveAutoencoder] = None, dropout: float = 0.0,
+                enc_use_addnorm: List[bool] = [True, True]):
     super(TransformerLikeModel, self).__init__()
 
     self.embed_size = embed_size
@@ -23,7 +24,7 @@ class TransformerLikeModel(nn.Module):
     self.seca = ScalarExpansionContractiveAutoencoder(embed_size, input_size) if seca is None else seca
     self.pe = PositionalEmbeddingLayer(max(max_seq_length, output_len), embed_size, positional_embedding_method)
     self.encoder = nn.Sequential(*[
-        EncoderModule(embed_size, num_head_enc, self.hidden_ff_size_enc, dropout=dropout) for _ in range(encoder_size)
+        EncoderModule(embed_size, num_head_enc, self.hidden_ff_size_enc if self.hidden_ff_size_enc > 0 else None, dropout=dropout, use_addnorm_1=enc_use_addnorm[0], use_addnorm_2=enc_use_addnorm[1]) for _ in range(encoder_size)
     ])
     self.decoder = nn.Sequential(*[
         DecoderModule(embed_size, num_head_dec_1, num_head_dec_2, self.hidden_ff_size_dec, dropout=dropout) for _ in range(decoder_size)
