@@ -847,6 +847,16 @@ In Table \ref{tab:ablation} it's possible to see the effects of removing or edit
 	\end{tabular}
 \end{table}
 
+\subsection{Interpretability}
+As an additional view, Figure \ref{fig:attention} shows - for the restaurant Google Trends series - the cross-attention that the Decoder gives to each encoded input timestep to predict the next output value.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1.0\linewidth]{attention.png}
+	\caption{The contribution of each timestep for any given output step.}
+	\label{fig:attention}
+\end{figure}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusions} \label{sec:conclusions}
 
