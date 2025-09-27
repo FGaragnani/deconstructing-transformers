@@ -11,6 +11,7 @@ from typing import List, Tuple, Dict
 import numpy as np
 import pickle
 import random
+import time
 
 class Result:
 
@@ -46,7 +47,9 @@ def main():
     DROPOUT = 0.05
 
     df = pd.read_csv('results/res_monthly.csv')
-    indices = df.id.tolist()
+    # indices = df.id.tolist()
+    indices = [1652, 1546, 1894, 2047, 2255, 2492, 2594, 2658, 2737, 2758, 2817, 2823]
+    tim = 0
 
     datasets: List[Tuple[DatasetTimeSeries, DatasetTimeSeries]] = parse_whole_dataset_from_xls("M3C.xls", SheetType.MONTHLY, input_len=INPUT_LEN, output_len=OUTPUT_LEN, preprocessing=PreprocessingTimeSeries.MIN_MAX)
     datasets = [dataset for dataset in datasets if dataset[0].id in indices]
@@ -56,7 +59,7 @@ def main():
         results.append(Result(num_models=2))
 
         print(f"Training on dataset: {train_dataset.category} (ID: {train_dataset.id})")
-        print(f"Number of training samples: {len(train_dataset)}, Number of testing samples: {len(test_dataset)}")
+        # print(f"Number of training samples: {len(train_dataset)}, Number of testing samples: {len(test_dataset)}")
         
         model: TransformerLikeModel = TransformerLikeModel(
             embed_size=EMBED_SIZE,
@@ -69,34 +72,47 @@ def main():
             dropout=DROPOUT,
             max_seq_length=INPUT_LEN
         )
-        print("Number of trainable parameters: ", sum(p.numel() for p in model.parameters() if p.requires_grad))
+        # print("Number of trainable parameters: ", sum(p.numel() for p in model.parameters() if p.requires_grad))
 
         train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
         test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
+
+        start_time = time.time()
 
         train_loss, test_loss = train_transformer_model(
             model=model, 
             epochs=EPOCHS, 
             train_data_loader=train_loader, 
             test_data_loader=test_loader, 
-            verbose=True, 
+            verbose=False, 
             pretrain_seca=True,
             early_stopping=True,
             early_stopping_patience=5
         )
 
+        end_time = time.time()
+        tim = end_time - start_time
+        print(f"ID: {train_dataset.id} - Time for training Transformer: {tim / EPOCHS:.2f} seconds")
+
         results[-1][0] = (train_loss ** 0.5, test_loss ** 0.5)     # RMSE
         all_preds = []
+        """
         for i, (X_batch, _) in enumerate(test_loader):
             preds = model(X_batch)
             p_np = preds.detach().cpu().numpy()
             all_preds.append(p_np)
         all_preds = np.concatenate(all_preds, axis=0)
         _, y_test_np = test_dataset.np_datasets
+        """
 
         clf = RandomForestRegressor(n_estimators=250, random_state=42)
         X_np, y_np = train_dataset.np_datasets
+        start_time = time.time()
         clf.fit(X_np, y_np)
+        end_time = time.time()
+        tim = end_time - start_time
+        print(f"ID: {train_dataset.id} - Time for training Forest: {tim :.2f} seconds")
+        continue
         y_p_train = clf.predict(X_np)
         train_rmse = np.sqrt(np.mean((y_p_train - y_np) ** 2))    # RMSE
         X_np, y_np = test_dataset.np_datasets
@@ -117,8 +133,6 @@ def main():
             logf.write(np.array2string(y_test_np, precision=4, separator=', ', max_line_width=2000, threshold=1000000) + "\n")
             logf.write("\n")
 
-    with open("results.pkl", "wb") as f:
-        pickle.dump(results, f)
 
 if __name__ == "__main__":
     main()
