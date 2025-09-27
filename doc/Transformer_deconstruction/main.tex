@@ -792,11 +792,10 @@ The results in the table confirm that the RMSE values are comparable in all case
 	\label{fig:trworse}
 \end{figure}
 
-Other comparisons have been performed against other models, complementing the Random Forest baseline and offering a broader perspective by including recent transformer-based approaches. These comprise the Chronos model \cite{chronos}, TCAN (Temporal Convolution Attention Network) \cite{tcan}, ARIMA and ETS. The RMSE test results are shown for the series outlined in Table \ref{tab:bestworse}.
-
+Other comparisons have been performed against other models, complementing the Random Forest baseline and offering a broader perspective by including recent transformer-based approaches. These comprise the Chronos model \cite{chronos}, TCAN (Temporal Convolution Attention Network) \cite{tcan}, ARIMA and ETS. The RMSE test results are shown for the series outlined in Table \ref{tab:comparisons}.
 
 \begin{table}[H]
-	\caption{Minimalistic transformer and random forest, aggregate results, scaled data}
+	\caption{Minimalistic transformer compared to other baseline models.}
 	\label{tab:comparisons}
 	\centering
 	\begin{tabular}{c|ccccc}
@@ -819,6 +818,34 @@ Other comparisons have been performed against other models, complementing the Ra
 	\end{tabular}
 \end{table}
 
+\subsection{Ablation Studies}
+
+In Table \ref{tab:ablation} it's possible to see the effects of removing or editing certain parts of the Encoder on the whole model performances.
+
+\begin{table}[H]
+	
+	\caption{Ablation studies.}
+	\label{tab:ablation}
+	\centering
+	\begin{tabular}{c | ccccccc | c}
+		\toprule
+		id & Single Head & No FF & No first Add\&Norm & No second Add\&Norm & 1-sized embeddings & No PE & No Output & Baseline \\
+		\midrule
+		1652 & 0.1751/0.3271 & 0.1882/0.3299 & 0.1833/0.3323 & 0.1809/0.3271 & 0.4103/0.5686 & 0.1836/0.3018 & 0.1833/0.3233 & 0.1797/0.3376   \\
+		1546 & 0.1949/0.3534 & 0.1856/0.2907 & 0.2116/0.4803 & 0.1905/0.3302 & 0.6055/0.3190 & 0.1905/0.3013 & 0.1950/0.4079 & 0.1977/0.3547   \\
+		1894 & 0.1426/0.4967 & 0.1884/0.3859 & 0.1325/0.3258 & 0.1561/0.5248 & 0.2437/0.3707 & 0.1086/0.5129 & 0.1498/0.2609 & 0.1524/0.2113   \\
+		2047 & 0.1610/0.2521 & 0.1577/0.4489 & 0.1681/0.2556 & 0.1341/0.4325 & 0.1815/0.2539 & 0.0994/0.4881 & 0.1410/0.3244 & 0.1737/0.3440   \\
+		2255 & 0.1171/0.6192 & 0.1267/0.5877 & 0.1244/0.6037 & 0.1219/0.6083 & 0.7751/0.2084 & 0.0682/0.5967 & 0.0971/0.5666 & 0.1194/0.5776  \\
+		2492 & 0.1577/0.4382 & 0.1135/0.2723 & 0.1544/0.5718 & 0.1439/0.5982 & 0.2671/0.3408 & 0.0974/0.5598 & 0.1331/0.3800 & 0.1142/0.1670   \\
+		2594 & 0.1335/0.7284 & 0.1253/0.8001 & 0.1154/0.6400 & 0.1543/0.6563 & 0.5420/0.1216 & 0.0824/0.6159 & 0.1181/0.5234 & 0.1374/0.6539   \\
+		2658 & 0.1431/0.5477 & 0.2101/0.2681 & 0.1820/0.3138 & 0.1842/0.4183 & 0.2158/0.2462 & 0.1664/0.4285 & 0.1909/0.2340 & 0.1869/0.3801   \\
+		2737 & 0.1644/0.2268 & 0.1373/0.2455 & 0.1319/0.3162 & 0.1167/0.2559 & 0.1681/0.1989 & 0.0994/0.1994 & 0.1603/0.2153 & 0.1546/0.1935  \\
+		2758 & 0.2389/0.3920 & 0.2730/0.3358 & 0.2762/0.4013 & 0.2535/0.4790 & 0.3712/0.2211 & 0.0915/0.7113 & 0.2724/0.3660 & 0.2291/0.3579   \\
+		2817 & 0.2676/0.4225 & 0.2547/0.4147 & 0.2623/0.4288 & 0.2404/0.2942 & 0.5880/0.2005 & 0.1670/0.4662 & 0.2262/0.3866 & 0.2689/0.3413   \\
+		2823 & 0.3002/0.2001 & 0.3070/0.2211 & 0.3080/0.3478 & 0.2930/0.1788 & 3.0250/2.7238 & 0.2338/0.1778 & 0.2863/0.2181 & 0.3087/0.2208   \\
+		\bottomrule
+	\end{tabular}
+\end{table}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusions} \label{sec:conclusions}

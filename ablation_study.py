@@ -13,13 +13,13 @@ def main():
 
     OUTPUT_LEN = 18
     INPUT_LEN = 24
-    EMBED_SIZE = 36
-    NUM_HEADS = 4
-    ENCODER_SIZE = 1
-    DECODER_SIZE = 1
-    BATCH_SIZE = 16
-    EPOCHS = 100
-    DROPOUT = 0.05
+    EMBED_SIZE = 9
+    NUM_HEADS = 3
+    ENCODER_SIZE = 2
+    DECODER_SIZE = 2
+    BATCH_SIZE = 8
+    EPOCHS = 10
+    DROPOUT = 0.075
 
     df = pd.read_csv('results/res_monthly.csv')
     indices = [
@@ -29,101 +29,118 @@ def main():
     datasets: List[Tuple[DatasetTimeSeries, DatasetTimeSeries]] = parse_whole_dataset_from_xls("M3C.xls", SheetType.MONTHLY, input_len=INPUT_LEN, output_len=OUTPUT_LEN, preprocessing=PreprocessingTimeSeries.MIN_MAX)
     datasets = [dataset for dataset in datasets if dataset[0].id in indices]
 
+    # Use constructors so each training run gets a freshly initialized model
     models = [
-        TransformerLikeModel(
-            embed_size=EMBED_SIZE,
-            output_len=OUTPUT_LEN,
-            max_seq_length=INPUT_LEN,
-            num_head_enc=NUM_HEADS,
-            num_head_dec_1=NUM_HEADS,
-            num_head_dec_2=NUM_HEADS,
-            encoder_size=ENCODER_SIZE,
-            decoder_size=DECODER_SIZE,
-            dropout=DROPOUT
-        ),                                  # Normal model
-        TransformerLikeModel(
-            embed_size=EMBED_SIZE,
-            output_len=OUTPUT_LEN,
-            max_seq_length=INPUT_LEN,
-            num_head_enc=1,
-            num_head_dec_1=NUM_HEADS,
-            num_head_dec_2=NUM_HEADS,
-            encoder_size=ENCODER_SIZE,
-            decoder_size=DECODER_SIZE,
-            dropout=DROPOUT
+        (lambda embed_size=EMBED_SIZE, OUTPUT_LEN=OUTPUT_LEN, INPUT_LEN=INPUT_LEN, NUM_HEADS=NUM_HEADS, ENCODER_SIZE=ENCODER_SIZE, DECODER_SIZE=DECODER_SIZE, DROPOUT=DROPOUT: 
+            TransformerLikeModel(
+                embed_size=embed_size,
+                output_len=OUTPUT_LEN,
+                max_seq_length=INPUT_LEN,
+                num_head_enc=1,
+                num_head_dec_1=NUM_HEADS,
+                num_head_dec_2=NUM_HEADS,
+                encoder_size=ENCODER_SIZE,
+                decoder_size=DECODER_SIZE,
+                dropout=DROPOUT
+            )
         ),                                   # Single Head Encoder
-        TransformerLikeModel(
-            embed_size=EMBED_SIZE,
-            output_len=OUTPUT_LEN,
-            max_seq_length=INPUT_LEN,
-            num_head_enc=NUM_HEADS,
-            num_head_dec_1=NUM_HEADS,
-            num_head_dec_2=NUM_HEADS,
-            encoder_size=ENCODER_SIZE,
-            decoder_size=DECODER_SIZE,
-            dropout=DROPOUT,
-            hidden_ff_size_enc=0
+        (lambda embed_size=EMBED_SIZE, OUTPUT_LEN=OUTPUT_LEN, INPUT_LEN=INPUT_LEN, NUM_HEADS=NUM_HEADS, ENCODER_SIZE=ENCODER_SIZE, DECODER_SIZE=DECODER_SIZE, DROPOUT=DROPOUT: 
+            TransformerLikeModel(
+                embed_size=embed_size,
+                output_len=OUTPUT_LEN,
+                max_seq_length=INPUT_LEN,
+                num_head_enc=NUM_HEADS,
+                num_head_dec_1=NUM_HEADS,
+                num_head_dec_2=NUM_HEADS,
+                encoder_size=ENCODER_SIZE,
+                decoder_size=DECODER_SIZE,
+                dropout=DROPOUT,
+                hidden_ff_size_enc=0
+            )
         ),                                   # No FF in Encoder
-        TransformerLikeModel(
-            embed_size=EMBED_SIZE,
-            output_len=OUTPUT_LEN,
-            max_seq_length=INPUT_LEN,
-            num_head_enc=NUM_HEADS,
-            num_head_dec_1=NUM_HEADS,
-            num_head_dec_2=NUM_HEADS,
-            encoder_size=ENCODER_SIZE,
-            decoder_size=DECODER_SIZE,
-            dropout=DROPOUT,
-            enc_use_addnorm=[False, True]
+        (lambda embed_size=EMBED_SIZE, OUTPUT_LEN=OUTPUT_LEN, INPUT_LEN=INPUT_LEN, NUM_HEADS=NUM_HEADS, ENCODER_SIZE=ENCODER_SIZE, DECODER_SIZE=DECODER_SIZE, DROPOUT=DROPOUT: 
+            TransformerLikeModel(
+                embed_size=embed_size,
+                output_len=OUTPUT_LEN,
+                max_seq_length=INPUT_LEN,
+                num_head_enc=NUM_HEADS,
+                num_head_dec_1=NUM_HEADS,
+                num_head_dec_2=NUM_HEADS,
+                encoder_size=ENCODER_SIZE,
+                decoder_size=DECODER_SIZE,
+                dropout=DROPOUT,
+                enc_use_addnorm=[False, True]
+            )
         ),                                   # No first Add&Norm Encoder
-        TransformerLikeModel(
-            embed_size=EMBED_SIZE,
-            output_len=OUTPUT_LEN,
-            max_seq_length=INPUT_LEN,
-            num_head_enc=NUM_HEADS,
-            num_head_dec_1=NUM_HEADS,
-            num_head_dec_2=NUM_HEADS,
-            encoder_size=ENCODER_SIZE,
-            decoder_size=DECODER_SIZE,
-            dropout=DROPOUT,
-            enc_use_addnorm=[True, False]
+        (lambda embed_size=EMBED_SIZE, OUTPUT_LEN=OUTPUT_LEN, INPUT_LEN=INPUT_LEN, NUM_HEADS=NUM_HEADS, ENCODER_SIZE=ENCODER_SIZE, DECODER_SIZE=DECODER_SIZE, DROPOUT=DROPOUT: 
+            TransformerLikeModel(
+                embed_size=embed_size,
+                output_len=OUTPUT_LEN,
+                max_seq_length=INPUT_LEN,
+                num_head_enc=NUM_HEADS,
+                num_head_dec_1=NUM_HEADS,
+                num_head_dec_2=NUM_HEADS,
+                encoder_size=ENCODER_SIZE,
+                decoder_size=DECODER_SIZE,
+                dropout=DROPOUT,
+                enc_use_addnorm=[True, False]
+            )
         ),                                    # No second Add&Norm Encoder
-        TransformerLikeModel(
-            embed_size=1,
-            output_len=OUTPUT_LEN,
-            max_seq_length=INPUT_LEN,
-            num_head_enc=1,
-            num_head_dec_1=1,
-            num_head_dec_2=1,
-            encoder_size=ENCODER_SIZE,
-            decoder_size=DECODER_SIZE,
-            dropout=DROPOUT,
-            seca=nn.Identity() # type: ignore
+        (lambda OUTPUT_LEN=OUTPUT_LEN, INPUT_LEN=INPUT_LEN, ENCODER_SIZE=ENCODER_SIZE, DECODER_SIZE=DECODER_SIZE, DROPOUT=DROPOUT: 
+            TransformerLikeModel(
+                embed_size=1,
+                output_len=OUTPUT_LEN,
+                max_seq_length=INPUT_LEN,
+                num_head_enc=1,
+                num_head_dec_1=1,
+                num_head_dec_2=1,
+                encoder_size=ENCODER_SIZE,
+                decoder_size=DECODER_SIZE,
+                dropout=DROPOUT,
+                seca=None # type: ignore
+            )
         ),                                  # No SECA
-        TransformerLikeModel(
-            embed_size=EMBED_SIZE,
-            output_len=OUTPUT_LEN,
-            max_seq_length=INPUT_LEN,
-            num_head_enc=NUM_HEADS,
-            num_head_dec_1=NUM_HEADS,
-            num_head_dec_2=NUM_HEADS,
-            encoder_size=ENCODER_SIZE,
-            decoder_size=DECODER_SIZE,
-            dropout=DROPOUT,
-            use_pe=False
+        (lambda embed_size=EMBED_SIZE, OUTPUT_LEN=OUTPUT_LEN, INPUT_LEN=INPUT_LEN, NUM_HEADS=NUM_HEADS, ENCODER_SIZE=ENCODER_SIZE, DECODER_SIZE=DECODER_SIZE, DROPOUT=DROPOUT: 
+            TransformerLikeModel(
+                embed_size=embed_size,
+                output_len=OUTPUT_LEN,
+                max_seq_length=INPUT_LEN,
+                num_head_enc=NUM_HEADS,
+                num_head_dec_1=NUM_HEADS,
+                num_head_dec_2=NUM_HEADS,
+                encoder_size=ENCODER_SIZE,
+                decoder_size=DECODER_SIZE,
+                dropout=DROPOUT,
+                use_pe=False
+            )
         ),                              # No Positional Encoding
-        TransformerLikeModel(
-            embed_size=EMBED_SIZE,
-            output_len=OUTPUT_LEN,
-            max_seq_length=INPUT_LEN,
-            num_head_enc=NUM_HEADS,
-            num_head_dec_1=NUM_HEADS,
-            num_head_dec_2=NUM_HEADS,
-            encoder_size=ENCODER_SIZE,
-            decoder_size=DECODER_SIZE,
-            dropout=DROPOUT,
-            use_out=False
-        )                                   # No Output Layer
+        (lambda embed_size=EMBED_SIZE, OUTPUT_LEN=OUTPUT_LEN, INPUT_LEN=INPUT_LEN, NUM_HEADS=NUM_HEADS, ENCODER_SIZE=ENCODER_SIZE, DECODER_SIZE=DECODER_SIZE, DROPOUT=DROPOUT: 
+            TransformerLikeModel(
+                embed_size=embed_size,
+                output_len=OUTPUT_LEN,
+                max_seq_length=INPUT_LEN,
+                num_head_enc=NUM_HEADS,
+                num_head_dec_1=NUM_HEADS,
+                num_head_dec_2=NUM_HEADS,
+                encoder_size=ENCODER_SIZE,
+                decoder_size=DECODER_SIZE,
+                dropout=DROPOUT,
+                use_out=False
+            )
+        ),                                   # No Output Layer
+        (lambda embed_size=EMBED_SIZE, OUTPUT_LEN=OUTPUT_LEN, INPUT_LEN=INPUT_LEN, NUM_HEADS=NUM_HEADS, ENCODER_SIZE=ENCODER_SIZE, DECODER_SIZE=DECODER_SIZE, DROPOUT=DROPOUT: 
+            TransformerLikeModel(
+                embed_size=embed_size,
+                output_len=OUTPUT_LEN,
+                max_seq_length=INPUT_LEN,
+                num_head_enc=NUM_HEADS,
+                num_head_dec_1=NUM_HEADS,
+                num_head_dec_2=NUM_HEADS,
+                encoder_size=ENCODER_SIZE,
+                decoder_size=DECODER_SIZE,
+                dropout=DROPOUT
+            )
+        ),  
     ]
 
     desc = ["Standard", "Single Head Encoder", "No FF Encoder", "No first Add&Norm", "No second Add&Norm", "No SECA", "No Positional Encoding", "No Output Layer"]
@@ -134,17 +151,19 @@ def main():
         
         print(str(indices[i]) + " & ", end="")
 
-        for model in models:
+        for model_ctor in models:
+
+            model = model_ctor()
 
             train_loss, test_loss = train_transformer_model(
-                model=model, 
-                epochs=EPOCHS, 
-                train_data_loader=train_loader, 
-                test_data_loader=test_loader, 
+                model=model,
+                epochs=EPOCHS,
+                train_data_loader=train_loader,
+                test_data_loader=test_loader,
                 verbose=False,
             )
 
-            print(f"{test_loss ** 0.5:.4f} & ", end="")
+            print(f"{train_loss ** 0.5:.4f}/{test_loss ** 0.5:.4f} & ", end="")
         print(" \\\\")
 
     
