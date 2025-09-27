@@ -4,6 +4,7 @@ import torch.optim as optim
 import random
 
 from src.model import TransformerLikeModel, EncoderOnlyModel
+from src.seca import ScalarExpansionContractiveAutoencoder as Seca
 from torch.utils.data import DataLoader
 
 from typing import Tuple
@@ -18,11 +19,11 @@ def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data
   assert getattr(model, 'output_len', None) is not None and model.output_len > 0, "model.output_len must be a positive integer"
 
   model.train()
-  if pretrain_seca:
+  if pretrain_seca and model.seca is not None:
     model.seca.start()
-  model.seca.freeze()
+  #model.seca.freeze()
 
-  optimizer = optim.AdamW(model.parameters(), lr=2e-2)
+  optimizer = optim.AdamW(model.parameters(), lr=2e-3)
   scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.5)
   criterion = nn.MSELoss()
 
@@ -31,7 +32,6 @@ def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data
 
   for epoch in range(epochs):
     epoch_loss = 0
-    scheduler.step()
 
     if early_stopping and epoch == 0:
       best_val_loss = float('inf')
@@ -64,6 +64,7 @@ def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data
       total_loss.backward()
       torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
       optimizer.step()
+      scheduler.step()
 
       epoch_loss += total_loss.item()
 

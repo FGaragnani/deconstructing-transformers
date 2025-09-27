@@ -40,7 +40,8 @@ class TransformerLikeModel(nn.Module):
     """
     X, Y = input
 
-    Z = self.seca.encode(X)
+    if self.seca is not None:
+      Z = self.seca.encode(X)
     if self.use_pe:
       Z = self.pe(Z)
     Z = self.encoder(Z)
@@ -51,7 +52,8 @@ class TransformerLikeModel(nn.Module):
     if self.use_out:
       context = Z.mean(dim=1)
       y = self.output(y, context=context)
-
+    else:
+      y = y[:, -1, :]
     return y
 
   def forward(self, X: torch.Tensor):
@@ -63,7 +65,8 @@ class TransformerLikeModel(nn.Module):
     batch_size, seq_length, _ = X.shape
     Y_tokens = self.cls_token.expand((batch_size, 1, self.embed_size))
 
-    Z = self.seca.encode(X)
+    if self.seca is not None:
+      Z = self.seca.encode(X)
     if self.use_pe:
       Z = self.pe(Z)
     Z = self.encoder(Z)
@@ -71,12 +74,15 @@ class TransformerLikeModel(nn.Module):
     preds = []
 
     for _ in range(self.output_len):
+      Y = Y_tokens
       if self.use_pe:
-        Y_pe = self.pe(Y_tokens)
-      y = self.decoder((Y_pe, Z))[0]
+        Y = self.pe(Y_tokens)
+      y = self.decoder((Y, Z))[0]
       if self.use_out:
         context = Z.mean(dim=1)
         y = self.output(y, context=context)
+      else:
+        y = y[:, -1, :]
       Y_tokens = torch.cat([Y_tokens, y.unsqueeze(1)], dim=1)
       preds.append(self.seca.decode(y))
 
