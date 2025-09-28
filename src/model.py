@@ -5,7 +5,7 @@ import torch.nn as nn
 from src.seca import ScalarExpansionContractiveAutoencoder
 from src.layers import PositionalEmbeddingLayer
 from src.modules import EncoderModule, DecoderModule, Output
-from typing import Optional, List
+from typing import Optional, List, Any
 
 class TransformerLikeModel(nn.Module):
   def __init__(self, embed_size: int, encoder_size: int = 6, decoder_size: int = 6, input_size: int = 1, hidden_ff_size_enc: Optional[int] = None, hidden_ff_size_dec: Optional[int] = None, num_head_enc: int = 8, num_head_dec_1: int = 8, num_head_dec_2: int = 8,
@@ -110,9 +110,15 @@ class TransformerLikeModel(nn.Module):
     Z = self.encoder(Z)
 
     Y = self.seca.encode(Y)
-    Y = self.pe(Y)
-    Y = self.decoder[0].mha_1((Y, Y, Y)) # type: ignore
-    Y = self.decoder[0].norm1(Y) # type: ignore
+    if self.use_pe:
+      Y = self.pe(Y)
+
+    mha1: Any = self.decoder[0].mha_1
+    dropout: Any = self.decoder[0].dropout
+    norm1: Any = getattr(self.decoder[0], 'norm1')
+    A1, _ = mha1((Y, Y, Y), return_attention=True)
+    Y = norm1(Y + dropout(A1))
+
     _, attention_weights = self.decoder[0].mha_2((Y, Z, Z), return_attention=True) # type: ignore
 
     return attention_weights
