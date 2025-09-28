@@ -2,14 +2,14 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import pmdarima as pm
-
 from statsmodels.tsa.stattools import acf
+
 # Accuracy metrics
 def forecast_accuracy(forecast, actual):
-    mape = np.mean(np.abs(forecast - actual)/np.abs(actual))  # MAPE
+    mape = np.mean(np.abs(forecast - actual)/(np.abs(actual)))  # MAPE
     me   = np.mean(forecast - actual)           # ME
     mae  = np.mean(np.abs(forecast - actual))   # MAE
-    mpe  = np.mean((forecast - actual)/actual)  # MPE
+    mpe  = np.mean((forecast - actual)/(actual))  # MPE
     rmse = np.mean((forecast - actual)**2)**.5  # RMSE
     corr = np.corrcoef(forecast, actual)[0,1]   # correlation coeff
     acf1 = acf(forecast-actual)[1]              # ACF1
@@ -25,6 +25,7 @@ if __name__ == "__main__":
    ch = int( input() )
    for i in range(len(series)):
       s     = df.loc[df['Series']==series[i],6:].dropna(axis=1, how='all').values.flatten()
+      s     = (s - np.min(s)) / (np.max(s) - np.min(s))
       train = s[:cutpoint]
       test  = s[cutpoint:]
       if ch == 0:  # pmdarima
@@ -82,7 +83,7 @@ if __name__ == "__main__":
       plt.plot(train,label="train")
       plt.plot(np.arange(len(train), len(train)+nperiod), yfore,label="forecast")
       plt.plot(np.arange(len(train), len(train)+nperiod), test, label="test")
-      plt.xlabel('time',fontsize=14);
+      plt.xlabel('time',fontsize=14)
       plt.ylabel('sales',fontsize=14)
       plt.title(title)
       plt.legend(fontsize=14)
