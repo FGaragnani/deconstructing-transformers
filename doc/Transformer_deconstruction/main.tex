@@ -68,9 +68,10 @@
 \usepackage{graphicx}
 \usepackage{amsmath}        % multiline formulas
 \usepackage{array}          % for better column control
+\usepackage{xcolor}         % for coloring blocks of text
+
 \usepackage{tikz}
 \usetikzlibrary{positioning,fit,arrows.meta,decorations.pathreplacing,calc}
-
 \tikzset{
 	block/.style={draw, rounded corners, thick, minimum width=3.2cm, minimum height=8mm, align=center, font=\sffamily},
 	mha/.style={block, fill=blue!6},
@@ -91,7 +92,7 @@
 
 %=================================================================
 % Full title of the paper (Capitalized)
-\Title{Deconstructing transformer-based time series forecasting}
+\Title{\textcolor{blue}{Deconstructing a Minimalist Transformer Architecture for Univariate Time Series Forecasting}}
 
 % MDPI internal command: Title for citation in the left column
 \TitleCitation{Deconstructing transformer-based time series forecasting}
@@ -131,7 +132,7 @@ $^{2}$ \quad Department of Computer Science, University of Bologna; vittorio.man
 %\simplesumm{} % Simple summary
 
 % Abstract (Do not insert blank lines, i.e. \\) 
-\abstract{This paper provides a thorough breakdown of a fundamental Transformer-based architecture for forecasting univariate time series. We describe each processing step in detail, from input embedding and positional encoding to self-attention mechanisms and output projection, all of which are tailored specifically to sequential temporal data. By isolating and analyzing the role of each component, we demonstrate how transformers capture long-term dependencies in time series. We implement a simplified, interpretable transformer model and showcase it on a simple use case. We then validate it on a significant benchmark suite, including datasets from forecasting competitions and real-world applications. The aim of this work is to serve as both a practical guide and a foundation for future innovations in transformer-based forecasting.}
+\abstract{\textcolor{blue}{This paper provides a detailed breakdown of a minimalist, fundamental Transformer-based architecture for forecasting univariate time series. It describes each processing step in detail, from input embedding and positional encoding to self-attention mechanisms and output projection. All of these steps are specifically tailored to sequential temporal data. By isolating and analysing the role of each component, the paper demonstrates how Transformers capture long-term dependencies in time series. A simplified, interpretable Transformer model is implemented and showcased using a simple example, before being validated using a significant benchmark suite. This suite includes datasets from forecasting competitions and real-world applications. The aim of this work is to serve as a practical guide and foundation for future transformer-based forecasting innovations.}}
 
 % Keywords
 \keyword{Data series forecasting; Transformer models; Machine learning} 
@@ -860,15 +861,17 @@ As an additional view, Figure \ref{fig:attention} shows - for the restaurant Goo
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusions} \label{sec:conclusions}
 
-In this work, we present a minimalist transformer architecture that is specifically designed for univariate time series forecasting. Rather than proposing yet another cutting-edge variant, our contribution lies in systematically reducing the architecture to its essential components and documenting all relevant steps of the encoder, decoder and learning procedures in pseudocode. Our aim was to provide a transparent and replicable baseline for researchers and practitioners interested in understanding the core mechanisms of transformers when applied to forecasting tasks.
+\textcolor{blue}{This work presents a minimalist transformer architecture that is specifically designed for univariate time series forecasting}. Rather than proposing yet another cutting-edge variant, our contribution lies in systematically reducing the architecture to its essential components and documenting all relevant steps of the encoder, decoder and learning procedures in pseudocode. Our aim was to provide a transparent and replicable baseline for researchers and practitioners interested in understanding the core mechanisms of transformers when applied to forecasting tasks.
 
-We evaluated our model using a set of standard forecasting benchmarks and compared its performance with that of a random forest forecaster. Although the minimalist transformer does not outperform the most sophisticated state-of-the-art models, it consistently achieves comparable accuracy, particularly for time series with long-term dependencies, where attention mechanisms can exploit global context more effectively than purely tree-based methods.
+\textcolor{blue}{The model is evaluated using a set of standard forecasting benchmarks and compared its performance with that of a random forest forecaster}. Although the minimalist transformer does not outperform the most sophisticated state-of-the-art models, it consistently achieves comparable accuracy, particularly for time series with long-term dependencies, where attention mechanisms can exploit global context more effectively than purely tree-based methods.
 
-Beyond raw predictive performance, our findings highlight two key outcomes: clarity and accessibility. By explicitly exposing each functional step, our framework lowers the barrier for newcomers to the transformer literature and the field of time series forecasting.
+\textcolor{blue}{Beyond raw predictive performance, our findings highlight two key outcomes: clarity and accessibility. By explicitly exposing each functional step, our framework lowers the barrier for newcomers to the transformer literature and the field of time series forecasting}.
 
 The robustness of the transformer paradigm is also evident, as even a stripped-down version of the model demonstrates stable forecasting ability. This suggests that many performance gains in advanced variants stem from relatively minor architectural refinements.
 
-In a research landscape often dominated by increasingly complex architectures, our study highlights the importance of transparent baselines. Future work may explore the impact of specific enhancements, such as seasonal embeddings, multi-head configurations or hybridization with statistical components, on forecasting performance when added to this minimalist core.
+\textcolor{blue}{Although designed for univariate forecasting, the proposed architecture can be readily extended to the multivariate case by adapting the input encoding to jointly represent the target variable and external predictors, thereby enabling the model to explicitly learn and exploit correlations between them}.
+
+\textcolor{blue}{In a research landscape often dominated by increasingly complex architectures, our study highlights the importance of transparent baselines}. Future work may explore the impact of specific enhancements, such as seasonal embeddings, multi-head configurations or hybridization with statistical components, on forecasting performance when added to this minimalist core.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Optional
