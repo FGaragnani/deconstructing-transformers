@@ -801,8 +801,6 @@ The results in the table confirm that the RMSE values are comparable in all case
 
 \textcolor{blue}{Other comparisons have been performed against other models, complementing the Random Forest baseline and offering a broader perspective by including recent transformer-based approaches. These comprise the Chronos model \cite{chronos}, TCAN (Temporal Convolution Attention Network) \cite{tcan}, ARIMA and ETS. The autoregressive models relied on their statsmodels implementation \cite{SP10} using pmdarima's stepwise approach for hyperparameter tuning \cite{S17}. The RMSE test results are shown for the series listed in Table \ref{tab:comparisons}}.
 
-\cite{LKR21}
-
 \begin{table}[H]
 	\caption{Minimalist transformer compared to other baseline models.}
 	\label{tab:comparisons}
@@ -857,7 +855,13 @@ In Table \ref{tab:ablation} it's possible to see the effects of removing or edit
 \end{table}
 
 \subsection{Interpretability}
-As an additional view, Figure \ref{fig:attention} shows - for the restaurant Google Trends series - the cross-attention that the Decoder gives to each encoded input timestep to predict the next output value.
+As an additional view, Figure \ref{fig:attention} shows - for the restaurant Google Trends series - the contribution of each timesteps that the Decoder gives to both the encoded input time series and to the autoregressively generated output timestep. The bigger the circle around a certain timestep, the greater the attention weight given by the trained model for inference.
+
+More specifically, the attention of the input series - in blue - is extracted by the weights of the Cross-Attention layer, while the attention contribution of the generated series - in green - is examined in the Self-Attention layer.
+
+The results are aligned with what one might expect the model to learn about a seasonal trajectory. For instance, it can be seen that for the generation of the fourth timestep (title in Figure \ref{fig:attention} as "Step 4") the model almost solely focus on the timestep seven days prior - which is when a certain seasonal rise happens. The same happens at the immediate next generation, when the model focuses heavily on the fourth timestep of the input series.
+
+Another interesting observation that emerges from the above example is that as time goes on, the model shifts from weighing certain input steps heavily and prefers a more 'global' view of the pattern - probably because many information are already stored in the generated sequence.
 
 \begin{figure}
 	\centering
