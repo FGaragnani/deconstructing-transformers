@@ -147,9 +147,9 @@ Transformer models, which were initially designed for natural language processin
 
 Unlike natural language, time series are composed of continuous values and frequently exhibit seasonality, trends and influence from exogenous variables. While recent studies have proposed various adaptations of the transformer to address the unique properties of time series data, many of these models are treated as opaque black boxes. This means that there is limited clear understanding of how each component relates to temporal information and contributes to forecasting performance. Furthermore, the implementation details are frequently insufficiently specified, which makes reproducibility and interpretability challenging.
 
-In this paper, our aim is to 'deconstruct' the forecasting process of transformer-based models when applied to univariate time series. Our objective is to provide a transparent, modular and pedagogical account of how univariate time series are transformed and processed within these models to generate future trajectories. We describe each processing step in detail, including data normalization, input windowing, positional encoding, encoder and decoder architecture, training strategies, and prediction generation. We highlight both the theoretical basis and the practical design choices, showing how each element contributes to predictive accuracy and attempting to bridge the gap between theoretical advancements and practical implementation.
+In this paper, our aim is to 'deconstruct' the forecasting process of transformer-based models when applied to univariate time series. Our objective is to provide a transparent, modular and pedagogical account of how univariate time series are transformed and processed within these models to generate future trajectories. Each processing step is described in detail, including data normalization, input windowing, positional encoding, encoder and decoder architecture, training strategies, and prediction generation. Both the theoretical basis and the practical design choices are highlighted, showing how each element contributes to predictive accuracy and attempting to bridge the gap between theoretical advancements and practical implementation.
 
-To validate our methodology, we implemented and evaluated a basic transformer-based model on a significant benchmark of univariate time series. These were selected from the well-known M forecasting competition benchmarks and included macro- and micro-economic, industrial, financial and demographic series with varying statistical properties. The work combines theoretical explanation with empirical validation to serve as a comprehensive guide to deconstructing transformer-based time series forecasting, providing a tutorial for newcomers and a reference for practitioners.
+To validate our methodology, a basic transformer-based model has been implemented and evaluated on a significant benchmark of univariate time series. These were selected from the well-known M forecasting competition benchmarks and included macro- and micro-economic, industrial, financial and demographic series with varying statistical properties. The work combines theoretical explanation with empirical validation to serve as a comprehensive guide to deconstructing transformer-based time series forecasting, providing a tutorial for newcomers and a reference for practitioners.
 
 The paper is structured as follows. Section \ref{sec:literature} reviews the related works in time series forecasting, with particular emphasis on recent advancements leveraging Transformer architectures. Section \ref{sec:transformer} presents the workflow of a minimalist Transformer module to produce a multipoint forecast for a univariate time series. Section \ref{sec:results} analyses some results in applying the described architecture on benchmark data series and comparing it with another standard methodology.
 
@@ -178,14 +178,14 @@ More recently, an explosion of adaptations has appeared, together with dedicated
 
 By contrast, there is interest in minimal Transformer implementations, which isolate the effectiveness of self-attention in forecasting tasks. Informer has already demonstrated that a simplified Transformer, devoid of specialized components, can outperform classical models and RNNs on certain benchmarks when properly tuned. Similarly, \citep{LSNP21} proposed the `Temporal Attention' module within a lightweight Transformer framework, demonstrating that attention over timesteps alone can achieve comparable performance on univariate series. Other studies, such as iTransformer \cite{LHZW24}, investigate how the performance of standard Transformers is affected by different initialization, normalization, or positional encoding strategies. This sheds light on the contribution of each component to forecasting accuracy.
 
-This body of work highlights the growing interest in demystifying transformer-based time series models by removing layers of abstraction. In line with this perspective, we propose a minimalist transformer specifically designed for univariate forecasting. We implement and evaluate a minimal version of the transformer encoder by maintaining only the essential self-attention and feedforward components. By simplifying the model, our aim is to understand the fundamental processes that enable transformers to succeed in this domain and to provide a transparent and reproducible basis for further research.
+This body of work highlights the growing interest in demystifying transformer-based time series models by removing layers of abstraction. In line with this perspective, a minimalist transformer specifically designed for univariate forecasting is proposed. A minimal version of the transformer encoder has been developed by maintaining only the essential self-attention and feedforward components. By simplifying the model, our aim is to understand the fundamental processes that enable transformers to succeed in this domain and to provide a transparent and reproducible basis for further research.
 
 % https://medium.com/intel-tech/how-to-apply-transformers-to-time-series-models-spacetimeformer-e452f2825d2e
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The transformer processing pipeline} \label{sec:transformer}
 
-This section describes the successive processing phases carried out by a minimalist transformer module to produce a multipoint forecast of a univariate data series. The relevant python code can be found in \cite{G25}. Successive processing stages are here showcased on a tiny time series obtained by querying Google Trends \cite{googletrends2025} on the term "restaurant". The series shows a trend (at the time of writing, it is holiday season in Italy and interest in dining out is increasing) as well as seasonality, due to increased interest at weekends. We consider only 35 data points, 7 of which are kept for validation and 28 are used for training.
+This section describes the successive processing phases carried out by a minimalist transformer module to produce a multipoint forecast of a univariate data series. The relevant python code can be found in \cite{G25}. Successive processing stages are here showcased on a tiny time series obtained by querying Google Trends \cite{googletrends2025} on the term "restaurant". The series shows a trend (at the time of writing, it is holiday season in Italy and interest in dining out is increasing) as well as seasonality, due to increased interest at weekends. Only 35 data points are considered, 7 of which are kept for validation and 28 are used for training.
 
 The series $s(t)$ is the following:
 \begin{align}
@@ -272,7 +272,7 @@ The objective of the encoding component (i.e., the \textit{encoder}) in a Transf
 	\label{fig:enc}
 \end{figure}
 
-The general structure of the encoding module is represented by the pseudocode in Algorithm \ref{algo:encoding} and sketched in Figure \ref{fig:enc}. All intermediate numerical results obtained for the restaurant series case study are reported in appendix \ref{sec:appendix} to enable the interested reader to immediately grasp the dimensionalities and values involved in this tiny example, and possibly to follow the corresponding evolution of a run of the code provided in \cite{G25}. In the case of the running example we used the following argument values: $n$=7, $m$=4, $k$=2, $d_k$=$d_v$=2, $p$=16.
+The general structure of the encoding module is represented by the pseudocode in Algorithm \ref{algo:encoding} and sketched in Figure \ref{fig:enc}. All intermediate numerical results obtained for the restaurant series case study are reported in appendix \ref{sec:appendix} to enable the interested reader to immediately grasp the dimensionalities and values involved in this tiny example, and possibly to follow the corresponding evolution of a run of the code provided in \cite{G25}. In the case of the running example the following argument values are used: $n$=7, $m$=4, $k$=2, $d_k$=$d_v$=2, $p$=16.
 
 The individual steps are detailed below.
 
@@ -323,7 +323,7 @@ The individual steps are detailed below.
 
 The input consists of the data series to be forecast, in our case, it is an array $s \in \mathbb{R}^n$ and of six control hyperparameters.
 
-For the restaurant time series, we applied a straightforward preprocessing step: \textit{min-max} normalization of the raw data. Subsequently, each sequence was constructed using a sliding window of length $n = 7$ over the series.
+For the restaurant time series, a straightforward preprocessing step has been applied: \textit{min-max} normalization of the raw data. Subsequently, each sequence was constructed using a sliding window of length $n = 7$ over the series.
 
 ~\\Lines \ref{enc:seca1}-\ref{enc:seca2}: (\textit{Input Projection})
 
@@ -358,7 +358,7 @@ This loop iterates a basic attention mechanism that dynamically weighs the contr
 
 Queries (the elements currently focused on), keys (descriptors of the corresponding values), and values (the actual information) are all represented as matrices. Typically, queries and keys share the same inner dimension $d_k$, while values may have a different dimension $d_v$. At each iteration the corresponding set of query, key, and value is referred to as a \textit{head}. The matrices and the bias identified for the two heads used in our running example are reported in the appendix in tables \ref{tab:matWq} and \ref{tab:bias} .
 
-~\\Line \ref{enc:qh}: generates the $h-th$ query matrix and projects the input embeddings into vectors that represent what we are looking for in the past. This is achieved by using a dynamic parameter matrix $W^h_q \in \mathbb{R}^{m \times d_k}$ and a bias array $b^h_q \in \mathbb{R}^{d_k}$ that are learnt.
+~\\Line \ref{enc:qh}: generates the $h-th$ query matrix and projects the input embeddings into vectors that represent what it has been looked for in the past. This is achieved by using a dynamic parameter matrix $W^h_q \in \mathbb{R}^{m \times d_k}$ and a bias array $b^h_q \in \mathbb{R}^{d_k}$ that are learnt.
 
 ~\\Line \ref{enc:kh}: generates the $h-th$ key matrix and projects the input embeddings into vectors that represent the information content of each corresponding embedding. This is achieved by using a dynamic parameter matrix $W^h_k \in \mathbb{R}^{m \times d_k}$ and a bias array $b^h_k \in \mathbb{R}^{d_k}$ that are learnt.
 
@@ -368,7 +368,7 @@ Queries (the elements currently focused on), keys (descriptors of the correspond
 
 ~\\Line \ref{enc:attention1}: implements the first part of the attention function, in this case using the \textit{Scaled Dot-Product Attention} \cite{VSPU17}. The similarity between sequence elements is computed from $Q$ and $K$ through a dot product. The key matrix is transposed so that the operation compares each feature of every query with the corresponding feature of every key. This initial $A$ matrix will contain similarity values $a_{ij} \in \mathbb{R}$ between every query vector and every key vector. 
 
-~\\Line \ref{enc:softmax}: transforms the similarity values into `probability' scores. The $\text{softmax}()$ operator is applied to all elements $a_{ij}$ over every row: $a_{ij} = e^{a_{ij}} / \sum_k e^{a_{kj}},\quad \forall i,j  = 1,\,...,\,n $. In this way, we get for every query vector, normalized weights of similarity towards key vectors. 
+~\\Line \ref{enc:softmax}: transforms the similarity values into `probability' scores. The $\text{softmax}()$ operator is applied to all elements $a_{ij}$ over every row: $a_{ij} = e^{a_{ij}} / \sum_k e^{a_{kj}},\quad \forall i,j  = 1,\,...,\,n $. In this way, for every query vector, normalized weights of similarity towards key vectors are obtained. 
 
 ~\\Line \ref{enc:attention2}: completes the computation of the attention function by implementing a weighted sum of the value vectors, $A^h = A^h \cdot V^h$, thereby aggregating information from the relevant timesteps.
 
@@ -615,7 +615,7 @@ Each operation in the decoding stage is followed by a residual connection and a 
 
 ~\\Line \ref{dec:finalproj}: (\textit{Projecting the Output})
 
-\noindent At the end of the decoding loop, we obtain the matrix $\textbf{Y} \in \mathbb{R}^{o \times m}$.
+\noindent At the end of the decoding loop, matrix $\textbf{Y} \in \mathbb{R}^{o \times m}$ is obtained.
 Before mapping the $j$-th embedding back into its scalar prediction, $Y_j$ is passed through a final feedforward network and regularized:
 \begin{equation}
     Y_j \leftarrow feedforward(Y_j) * scale(\textbf{Z}) + bias(\textbf{Z})
@@ -645,7 +645,7 @@ The process is the standard neural learning process, flowing through three main 
 
 The backward pass implements the actual learning process by reversing the computation flow that was used to make the forecast, as presented in Figure \ref{fig:enc}. A transformer's computation graph has many layers, including an embedding layer, multiple self-attention blocks (each with projections $W_Q, W_K, W_V, W_O$), feed-forward networks, layer norms, residual connections, etc. During backpropagation, the chain rule of calculus is applied to each layer, as with standard MLPs, and the gradient flows backwards through each operation. This means that the $W_Q, W_K, W_V, W_O$, feed-forward weights, embedding matrices and LayerNorm parameters all receive gradient-based updates depending on the value of the loss function.
 
-Learning is a computationally intensive phase based on standard gradient descent optimizers and greatly benefits of GPU-optimized codes. In our minimalist architecture we delegated the backward computations to the relevant PyTorch classes  \cite{PyTorch25}.
+Learning is a computationally intensive phase based on standard gradient descent optimizers and greatly benefits of GPU-optimized codes. In our minimalist architecture the backward computations have been delegated to the relevant PyTorch classes  \cite{PyTorch25}.
 
 The embedding matrices $W_i$ and $W_o$ are initialized in a way such that $W_i \cdot W_o = 1$ - to represent exactly the same projection. Specifically, $W_i$ is initialized by drawing each of its elements from a uniform distribution, and $W_o$ is set to be $\dfrac{W_i}{||W_i||^2}$ - since the bias arrays $b_i, b_o$ are zero-initialized. Then, during training, they are set to change without any constraint.
 
@@ -678,9 +678,9 @@ First, we showcase the successive processing stages on the archetypal airline pa
 
 The Airline Passengers time series is one of the most famous and widely used in data analysis and forecasting. It consists of 144 observations of the monthly total number of international airline passengers in thousands between 1949 and 1960. As it is a real-world case that is very easy to model and predict (it is known to be an ARMA(1,1)), it is commonly used as a first validation for new forecasting approaches.
 
-When we apply our model to this series, setting aside the last 12 values for validation and accounting for the obvious 12-month seasonality, the successive encoding steps through the positional embedding - multi-head attention - layer norm - layer norm pipeline produce the results shown in Figure \ref{fig:airlines}.
+When the model is applied to this series, setting aside the last 12 values for validation and accounting for the obvious 12-month seasonality, the successive encoding steps through the positional embedding - multi-head attention - layer norm pipeline produce the results shown in Figure \ref{fig:airlines}.
 
-The series was preprocessed only by a standard min-max normalization, then it was projected into embeddings of size $m = 12$. Employing only $n = 12$ timesteps at a time, we obtained $118$ matrices $X \in \mathbb{R}^{12 \times 12}$. Matrix $P$ used for positional embedding has the same dimensionality.
+The series was preprocessed only by a standard min-max normalization, then it was projected into embeddings of size $m = 12$. Employing only $n = 12$ timesteps at a time, $118$ matrices $X \in \mathbb{R}^{12 \times 12}$ are obtained. Matrix $P$ used for positional embedding has the same dimensionality.
 
 Next comes multi-head attention. We used 2 heads, and for each head we set $d_k = d_v = \frac{12}{2} = 6$. Therefore all matrices $W^h_Q$, $W^h_K$ and $W^h_V$ had dimensions $12 \times 6$. These provide the bases for computing the attention function, where each $h-th$ head gives rise to the matrix $A^h=\frac{Q_hK'_h}{d_h} \in \mathbb{R}^{n \times n}$, in our case $A^h \in \mathbb{R}^{12 \times 12}$. The successive {\em softmax} function does not change its dimensionality. After multiplying by $V_h$ we obtain the output of each head, of dimension $12 \times 6$. All outputs are then concatenated by row, giving rise to a matrix $A \in \mathbb{R}^{12 \times 12}$. The input dimension is then kept, when the output attention matrix is multiplied by matrix $W_O \in \mathbb{R}^{hd_v \times m}$ - in our case, of dimension $12 \times 12$. In summary, the values used for the parameters were: $n$=12, $m$=12, $k$=2,  $d_k$=$d_v$=6, $p$=48. The number of epochs set for learning was 400, the total number of parameters to learn in the transformer model resulted to be 5413.
 
@@ -707,9 +707,9 @@ The benchmark consisted of the monthly series from the M3 forecasting competitio
 	\item {\it Others}, i.e., diverse, real-world time series that don’t belong to traditional economic or financial domains (e.g., energy consumption, transportation data)
 \end{itemize}
 
-The length of the monthly series varies, typically ranging from 48 to 126 observations (i.e., 4 to over 10 years of data) and for each series, participants were asked to forecast the next 18 months. We used this same forecast horizon in our tests, and the following argument values: In summary, the values used for the parameters were: $n$=24, $m$=36, $k$=4, $d_k$=$d_v$=12, $p$=144. The number of epochs set for network learning was 400, the total number of parameters to learn in the transformer model resulted to be 46'189.
+The length of the monthly series varies, typically ranging from 48 to 126 observations (i.e., 4 to over 10 years of data) and for each series, participants were asked to forecast the next 18 months. This same forecast horizon has been used in our tests, and the following argument values: $n$=24, $m$=36, $k$=4, $d_k$=$d_v$=12, $p$=144. The number of epochs set for network learning was 400, the total number of parameters to learn in the transformer model resulted to be 46'189.
 
-We ran each model on all the benchmark series, computing the RMSE on both the training and test sets. To determine whether the difference in forecast effectiveness was significant, we conducted a Mann–Whitney U-test on the RMSE results for each aggregate separately. Table \ref{tab:aggregate} shows the results of the comparison aggregated over the type feature. The columns show:
+We ran each model on all the benchmark series, computing the RMSE on both the training and test sets. To determine whether the difference in forecast effectiveness was significant, a Mann–Whitney U-test has been conducted on the RMSE results for each aggregate separately. Table \ref{tab:aggregate} shows the results of the comparison aggregated over the type feature. The columns show:
 
 \begin{itemize}
 	\item {\it type}: type of the aggregate,
@@ -744,8 +744,6 @@ The results in Table \ref{tab:aggregate}  show that, despite being outperformed 
 
 \textcolor{blue}{As the M3 benchmark has been studied in depth, we can tentatively interpret these observations. Financial data is characterised by high volatility and weak or non-existent trends or seasonality. They therefore have a higher noise component, which appears to be better handled by transformers. In contrast, industry and macro data have stronger deterministic components, such as trends and seasonality (due to business cycles, yearly production seasonality, etc.), which are better captured by a decision tree-based model.
 Seasonality is in fact much more pronounced in industry and demographics series, while finance has very weak seasonality and is often dominated by idiosyncratic shocks. A similar situation applies to trends in the series, where demographic and macroeconomic series exhibit clear long-term growth or decline. Finally, and most significantly, financial and 'other' series are subject to frequent regime shifts, whereas industry and macroeconomic series undergo structural breaks less frequently and exhibit more persistent regimes.}
-
-The times are expressed in seconds; for the Transformer model, in particular, the time is an average per-epoch.
 
 \begin{table}[H]
 \caption{Minimalist transformer and random forest, aggregate results, scaled data}
@@ -782,6 +780,8 @@ Table \ref{tab:bestworse} shows details of the instances in each category for wh
 	\item {\it rftest}: the absolute RMSE of the random forest model on the test part, i.e., on the last 18 data points;
 	\item {\it $\Delta$train}: the RMSE difference between transformers and random forest on the training part;
 	\item {\it $\Delta$test}: the RMSE difference between transformers and random forest on the test part;
+	\item {\it trtime}: the average time in seconds needed to train for a single epoch the Transformer on the respective series;
+	\item {\it rftime}: the time in seconds needed to fit the random forest model on the training set.
 \end{itemize}
 
 The results in the table confirm that the RMSE values are comparable in all cases and that there are never differences in the order of magnitude, with values remaining relatively low when even considering that they were computed on max-min scaled series. In all categories, the transformers achieved a lower RMSE in at least one series. Figures \ref{fig:trbest} and \ref{fig:trworse} show plots of the actual series and the forecasts of the transformers and the random forest in cases where the transformers performed better and worse than the random forest, respectively.
