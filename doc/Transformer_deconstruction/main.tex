@@ -160,7 +160,7 @@ Transformer modules for processing graph-like structures were originally introdu
 
 Indeed, RNNs can be effective in capturing long-term dependencies among data, but suffer from slow training, vanishing gradients and high sensitivity to hyperparameter settings. Furthermore, the most well-established statistical methods, such as autoregressive integrated moving average (ARIMA) \citep{BJ70} and exponential smoothing (ETS) \citep{H57,W60}, are highly effective for stationary data but struggle with complex nonlinear patterns.
 
-Transformer architectures are immune from these drawbacks because they make no stationarity assumption and capture global dependencies in input sequences without relying on recurrence, instead leveraging self-attention mechanisms enabling direct modeling of long-range dependencies. This supports full parallelization during training and allows the model to focus on relevant time steps, regardless of their position in the sequence.
+\textcolor{blue}{Transformer architectures are immune to these drawbacks because they do not rely on the assumption of stationarity. They capture global dependencies in input sequences without relying on recurrence, instead leveraging self-attention mechanisms to enable the direct modelling of long-range dependencies. This supports full parallelization during training and allows the model to focus on relevant time steps, regardless of their position in the sequence}.
 
 A key challenge in applying transformers to univariate time series is the absence of the rich semantic tokens found in language. Unlike words in a sentence, time series values are continuous and lack discrete meaning, making it more difficult to learn meaningful attention patterns. Therefore, transformers need to be adapted for time series forecasting. Early adaptations of transformers for use with time series data include:
 
@@ -672,7 +672,7 @@ Despite the limited data and restrictive configuration, the transformer is highl
 
 This section presents results obtained using our minimalist transformer architecture in forecasting well-known univariate benchmark data series.
 
-First, we showcase the successive processing stages on the archetypal airline passenger data series \citep{BJ70}. Then, we present illustrative quantitative results on standard forecasting benchmark instances.
+First, we showcase the successive processing stages on the archetypal airline passenger data series \citep{BJ70}. Then, we present illustrative quantitative results on standard forecasting benchmark instances. \textcolor{blue}{Unless otherwise specified, the hyperparameters were optimized by means of the Optuna package \cite{ASY19}}.
 
 \subsection{The airline passengers test case} \label{subsec:airlines}
 
@@ -696,19 +696,21 @@ Next comes multi-head attention. We used 2 heads, and for each head we set $d_k 
 
 Our work aimed to provide a basic, simple architecture that could be used to fully understand the internal functioning and possibly form the basis for improvements, rather than a best-of-class architecture. However, it is important to validate its effectiveness in order to determine how representative it is of the possibilities offered by the transformer approach to data series forecasting. To this end, we ran both our system and a standard random forest forecaster, the RandomForestRegressor from scikit-learn \cite{GEW06}, on a standard forecasting benchmark.
 
-The benchmark used consisted of the monthly series of the M3 forecasting competition \cite{MH00}. The M3 dataset includes a diverse collection of time series across different domains and frequencies, including yearly, quarterly, monthly, and other intervals. The monthly data subset includes 1428 real world time series collected at monthly intervals covering a wide range of domains, classified as:
+The benchmark consisted of the monthly series from the M3 forecasting competition \cite{MH00}. The M3 dataset comprises a variety of time series from different domains and frequencies, including yearly, quarterly, monthly and other intervals. \textcolor{blue}{It contains the kind of seasonal and noisy data commonly encountered in business forecasting}. The monthly data subset includes 1428 real world time series collected at monthly intervals covering a wide range of domains, classified as:
+
 \begin{itemize}
-	\item Macroeconomics (e.g., unemployment rates, inflation, industrial production),
-	\item Microeconomics (e.g., sales, orders, inventory levels for individual companies),
-	\item Industry (e.g., combined production, sales, or demand in a broader industrial sector, not just a single firm)
-	\item Finance (e.g., stock prices, exchange rates, interest rates),
-	\item Demographics (e.g., population statistics, birth/death rates),
-	\item Others, i.e., diverse, real-world time series that don’t belong to traditional economic or financial domains (e.g., energy consumption, transportation data)
+	\item {\it Macroeconomics} (e.g., unemployment rates, inflation, industrial production),
+	\item {\it Microeconomics} (e.g., sales, orders, inventory levels for individual companies),
+	\item {\it Industry} (e.g., combined production, sales, or demand in a broader industrial sector, not just a single firm)
+	\item {\it Finance} (e.g., stock prices, exchange rates, interest rates),
+	\item {\it Demographics} (e.g., population statistics, birth/death rates),
+	\item {\it Others}, i.e., diverse, real-world time series that don’t belong to traditional economic or financial domains (e.g., energy consumption, transportation data)
 \end{itemize}
 
 The length of the monthly series varies, typically ranging from 48 to 126 observations (i.e., 4 to over 10 years of data) and for each series, participants were asked to forecast the next 18 months. We used this same forecast horizon in our tests, and the following argument values: In summary, the values used for the parameters were: $n$=24, $m$=36, $k$=4, $d_k$=$d_v$=12, $p$=144. The number of epochs set for network learning was 400, the total number of parameters to learn in the transformer model resulted to be 46'189.
 
 We ran each model on all the benchmark series, computing the RMSE on both the training and test sets. To determine whether the difference in forecast effectiveness was significant, we conducted a Mann–Whitney U-test on the RMSE results for each aggregate separately. Table \ref{tab:aggregate} shows the results of the comparison aggregated over the type feature. The columns show:
+
 \begin{itemize}
 	\item {\it type}: type of the aggregate,
 	\item {\it num}: number of series in the aggregate,
@@ -720,7 +722,7 @@ We ran each model on all the benchmark series, computing the RMSE on both the tr
 \end{itemize}
 
 \begin{table}[H]
-\caption{Minimalistic transformer and random forest, aggregate results}
+\caption{Minimalist transformer and random forest, aggregate results}
 \label{tab:aggregate}
 \centering
 %% \tablesize{} %% You can specify the fontsize here, e.g., \tablesize{\footnotesize}. If commented out \small will be used.
@@ -731,18 +733,22 @@ We ran each model on all the benchmark series, computing the RMSE on both the tr
 MICRO 		& 474 &  92.65 & 6 & 134 & 28.27 & 0.000\\
 INDUSTRY 	& 334 & 140.02 & 3 & 123 & 36.83 & 0.042\\
 MACRO 		& 312 & 130.88 & 3 & 101 & 32.37 & 0.021\\
-FINANCE 	& 145 & 124.40 & 1 &  68 & 46.90 & 0.247\\
+FINANCE 	   & 145 & 124.40 & 1 &  68 & 46.90 & 0.247\\
 DEMOGRAPHIC & 111 & 123.33 & 3 &  33 & 29.73 & 0.021\\
 OTHER 		&  52 &  82.98 & 0 &  29 & 55.77 & 0.661\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The results in Table \ref{tab:aggregate}  show that, despite being outperformed as a modeller of the known part of the series, the transformer solution can already be competitive in forecasting, despite the limiting operational restrictions. The quality of the forecast depends on the structure of the data, resulting from dependency on the application domain. In the MICRO and DEMOGRAPHIC domains, transformers performed better than Random Forest in less than one-third of cases, whereas in FINANCE it was almost one-half, and in the OTHER domain even more than half the time. There is no statistical difference in performance between the two approaches for these last two domains, while Random Forest has a significantly lower average RMSE for the other four. The times are expressed in seconds; for the Transformer model, in particular, the time is an average per-epoch.
+The results in Table \ref{tab:aggregate}  show that, despite being outperformed as a modeller of the known part of the series, the transformer solution can already be competitive in forecasting, despite the limiting operational restrictions. The quality of the forecast depends on the structure of the data, resulting from dependency on the application domain. In the MICRO and DEMOGRAPHIC domains, transformers performed better than Random Forest in less than one-third of cases, whereas in FINANCE it was almost one-half, and in the OTHER domain even more than half the time. There is no statistical difference in performance between the two approaches for these last two domains, while Random Forest has a significantly lower average RMSE for the other four. \textcolor{blue}{The results of the tests are highly dependent on sample size. It is not surprising that the greatest indifference is observed for the least numerous sample. However, no aggregate has a sample size that renders the test irrelevant.}
 
+\textcolor{blue}{As the M3 benchmark has been studied in depth, we can tentatively interpret these observations. Financial data is characterised by high volatility and weak or non-existent trends or seasonality. They therefore have a higher noise component, which appears to be better handled by transformers. In contrast, industry and macro data have stronger deterministic components, such as trends and seasonality (due to business cycles, yearly production seasonality, etc.), which are better captured by a decision tree-based model.
+Seasonality is in fact much more pronounced in industry and demographics series, while finance has very weak seasonality and is often dominated by idiosyncratic shocks. A similar situation applies to trends in the series, where demographic and macroeconomic series exhibit clear long-term growth or decline. Finally, and most significantly, financial and 'other' series are subject to frequent regime shifts, whereas industry and macroeconomic series undergo structural breaks less frequently and exhibit more persistent regimes.}
+
+The times are expressed in seconds; for the Transformer model, in particular, the time is an average per-epoch.
 
 \begin{table}[H]
-\caption{Minimalistic transformer and random forest, aggregate results, scaled data}
+\caption{Minimalist transformer and random forest, aggregate results, scaled data}
 \label{tab:bestworse}
 \centering
 %% \tablesize{} %% You can specify the fontsize here, e.g., \tablesize{\footnotesize}. If commented out \small will be used.
@@ -793,10 +799,12 @@ The results in the table confirm that the RMSE values are comparable in all case
 	\label{fig:trworse}
 \end{figure}
 
-Other comparisons have been performed against other models, complementing the Random Forest baseline and offering a broader perspective by including recent transformer-based approaches. These comprise the Chronos model \cite{chronos}, TCAN (Temporal Convolution Attention Network) \cite{tcan}, ARIMA and ETS. The RMSE test results are shown for the series outlined in Table \ref{tab:comparisons}.
+\textcolor{blue}{Other comparisons have been performed against other models, complementing the Random Forest baseline and offering a broader perspective by including recent transformer-based approaches. These comprise the Chronos model \cite{chronos}, TCAN (Temporal Convolution Attention Network) \cite{tcan}, ARIMA and ETS. The autoregressive models relied on their statsmodels implementation \cite{SP10} using pmdarima's stepwise approach for hyperparameter tuning \cite{S17}. The RMSE test results are shown for the series listed in Table \ref{tab:comparisons}}.
+
+\cite{LKR21}
 
 \begin{table}[H]
-	\caption{Minimalistic transformer compared to other baseline models.}
+	\caption{Minimalist transformer compared to other baseline models.}
 	\label{tab:comparisons}
 	\centering
 	\begin{tabular}{c|ccccc}
