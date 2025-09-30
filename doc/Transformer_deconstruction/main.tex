@@ -829,6 +829,8 @@ The results in the table confirm that the RMSE values are comparable in all case
 
 In Table \ref{tab:ablation} it's possible to see the effects of removing or editing certain parts of the Encoder on the whole model performances.
 
+As it can be seen, being the model quite small - just a single Encoder block and a single Decoder block - the overall effects are visible but not too much impactful. As expectable, the baseline model is able to achieve the best loss value over the validation data (closely followed by the model without the output projection and scaling). Moreover, it has the fourth highest training loss value - which along with the validation result tells about the model's capabilities of generalizing over the training data.
+
 \begin{table}[H]
 	
 	\caption{Ablation studies.}
@@ -850,6 +852,7 @@ In Table \ref{tab:ablation} it's possible to see the effects of removing or edit
 		2758 & 0.2389/0.3920 & 0.2730/0.3358 & 0.2762/0.4013 & 0.2535/0.4790 & 0.3712/0.2211 & 0.0915/0.7113 & 0.2724/0.3660 & 0.2291/0.3579   \\
 		2817 & 0.2676/0.4225 & 0.2547/0.4147 & 0.2623/0.4288 & 0.2404/0.2942 & 0.5880/0.2005 & 0.1670/0.4662 & 0.2262/0.3866 & 0.2689/0.3413   \\
 		2823 & 0.3002/0.2001 & 0.3070/0.2211 & 0.3080/0.3478 & 0.2930/0.1788 & 3.0250/2.7238 & 0.2338/0.1778 & 0.2863/0.2181 & 0.3087/0.2208   \\
+		avg. & 0.1830/0.4170 & 0.1890/0.3833 & 0.1875/0.4181 & 0.1808/0.4253 & 0.6161/0.4811 & 0.1324/0.4466 & 0.1795/0.3505 & 0.1853/0.3450	\\
 		\bottomrule
 	\end{tabular}
 \end{table}
