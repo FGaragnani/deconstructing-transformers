@@ -862,9 +862,9 @@ As an additional view, Figure \ref{fig:attention} shows - for the restaurant Goo
 
 More specifically, the attention of the input series - in blue - is extracted by the weights of the Cross-Attention layer, while the attention contribution of the generated series - in green - is examined in the Self-Attention layer.
 
-The results are aligned with what one might expect the model to learn about a seasonal trajectory. For instance, it can be seen that for the generation of the fourth timestep (title in Figure \ref{fig:attention} as "Step 4") the model almost solely focus on the timestep seven days prior - which is when a certain seasonal rise happens. The same happens at the immediate next generation, when the model focuses heavily on the fourth timestep of the input series.
+The results are aligned with what one might expect the model to learn about a seasonal trajectory. For instance, it can be seen that for the generation of the first timestep (titled in Figure \ref{fig:attention} as "Step 1") the model depends on the timestep seven days prior - which is when a certain seasonal small rise happens. A similar argument could be given by noticing that - from the generation of the fifth step onwards - the model heavily uses the peak value of the input series, probably to extract information about the correct value of the new seasonal peak.
 
-Another interesting observation that emerges from the above example is that as time goes on, the model shifts from weighing certain input steps heavily and prefers a more 'global' view of the pattern - probably because many information are already stored in the generated sequence.
+Another interesting observation that emerges from the above example is that the model tries to focus on specific timesteps, almost ignoring entirely other. Since the difference between the those timesteps is small, the model tries best to gather as much information as possible from a few significant timesteps, rather than relying on too many similar ones.
 
 \begin{figure}
 	\centering
