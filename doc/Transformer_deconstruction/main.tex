@@ -69,6 +69,7 @@
 \usepackage{amsmath}        % multiline formulas
 \usepackage{array}          % for better column control
 \usepackage{xcolor}         % for coloring blocks of text
+\usepackage{rotating} 		 % for rotating wide tables
 
 \usepackage{tikz}
 \usetikzlibrary{positioning,fit,arrows.meta,decorations.pathreplacing,calc}
@@ -245,11 +246,11 @@ The objective of the encoding component (i.e., the \textit{encoder}) in a Transf
 	
 	
 	\node (mha) [mha, below=of pe] {Multi-Head Attention \\ \scriptsize (80)};
-	\node (add1) [addnorm, below=of mha] {Add \& Norm \par \scriptsize (8)};
+	\node (add1) [addnorm, below=of mha] {Add \& Norm 1 \par \scriptsize (8)};
 	
 	% Feedforward
 	\node (ff) [ff, below=of add1] {Feedforward Network \\ \scriptsize (148)};
-	\node (add2) [addnorm, below=of ff] {Add \& Norm \par \scriptsize (8)};
+	\node (add2) [addnorm, below=of ff] {Add \& Norm 2 \par \scriptsize (8)};
 	
 	% Output
 	\node (output) [block, fill=gray!10, below=of add2] {Output};
@@ -281,19 +282,19 @@ The individual steps are detailed below.
 	\SetKwInOut{Output}{Output}
 	\SetKw{KwGoTo}{go to}
 
-        \underline{procedure encoding(s,n,m,k,$d_k$,$d_v$,$p$)} \label{algo:encoding}
-        
-        \Input{ A time series ${\bf s} = [s_i]$, $i=0,\,\ldots,\,t$}
-        \Output{ A 2D matrix $Z$}
-        
-        \tcp*{Input Projection}
-        \tcp*{transform the array {\bf s} into the 2D embedding matrix (tensor) {\bf X}} 
-        \For{i = 0, \ldots, t} 
-        {\label{enc:seca1}
-            Expand value $s_i$ into a row $X_i = (s_iW_i) + b_i$
-        }   \label{enc:seca2}
-        \tcp*{Positional encoding}
-        X' = X + P;\; \label{enc:positional}
+	\underline{procedure encoding(s,n,m,k,$d_k$,$d_v$,$p$)} \label{algo:encoding}
+	
+	\Input{ A time series ${\bf s} = [s_i]$, $i=0,\,\ldots,\,t$}
+	\Output{ A 2D matrix $Z$}
+	
+	\tcp*{Input Projection}
+	\tcp*{transform the array {\bf s} into the 2D embedding matrix (tensor) {\bf X}} 
+	\For{i = 0, \ldots, t} 
+	{\label{enc:seca1}
+	   Expand value $s_i$ into a row $X_i = (s_iW_i) + b_i$
+	}   \label{enc:seca2}
+	
+	X' = X + P; \tcp*{Positional encoding} \label{enc:positional}
         
 	\For{n times}
 	{ \label{enc:encoding-block1}
@@ -827,38 +828,51 @@ The results in the table confirm that the RMSE values are comparable in all case
 
 \subsection{Ablation Studies}
 
-In Table \ref{tab:ablation} it's possible to see the effects of removing or editing certain parts of the Encoder on the whole model performances.
+In Table \ref{tab:ablation} it's possible to see the effects of removing or editing computational blocks of the Encoder, as drawn in Figure \ref{fig:enc}, on the performance of the entire model. Each cell reports the training loss of the configuration in the column on the instance in the row, and the corresponding loss, while the columns show:
 
-As it can be seen, being the model quite small - just a single Encoder block and a single Decoder block - the overall effects are visible but not too much impactful. As expectable, the baseline model is able to achieve the best loss value over the validation data (closely followed by the model without the output projection and scaling). Moreover, it has the fourth highest training loss value - which along with the validation result tells about the model's capabilities of generalizing over the training data.
+\begin{itemize}
+	\item {id}: the id of the data series in the M3 collection;
+	\item {1-sized embeddings}: results using embeddings of a single value (i.e., no embedding), lines 2-4 of Algorithm \ref{algo:encoding};
+	\item {No PE}: results without positional encoding, line 5 of Algorithm \ref{algo:encoding};
+	\item {Single Head}: results with single head instead than mutihead attention, lines 7-15 of Algorithm \ref{algo:encoding}; 
+	\item {No Add\&Norm 1}: results removing the first Add \& Norm block, line 18 of Algorithm \ref{algo:encoding};
+	\item {No FF}: results removing the feedforward network, line 19 of Algorithm \ref{algo:encoding};
+	\item {No Add\&Norm 2}: results removing the second Add \& Norm block, line 20 of Algorithm \ref{algo:encoding};
+	\item {No Output}: results without output projection and scaling, line ?? of Algorithm \ref{algo:encoding};
+	\item {Baseline}: results of the complete model
+\end{itemize}
 
+As the model is quite small, comprising just a single encoder block and a single decoder block, the overall effect is visible but not particularly impactful. As expected, the baseline model achieves the best loss value over the validation data, closely followed by the model without output projection and scaling. Moreover, it has the fourth highest training loss value, which, alongside the validation result, indicates the model's ability to generalize over the training data.
+
+\begin{sidewaystable}
 \begin{table}[H]
-	
 	\caption{Ablation studies.}
 	\label{tab:ablation}
 	\centering
 	\begin{tabular}{c | ccccccc | c}
 		\toprule
-		id & Single Head & No FF & No first Add\&Norm & No second Add\&Norm & 1-sized embeddings & No PE & No Output & Baseline \\
+		id & Single Head & No FF & No Add\&Norm 1 & No Add\&Norm 2 & 1-sized embeddings & No PE & No Output & Baseline \\
 		\midrule
-		1652 & 0.1751/0.3271 & 0.1882/0.3299 & 0.1833/0.3323 & 0.1809/0.3271 & 0.4103/0.5686 & 0.1836/0.3018 & 0.1833/0.3233 & 0.1797/0.3376   \\
-		1546 & 0.1949/0.3534 & 0.1856/0.2907 & 0.2116/0.4803 & 0.1905/0.3302 & 0.6055/0.3190 & 0.1905/0.3013 & 0.1950/0.4079 & 0.1977/0.3547   \\
-		1894 & 0.1426/0.4967 & 0.1884/0.3859 & 0.1325/0.3258 & 0.1561/0.5248 & 0.2437/0.3707 & 0.1086/0.5129 & 0.1498/0.2609 & 0.1524/0.2113   \\
-		2047 & 0.1610/0.2521 & 0.1577/0.4489 & 0.1681/0.2556 & 0.1341/0.4325 & 0.1815/0.2539 & 0.0994/0.4881 & 0.1410/0.3244 & 0.1737/0.3440   \\
-		2255 & 0.1171/0.6192 & 0.1267/0.5877 & 0.1244/0.6037 & 0.1219/0.6083 & 0.7751/0.2084 & 0.0682/0.5967 & 0.0971/0.5666 & 0.1194/0.5776  \\
-		2492 & 0.1577/0.4382 & 0.1135/0.2723 & 0.1544/0.5718 & 0.1439/0.5982 & 0.2671/0.3408 & 0.0974/0.5598 & 0.1331/0.3800 & 0.1142/0.1670   \\
-		2594 & 0.1335/0.7284 & 0.1253/0.8001 & 0.1154/0.6400 & 0.1543/0.6563 & 0.5420/0.1216 & 0.0824/0.6159 & 0.1181/0.5234 & 0.1374/0.6539   \\
-		2658 & 0.1431/0.5477 & 0.2101/0.2681 & 0.1820/0.3138 & 0.1842/0.4183 & 0.2158/0.2462 & 0.1664/0.4285 & 0.1909/0.2340 & 0.1869/0.3801   \\
-		2737 & 0.1644/0.2268 & 0.1373/0.2455 & 0.1319/0.3162 & 0.1167/0.2559 & 0.1681/0.1989 & 0.0994/0.1994 & 0.1603/0.2153 & 0.1546/0.1935  \\
-		2758 & 0.2389/0.3920 & 0.2730/0.3358 & 0.2762/0.4013 & 0.2535/0.4790 & 0.3712/0.2211 & 0.0915/0.7113 & 0.2724/0.3660 & 0.2291/0.3579   \\
-		2817 & 0.2676/0.4225 & 0.2547/0.4147 & 0.2623/0.4288 & 0.2404/0.2942 & 0.5880/0.2005 & 0.1670/0.4662 & 0.2262/0.3866 & 0.2689/0.3413   \\
-		2823 & 0.3002/0.2001 & 0.3070/0.2211 & 0.3080/0.3478 & 0.2930/0.1788 & 3.0250/2.7238 & 0.2338/0.1778 & 0.2863/0.2181 & 0.3087/0.2208   \\
-		avg. & 0.1830/0.4170 & 0.1890/0.3833 & 0.1875/0.4181 & 0.1808/0.4253 & 0.6161/0.4811 & 0.1324/0.4466 & 0.1795/0.3505 & 0.1853/0.3450	\\
+		N1652 & 0.175/0.327 & 0.188/0.329 & 0.183/0.332 & 0.180/0.327 & 0.410/0.568 & 0.183/0.301 & 0.183/0.323 & 0.179/0.337  \\
+		N1546 & 0.194/0.353 & 0.185/0.290 & 0.211/0.480 & 0.190/0.330 & 0.605/0.319 & 0.190/0.301 & 0.195/0.407 & 0.197/0.354  \\
+		N1894 & 0.142/0.496 & 0.188/0.385 & 0.132/0.325 & 0.156/0.524 & 0.243/0.370 & 0.108/0.512 & 0.149/0.260 & 0.152/0.211  \\
+		N2047 & 0.161/0.252 & 0.157/0.448 & 0.168/0.255 & 0.134/0.432 & 0.181/0.253 & 0.099/0.488 & 0.141/0.324 & 0.173/0.344  \\
+		N2255 & 0.117/0.619 & 0.126/0.587 & 0.124/0.603 & 0.121/0.608 & 0.775/0.208 & 0.068/0.596 & 0.097/0.566 & 0.119/0.577  \\
+		N2492 & 0.157/0.438 & 0.113/0.272 & 0.154/0.571 & 0.143/0.598 & 0.267/0.340 & 0.097/0.559 & 0.133/0.380 & 0.114/0.167  \\
+		N2594 & 0.133/0.728 & 0.125/0.800 & 0.115/0.640 & 0.154/0.656 & 0.542/0.121 & 0.082/0.615 & 0.118/0.523 & 0.137/0.653  \\
+		N2658 & 0.143/0.547 & 0.210/0.268 & 0.182/0.313 & 0.184/0.418 & 0.215/0.246 & 0.166/0.428 & 0.190/0.234 & 0.186/0.380  \\
+		N2737 & 0.164/0.226 & 0.137/0.245 & 0.131/0.316 & 0.116/0.255 & 0.168/0.198 & 0.099/0.199 & 0.160/0.215 & 0.154/0.193  \\
+		N2758 & 0.238/0.392 & 0.273/0.335 & 0.276/0.401 & 0.253/0.479 & 0.371/0.221 & 0.091/0.711 & 0.272/0.366 & 0.229/0.357  \\
+		N2817 & 0.267/0.422 & 0.254/0.414 & 0.262/0.428 & 0.240/0.294 & 0.588/0.200 & 0.167/0.466 & 0.226/0.386 & 0.268/0.341  \\
+		N2823 & 0.300/0.200 & 0.307/0.221 & 0.308/0.347 & 0.293/0.178 & 3.025/2.723 & 0.233/0.177 & 0.286/0.218 & 0.308/0.220  \\
+		 avg. & 0.183/0.417 & 0.189/0.383 & 0.187/0.418 & 0.180/0.425 & 0.616/0.481 & 0.132/0.446 & 0.179/0.350 & 0.185/0.345  \\
 		\bottomrule
 	\end{tabular}
 \end{table}
+\end{sidewaystable}
 
 \subsection{Interpretability}
-As an additional view, Figure \ref{fig:attention} shows - for the restaurant Google Trends series - the contribution of each timesteps that the Decoder gives to both the encoded input time series and to the autoregressively generated output timestep. The bigger the circle around a certain timestep, the greater the attention weight given by the trained model for inference.
+As an additional view, Figure \ref{fig:attention} shows - for the restaurant Google Trends series - the contribution of each timestep that the Decoder gives to both the encoded input time series and to the autoregressively generated output timestep. The bigger the circle around a certain timestep, the greater the attention weight given by the trained model for inference.
 
 More specifically, the attention of the input series - in blue - is extracted by the weights of the Cross-Attention layer, while the attention contribution of the generated series - in green - is examined in the Self-Attention layer.
 
@@ -869,7 +883,7 @@ Another interesting observation that emerges from the above example is that the 
 \begin{figure}
 	\centering
 	\includegraphics[width=1.0\linewidth]{attention.png}
-	\caption{The contribution of each timestep for any given output step.}
+	\caption{The contribution of each timestep for each generated output value.}
 	\label{fig:attention}
 \end{figure}
 
