@@ -167,11 +167,4 @@ Smith, T.G.;  et~al.
 \newblock {pmdarima}: ARIMA estimators for {Python},  2017--.
 \newblock [Online; accessed Sept 29, 2025].
 
-\bibitem[Lin et~al.(2021)Lin, Koprinska, and Rana]{LKR21}
-Lin, Y.; Koprinska, I.; Rana, M.
-\newblock Temporal Convolutional Attention Neural Networks for Time Series
-  Forecasting.
-\newblock In Proceedings of the 2021 International Joint Conference on Neural
-  Networks (IJCNN),  2021, pp. 1--8.
-
 \end{thebibliography}

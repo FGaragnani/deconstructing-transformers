@@ -27,7 +27,11 @@ if __name__ == "__main__":
       s     = df.loc[df['Series']==series[i],6:].dropna(axis=1, how='all').values.flatten()
       s     = (s - np.min(s)) / (np.max(s) - np.min(s))
       train = s[:cutpoint]
+      for i in range(len(train)):
+         if(train[i]==0): train[i]=0.0000021
       test  = s[cutpoint:]
+      for i in range(len(test)):
+         if(test[i]==0): test[i]=0.0000021
       if ch == 0:  # pmdarima
          # defaults: start_p=2, start_q=0, max_p=5, max_d=2, max_q=5,
          # start_P=1, start_Q=1, max_P=2, max_D=1, max_Q=2
@@ -70,12 +74,12 @@ if __name__ == "__main__":
          model = ExponentialSmoothing(train, seasonal_periods=12,trend="add",
           seasonal="mul",
           damped_trend=True,
-          use_boxcox=True,
+          use_boxcox=False,
           initialization_method="estimated")
          hwfit = model.fit()
          # make prediction
          yfore = hwfit.predict(len(train), len(train)+nperiod-1)
-         print(yfore)
+         #print(yfore)
          res = forecast_accuracy(yfore,test)
          title = f"Holt-Winters. RMSE={res['rmse']}"
          print(res)
