@@ -826,6 +826,24 @@ The results in the table confirm that the RMSE values are comparable in all case
 	\end{tabular}
 \end{table}
 
+\textcolor{blue}{To evaluate the scalability of the attention mechanism in capturing patterns, we conducted experiments on four longer time series. Table \ref{tab:long} below reports the information about the time series themselves and of the experiments' results. Each run had $24$ timesteps as input and had to predict $18$ points in time.}
+
+\begin{table}[H]
+	\caption{Minimalist Transformer results over longer time series.}
+	\label{tab:long}
+	\centering
+	\begin{tabular}{c|cccc}
+		\toprule
+		id   & train samples & test samples & trtrain & trtest  \\
+		\midrule
+		SDI\_Temp\_1m & 870 & 187 & 0.0399 & 0.1287 \\
+ 		Vapor\_Pressure\_Avg\_2 & 870 & 187 &  0.1099 & 0.1674 \\
+ 		WS\_ms\_Avg & 870 & 187 & 0.1571 & 0.1947 \\
+ 		WTemp\_C1\_Avg & 870 & 187 & 0.0291 & 0.1121 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
 \subsection{Ablation Studies}
 
 In Table \ref{tab:ablation} it's possible to see the effects of removing or editing computational blocks of the Encoder, as drawn in Figure \ref{fig:enc}, on the performance of the entire model. Each cell reports respectively the training and the testing loss of the configuration in the column of the instance in the row, and the corresponding loss, while the columns show:
@@ -844,9 +862,9 @@ In Table \ref{tab:ablation} it's possible to see the effects of removing or edit
 As the model is quite small, comprising just a single encoder block and a single decoder block, the overall effect is visible but not particularly impactful. As expected, the baseline model achieves the best loss value over the validation data. Moreover, it has the fourth highest training loss value, which, alongside the validation result, indicates the model's ability to generalize over the training data.
 
 \begin{sidewaystable}
-\begin{table}[H]
 	\caption{Ablation studies.}
 	\label{tab:ablation}
+\begin{table}[H]
 	\centering
 	\begin{tabular}{|c | ccccccc | c}
 		\toprule

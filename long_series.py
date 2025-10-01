@@ -27,6 +27,8 @@ def main():
             train_dataset = DatasetTimeSeries(second_col[:int(len(second_col) * TRAIN_SIZE)], SheetType.OTHER, i, "long", output_len=OUTPUT_LEN, preprocessing=PreprocessingTimeSeries.MIN_MAX)
             test_dataset = DatasetTimeSeries(second_col[int(len(second_col) * TRAIN_SIZE):], SheetType.OTHER, i, "long", output_len=OUTPUT_LEN, preprocessing=PreprocessingTimeSeries.MIN_MAX)
             long_series.append((filename, train_dataset, test_dataset))
+            print(f"Loaded {filename} with {len(train_dataset)} training samples and {len(test_dataset)} testing samples.")
+    return
 
     model = TransformerLikeModel(
         embed_size=EMBED_SIZE,
