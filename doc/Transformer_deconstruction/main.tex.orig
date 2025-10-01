@@ -801,6 +801,8 @@ The results in the table confirm that the RMSE values are comparable in all case
 \end{figure}
 
 
+<<<<<<< HEAD
+=======
 \textcolor{blue}{To evaluate the scalability of the attention mechanism in capturing patterns, we conducted experiments on four longer time series. Table \ref{tab:long} below reports the information about the time series themselves and of the experiments' results. Each run had $24$ timesteps as input and had to predict $18$ points in time; each dataset, instead, had $870$ samples in the training set and $187$ in the test set. Some plot examples from the start of each series can be seen in Figure \ref{fig:long}.}
 
 \begin{table}[H]
@@ -827,6 +829,8 @@ The results in the table confirm that the RMSE values are comparable in all case
 \end{figure}
 
 \textcolor{blue}{Other comparisons have been performed against other models, complementing the Random Forest baseline and offering a broader perspective by including recent transformer-based approaches. These comprise the Chronos model \cite{chronos}, TCAN (Temporal Convolution Attention Network) \cite{tcan}, ARIMA and ETS. The autoregressive models relied on their statsmodels implementation \cite{SP10} using pmdarima's stepwise approach for hyperparameter tuning \cite{S17}. The RMSE test results are shown for the series listed in Table \ref{tab:comparisons}}.
+
+>>>>>>> 10a4babb7ca5599dbaef9eb1acc873c1768c2fba
 \begin{table}[H]
 	\caption{Minimalist transformer compared to other baseline models.}
 	\label{tab:comparisons}
@@ -835,6 +839,20 @@ The results in the table confirm that the RMSE values are comparable in all case
 		\toprule
 		id   & trtest & chronos & tcan & arima & ets \\
 		\midrule
+<<<<<<< HEAD
+		N1652 & 0.262 & 0.5238 & & 0.1199 & 0.1203 \\
+		N1546 & 0.526 & 0.4107 & & 0.2382 & 0.2348 \\
+		N1894 & 0.290 & 0.3803 & & 0.4085 & 0.3640 \\
+		N2047 & 0.667 & 0.4639 & & 0.1332 & 0.1509 \\
+		N2255 & 0.088 & 0.4095 & & 0.2011 & 0.0330 \\
+		N2492 & 0.626 & 0.3174 & & 0.2844 & 0.2237 \\
+		N2594 & 0.597 & 0.3647 & & 0.0138 & 0.0478 \\
+		N2658 & 0.656 & 0.3626 & & 0.2489 & 0.3690 \\
+		N2737 & 0.129 & 0.2117 & & 0.2381 & 0.3063 \\
+		N2758 & 1.007 & 0.4105 & & 0.2126 & 0.1939 \\
+		N2817 & 0.125 & 0.5384 & & 0.1436 & 0.1263 \\
+		N2823 & 0.166 & 0.4495 & & 0.3025 & 0.3257 \\
+=======
 		N1652 & 0.262 & 0.5238 & 0.0745 & 0.1199 & 0.1203 \\
 		N1546 & 0.526 & 0.4107 & 0.1700 & 0.2382 & 0.2348 \\
 		N1894 & 0.290 & 0.3803 & 0.2504 & 0.4085 & 0.3640 \\
@@ -847,12 +865,33 @@ The results in the table confirm that the RMSE values are comparable in all case
 		N2758 & 1.007 & 0.4105 & 0.3582 & 0.2126 & 0.1939 \\
 		N2817 & 0.125 & 0.5384 & 0.1580 & 0.1436 & 0.1263 \\
 		N2823 & 0.166 & 0.4495 & 0.3048 & 0.3025 & 0.3257 \\
+>>>>>>> 10a4babb7ca5599dbaef9eb1acc873c1768c2fba
 		\bottomrule
 	\end{tabular}
 \end{table}
 
 \subsection{Ablation Studies}
 
+<<<<<<< HEAD
+In Table \ref{tab:ablation} it's possible to see the effects of removing or editing computational blocks of the Encoder, as drawn in Figure \ref{fig:enc}, on the performance of the entire model. Each cell reports the training loss of the configuration in the column on the instance in the row, and the corresponding loss, while the columns show:
+
+\begin{itemize}
+	\item {id}: the id of the data series in the M3 collection;
+	\item {1-sized embeddings}: results using embeddings of a single value (i.e., no embedding), lines 2-4 of Algorithm \ref{algo:encoding};
+	\item {No PE}: results without positional encoding, line 5 of Algorithm \ref{algo:encoding};
+	\item {Single Head}: results with single head instead than mutihead attention, lines 7-15 of Algorithm \ref{algo:encoding}; 
+	\item {No Add\&Norm 1}: results removing the first Add \& Norm block, line 18 of Algorithm \ref{algo:encoding};
+	\item {No FF}: results removing the feedforward network, line 19 of Algorithm \ref{algo:encoding};
+	\item {No Add\&Norm 2}: results removing the second Add \& Norm block, line 20 of Algorithm \ref{algo:encoding};
+	\item {No Output}: results without output projection and scaling, line ?? of Algorithm \ref{algo:encoding};
+	\item {Baseline}: results of the complete model
+\end{itemize}
+
+As the model is quite small, comprising just a single encoder block and a single decoder block, the overall effect is visible but not particularly impactful. As expected, the baseline model achieves the best loss value over the validation data, while the model without output projection and scaling is almost equivalent to it, but removing any other component has comparable highly disruptive effect. Furthermore, the full model has the fourth highest training loss value. This, alongside the validation result, indicates the model's ability to generalize over the training data.
+
+\begin{sidewaystable}
+\begin{table}[H]
+=======
 In Table \ref{tab:ablation} it's possible to see the effects of removing or editing computational blocks of the Encoder, as drawn in Figure \ref{fig:enc}, on the performance of the entire model. Each cell reports respectively the training and the testing loss of the configuration in the column of the instance in the row, and the corresponding loss, while the columns show:
 
 \begin{itemize}
@@ -865,19 +904,34 @@ In Table \ref{tab:ablation} it's possible to see the effects of removing or edit
 	\item {No Add\&Norm 2}: results removing the second Add \& Norm block, line \ref{enc:addnorm2} of Algorithm \ref{algo:encoding};
 	\item {Baseline}: results of the complete model.
 \end{itemize}
-\end{itemize}
-
-As the model is quite small, comprising just a single encoder block and a single decoder block, the overall effect is visible but not particularly impactful. As expected, the baseline model achieves the best loss value over the validation data, while the model without output projection and scaling is almost equivalent to it, but removing any other component has comparable highly disruptive effect. Furthermore, the full model has the fourth highest training loss value. This, alongside the validation result, indicates the model's ability to generalize over the training data.
 
 As the model is quite small, comprising just a single encoder block and a single decoder block, the overall effect is visible but not particularly impactful. As expected, the baseline model achieves the best loss value over the validation data. Moreover, it has the fourth highest training loss value, which, alongside the validation result, indicates the model's ability to generalize over the training data.
 
 \begin{sidewaystable}
+>>>>>>> 10a4babb7ca5599dbaef9eb1acc873c1768c2fba
 	\caption{Ablation studies.}
 	\label{tab:ablation}
 \begin{table}[H]
 	\centering
 	\begin{tabular}{|c | ccccccc | c}
 		\toprule
+<<<<<<< HEAD
+		id & Single Head & No FF & No Add\&Norm 1 & No Add\&Norm 2 & 1-sized embeddings & No PE & No Output & Baseline \\
+		\midrule
+		N1652 & 0.175/0.327 & 0.188/0.329 & 0.183/0.332 & 0.180/0.327 & 0.410/0.568 & 0.183/0.301 & 0.183/0.323 & 0.179/0.337  \\
+		N1546 & 0.194/0.353 & 0.185/0.290 & 0.211/0.480 & 0.190/0.330 & 0.605/0.319 & 0.190/0.301 & 0.195/0.407 & 0.197/0.354  \\
+		N1894 & 0.142/0.496 & 0.188/0.385 & 0.132/0.325 & 0.156/0.524 & 0.243/0.370 & 0.108/0.512 & 0.149/0.260 & 0.152/0.211  \\
+		N2047 & 0.161/0.252 & 0.157/0.448 & 0.168/0.255 & 0.134/0.432 & 0.181/0.253 & 0.099/0.488 & 0.141/0.324 & 0.173/0.344  \\
+		N2255 & 0.117/0.619 & 0.126/0.587 & 0.124/0.603 & 0.121/0.608 & 0.775/0.208 & 0.068/0.596 & 0.097/0.566 & 0.119/0.577  \\
+		N2492 & 0.157/0.438 & 0.113/0.272 & 0.154/0.571 & 0.143/0.598 & 0.267/0.340 & 0.097/0.559 & 0.133/0.380 & 0.114/0.167  \\
+		N2594 & 0.133/0.728 & 0.125/0.800 & 0.115/0.640 & 0.154/0.656 & 0.542/0.121 & 0.082/0.615 & 0.118/0.523 & 0.137/0.653  \\
+		N2658 & 0.143/0.547 & 0.210/0.268 & 0.182/0.313 & 0.184/0.418 & 0.215/0.246 & 0.166/0.428 & 0.190/0.234 & 0.186/0.380  \\
+		N2737 & 0.164/0.226 & 0.137/0.245 & 0.131/0.316 & 0.116/0.255 & 0.168/0.198 & 0.099/0.199 & 0.160/0.215 & 0.154/0.193  \\
+		N2758 & 0.238/0.392 & 0.273/0.335 & 0.276/0.401 & 0.253/0.479 & 0.371/0.221 & 0.091/0.711 & 0.272/0.366 & 0.229/0.357  \\
+		N2817 & 0.267/0.422 & 0.254/0.414 & 0.262/0.428 & 0.240/0.294 & 0.588/0.200 & 0.167/0.466 & 0.226/0.386 & 0.268/0.341  \\
+		N2823 & 0.300/0.200 & 0.307/0.221 & 0.308/0.347 & 0.293/0.178 & 3.025/2.723 & 0.233/0.177 & 0.286/0.218 & 0.308/0.220  \\
+		 avg. & 0.183/0.417 & 0.189/0.383 & 0.187/0.418 & 0.180/0.425 & 0.616/0.481 & 0.132/0.446 & 0.179/0.350 & 0.185/0.345  \\
+=======
 		id & Single Head & No FF & No Add\&Norm 1 & No Add\&Norm 2 & 1-sized embeddings & No PE &  \iffalse No Output &\fi Baseline \\
 		\midrule
 		N1652 & 0.175/0.327 & 0.188/0.329 & 0.183/0.332 & 0.180/0.327 & 0.410/0.568 & 0.183/0.301 &\iffalse 0.183/0.323 &\fi 0.179/0.337  \\
@@ -894,6 +948,7 @@ As the model is quite small, comprising just a single encoder block and a single
 		N2823 & 0.300/0.200 & 0.307/0.221 & 0.308/0.347 & 0.293/0.178 & 3.025/2.723 & 0.233/0.177 &\iffalse 0.286/0.218 &\fi 0.308/0.220  \\
 		\midrule
 		 avg. & 0.183/0.417 & 0.189/0.383 & 0.187/0.418 & 0.180/0.425 & 0.616/0.481 & 0.132/0.446 &\iffalse 0.179/0.350 &\fi 0.185/0.345  \\
+>>>>>>> 10a4babb7ca5599dbaef9eb1acc873c1768c2fba
 		\bottomrule
 	\end{tabular}
 \end{table}

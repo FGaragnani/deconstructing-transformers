@@ -1,6 +1,9 @@
 from src.model import TransformerLikeModel
+from ristoranti import RistorantiDataset
 
 import torch
+import pandas as pd
+import numpy as np
 
 SEQUENCE_LENGTH = 7
 PREDICTION_LENGTH = 7
@@ -18,7 +21,7 @@ EARLY_STOPPING = False
 
 def main():
 
-    model: TransformerLikeModel = TransformerLikeModel.load_model("ristoranti_model_dec.pth", TransformerLikeModel, embed_size=EMBED_SIZE,
+    model: TransformerLikeModel = TransformerLikeModel.load_model("ristoranti_model.pth", TransformerLikeModel, embed_size=EMBED_SIZE,
         encoder_size=ENCODER_SIZE,
         decoder_size=DECODER_SIZE,
         num_head_dec_1=NUM_HEADS,
@@ -27,6 +30,24 @@ def main():
         output_len=PREDICTION_LENGTH,
         max_seq_length=SEQUENCE_LENGTH,
     )
+
+    df = pd.read_csv('ristorantiGTrend.csv')
+    series = df.iloc[:, 1].values.astype(np.float32)
+
+    series = series[:35]
+    print("Timesteps: ", len(series))
+    min_val = np.min(series)
+    max_val = np.max(series)
+    series = (series - min_val) / (max_val - min_val)
+
+    dataset = RistorantiDataset(series, SEQUENCE_LENGTH, PREDICTION_LENGTH)
+    encoded_set = model.seca.encode(dataset[0][0].unsqueeze(0))
+    print("Encoded Set:")
+    print(encoded_set)
+    encoded_set = model.pe(encoded_set)
+    attentioned_set = model.encoder[0].mha((encoded_set, encoded_set, encoded_set))[0] # type: ignore
+    print("Attentioned Set:")
+    print(attentioned_set)
 
     torch.set_printoptions(profile="full")
     print("Positional Encoding")
@@ -41,12 +62,20 @@ def main():
         W_Q, W_K, W_V = layer.get_attention_matrix(i) # type: ignore
         print("\tQuery:")
         print(W_Q)
+        print("\tQuery Bias:")
+        print(layer.W_Q.bias[i*layer.head_dim:(i+1)*layer.head_dim]) # type: ignore
         print("\n\tKey:")
         print(W_K)
+        print("\tKey Bias:")
+        print(layer.W_K.bias[i*layer.head_dim:(i+1)*layer.head_dim]) # type: ignore
         print("\n\tValue:")
         print(W_V)
+        print("\tValue Bias:")
+        print(layer.W_V.bias[i*layer.head_dim:(i+1)*layer.head_dim]) # type: ignore
         print("\n\tOutput Matrix:")
         print(layer.W_O.weight) # type: ignore
+        print("\n\tOutput Bias:")
+        print(layer.W_O.bias) # type: ignore
     print("\n")
     print("Add & Norm")
     print("-" * 30)
@@ -66,32 +95,17 @@ def main():
     print("CLS token")
     print("-" * 30)
     print(f"\tCLS token: {model.cls_token.data}")
-    print("\nNumber of trainable parameters: ", sum(p.numel() for p in model.seca.parameters() if p.requires_grad))
-    print(model.seca.decoder.weight)
+    print("SECA")
+    print("-" * 30)
+    print(f"Encoder Weight: {model.seca.encoder.weight}")
+    print(f"Encoder Bias: {model.seca.encoder.bias}")
+    print(f"Decoder Weight: {model.seca.decoder.weight}")
+    print(f"Decoder Bias: {model.seca.decoder.bias}")
 
     print("\n\n")
     print("Decoder")
     print("-" * 30)
     print("Number of trainable parameters: ", sum(p.numel() for p in model.decoder.parameters() if p.requires_grad))
-    layer = model.decoder[0]
-    print("Masked Multi-Head Attention")
-    print("Number of trainable parameters: ", sum(p.numel() for p in layer.mha_1.parameters() if p.requires_grad)) # type: ignore
-    print("\n")
-    print("Cross Multi-Head Attention")
-    print("Number of trainable parameters: ", sum(p.numel() for p in layer.mha_2.parameters() if p.requires_grad)) # type: ignore
-    print("\n")
-    print("FeedForward Layer")
-    print("Number of trainable parameters: ", sum(p.numel() for p in layer.ff.parameters() if p.requires_grad)) # type: ignore
-    print("\n")
-    print("Add & Norm 1")
-    print("Number of trainable parameters: ", sum(p.numel() for p in layer.norm1.parameters() if p.requires_grad)) # type: ignore
-    print("\n")
-    print("Add & Norm 2")
-    print("Number of trainable parameters: ", sum(p.numel() for p in layer.norm2.parameters() if p.requires_grad)) # type: ignore
-    print("\n")
-    print("Add & Norm 3")
-    print("Number of trainable parameters: ", sum(p.numel() for p in layer.norm3.parameters() if p.requires_grad)) # type: ignore
-    print("\n")
-
+    
 if __name__ == "__main__":
     main()
