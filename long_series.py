@@ -2,7 +2,10 @@ from torch.utils.data import Dataset, DataLoader, TensorDataset
 from dataset.dataset import DatasetTimeSeries, SheetType, PreprocessingTimeSeries
 from src.model import TransformerLikeModel
 from src.train import train_transformer_model
+from sklearn.ensemble import RandomForestRegressor
 import os
+import numpy as np
+import time
 import pandas as pd
 
 OUTPUT_LEN = 18
@@ -28,6 +31,21 @@ def main():
             test_dataset = DatasetTimeSeries(second_col[int(len(second_col) * TRAIN_SIZE):], SheetType.OTHER, i, "long", output_len=OUTPUT_LEN, preprocessing=PreprocessingTimeSeries.MIN_MAX)
             long_series.append((filename, train_dataset, test_dataset))
             print(f"Loaded {filename} with {len(train_dataset)} training samples and {len(test_dataset)} testing samples.")
+    
+    for filename, train, test in long_series:
+        clf = RandomForestRegressor(n_estimators=250, random_state=42)
+        X_np, y_np = train.np_datasets
+        start_time = time.time()
+        clf.fit(X_np, y_np)
+        end_time = time.time()
+        tim = end_time - start_time
+        y_p_train = clf.predict(X_np)
+        train_rmse = np.sqrt(np.mean((y_p_train - y_np) ** 2))    # RMSE
+        X_np, y_np = test.np_datasets
+        y_p_test = clf.predict(X_np)
+        test_rmse = np.sqrt(np.mean((y_p_test - y_np) ** 2))    # RMSE
+        print(f"ID: {train.id} - Time for training Forest: {tim :.2f} seconds")
+        print(f"Dataset Name: {filename}, Train RMSE: {train_rmse}, Test RMSE: {test_rmse}")
     return
 
     model = TransformerLikeModel(
