@@ -173,6 +173,8 @@ A key challenge in applying transformers to univariate time series is the absenc
 	\item FEDformer \citep{ZMWW22}, which incorporates Fourier transformations into the attention mechanism to better exploit frequency-domain characteristics.
 
 	\item PatchTST \citep{patchTST}, which employs a splitting mechanism to time series, converting multiple timesteps (i.e., a patch) into a single token, enabling a vanilla Transformer architecture to capture long-term dependencies with fewer tokens. 
+	
+	\item Chronos \citep{chronos}, a family of pretrained time series forecasting models based on language model architectures. Chronos models have been trained on a large corpus of publicly available time series data and they are particularly interested in their zero-shot performance.
 \end{description}
 
 More recently, an explosion of adaptations has appeared, together with dedicated surveys and tutorials \cite{ WZZC23, ANTS23, SZLW25}. However, these models are often complex, incorporating multiple components such as static covariates, gating mechanisms, and probabilistic outputs. While these additions have shown empirical gains, they frequently obscure the core dynamics of the attention mechanism and make the models less accessible for analysis or adaptation.
@@ -787,7 +789,7 @@ Table \ref{tab:bestworse} shows details of the instances in each category for wh
 
 The results in the table confirm that the RMSE values are comparable in all cases and that there are never differences in the order of magnitude, with values remaining relatively low when even considering that they were computed on max-min scaled series. In all categories, the transformers achieved a lower RMSE in at least one series. Figures \ref{fig:trbest} and \ref{fig:trworse} show plots of the actual series and the forecasts of the transformers and the random forest in cases where the transformers performed better and worse than the random forest, respectively.
 
-\begin{figure}
+\begin{figure}[ht]
 	\centering
 	\includegraphics[width=1.0\linewidth]{N2737.png}
 	\caption{Actual data, transformers and random forest forecast on series N2737.}
@@ -801,7 +803,10 @@ The results in the table confirm that the RMSE values are comparable in all case
 \end{figure}
 
 
-\textcolor{blue}{To evaluate the scalability of the attention mechanism in capturing patterns, we conducted experiments on four longer time series. Table \ref{tab:long} below reports the information about the time series themselves and of the experiments' results. Each run had $24$ timesteps as input and had to predict $18$ points in time; each dataset, instead, had $870$ samples in the training set and $187$ in the test set. Some plot examples from the start of each series can be seen in Figure \ref{fig:long}.}
+\textcolor{blue}{To evaluate the scalability of the attention mechanism in capturing patterns, we conducted experiments on four longer time series. The series were produced in the context of the SMARTLAGOON project \cite{CMT21}, an EU H2020 project, whose objective is the real-time monitoring, analysis, and prediction of the socio-environmental evolution of the vulnerable area Mar Menor area, the largest saltwater coastal lagoon in Europe. As part of the project, smart buoys were deployed in the lagoon and their sensors generated IoT series on different physical variables at different sampling frequencies from August 2022 to April 2023.
+Table \ref{tab:long} below reports the results of forecasting the series in relation to water temperature at a depth of 1 m ($SDI\_Temp\_1m$), steam pressure ($Vapor\_Pressure$), wind speed ($WS\_ms$) and water temperature at a depth of 1 m ($WTemp\_C1$). Each run had $24$ timesteps as input and had to predict $18$ points in time. each dataset, instead, had $870$ samples in the training set and $187$ in the test set. Two plot examples of long series can be seen in Figure \ref{fig:long}.
+%
+The results presented in table \ref{tab:long} show much lower variance than those in Table \ref{tab:bestworse} as they refer to a single application domain. Interestingly, in this particular domain, our minimalist transformer performs particularly well in comparison to the random forest regressor. Despite achieving a higher RMSE error in the training phase, it was able to deliver better forecasting performance across all series.}
 
 \begin{table}[H]
 	\caption{Minimalist Transformer results over longer time series.}
@@ -811,10 +816,10 @@ The results in the table confirm that the RMSE values are comparable in all case
 		\toprule
 		name & trtrain & trtest & rftrain & rftest & $\Delta$train & $\Delta$test & trtime & rftime  \\
 		\midrule
-		\small SDI\_Temp\_1m 			& 0.047 & 0.143 & 0.012 & 0.170 & 0.035 & -0.027 & 5.06 & 2.52  \\
- 	\small 	Vapor\_Pressure\_Avg\_2		&  0.114 & 0.167 & 0.038 & 0.170 & 0.076 & -0.003 & 4.93 & 10.99 \\
- 	\small 	WS\_ms\_Avg 				& 0.175 & 0.190 & 0.061 & 0.191 & 0.114 & -0.001 & 4.96 & 19.28 \\
- 	\small 	WTemp\_C1\_Avg 				& 0.047 & 0.157 & 0.011 & 0.195 & 0.036 & -0.038 & 4.93 & 12.73 \\
+		\small SDI\_Temp\_1m 	& 0.047 & 0.143 & 0.012 & 0.170 & 0.035 & -0.027 & 5.06 & 2.52  \\
+ 		\small Vapor\_Pressure	& 0.114 & 0.167 & 0.038 & 0.170 & 0.076 & -0.003 & 4.93 & 10.99 \\
+ 		\small WS\_ms 				& 0.175 & 0.190 & 0.061 & 0.191 & 0.114 & -0.001 & 4.96 & 19.28 \\
+ 		\small WTemp\_C1 			& 0.047 & 0.157 & 0.011 & 0.195 & 0.036 & -0.038 & 4.93 & 12.73 \\
 		\bottomrule
 	\end{tabular}
 \end{table}
@@ -826,7 +831,8 @@ The results in the table confirm that the RMSE values are comparable in all case
 	\label{fig:long}
 \end{figure}
 
-\textcolor{blue}{Other comparisons have been performed against other models, complementing the Random Forest baseline and offering a broader perspective by including recent transformer-based approaches. These comprise the Chronos model \cite{chronos}, TCAN (Temporal Convolution Attention Network) \cite{tcan}, ARIMA and ETS. The autoregressive models relied on their statsmodels implementation \cite{SP10} using pmdarima's stepwise approach for hyperparameter tuning \cite{S17}. The RMSE test results are shown for the series listed in Table \ref{tab:comparisons}}.
+\textcolor{blue}{To provide a more comprehensive view of the forecasting models, further comparisons have been made against different forecasting models, including recent transformer-based approaches, in addition to the Random Forest baseline. These include the Chronos model \cite{chronos}, TCAN (Temporal Convolution Attention Network) \cite{tcan}, the ARIMA (AutoRegressive Integrated Moving Average) (ARIMA) and an ETS model (Exponential Smoothing), specifically a Holt and Winters forecaster. The autoregressive models relied on their statsmodels implementation \cite{SP10} using the stepwise approach of pmdarima for hyperparameter tuning \cite{S17}. The RMSE test results are shown for the series listed in Table \ref{tab:comparisons}}.
+
 \begin{table}[H]
 	\caption{Minimalist transformer compared to other baseline models.}
 	\label{tab:comparisons}
@@ -835,21 +841,24 @@ The results in the table confirm that the RMSE values are comparable in all case
 		\toprule
 		id   & trtest & chronos & tcan & arima & ets \\
 		\midrule
-		N1652 & 0.262 & 0.5238 & 0.0745 & 0.1199 & 0.1203 \\
-		N1546 & 0.526 & 0.4107 & 0.1700 & 0.2382 & 0.2348 \\
-		N1894 & 0.290 & 0.3803 & 0.2504 & 0.4085 & 0.3640 \\
-		N2047 & 0.667 & 0.4639 & 0.2547 & 0.1332 & 0.1509 \\
-		N2255 & 0.088 & 0.4095 & 0.1064 & 0.2011 & 0.0330 \\
-		N2492 & 0.626 & 0.3174 & 0.2204 & 0.2844 & 0.2237 \\
-		N2594 & 0.597 & 0.3647 & 0.1155 & 0.0138 & 0.0478 \\
-		N2658 & 0.656 & 0.3626 & 0.1913 & 0.2489 & 0.3690 \\
-		N2737 & 0.129 & 0.2117 & 0.1176 & 0.2381 & 0.3063 \\
-		N2758 & 1.007 & 0.4105 & 0.3582 & 0.2126 & 0.1939 \\
-		N2817 & 0.125 & 0.5384 & 0.1580 & 0.1436 & 0.1263 \\
-		N2823 & 0.166 & 0.4495 & 0.3048 & 0.3025 & 0.3257 \\
+		N1652 & 0.262 & 0.523 & 0.074 & 0.119 & 0.120 \\
+		N1546 & 0.526 & 0.410 & 0.170 & 0.238 & 0.234 \\
+		N1894 & 0.290 & 0.380 & 0.250 & 0.408 & 0.364 \\
+		N2047 & 0.667 & 0.463 & 0.254 & 0.133 & 0.150 \\
+		N2255 & 0.088 & 0.409 & 0.106 & 0.201 & 0.033 \\
+		N2492 & 0.626 & 0.317 & 0.220 & 0.284 & 0.223 \\
+		N2594 & 0.597 & 0.364 & 0.115 & 0.013 & 0.047 \\
+		N2658 & 0.656 & 0.362 & 0.191 & 0.248 & 0.369 \\
+		N2737 & 0.129 & 0.211 & 0.117 & 0.238 & 0.306 \\
+		N2758 & 1.007 & 0.410 & 0.358 & 0.212 & 0.193 \\
+		N2817 & 0.125 & 0.538 & 0.158 & 0.143 & 0.126 \\
+		N2823 & 0.166 & 0.449 & 0.304 & 0.302 & 0.325 \\
+		avg.	& 0.428 & 0.403 & 0.193 & 0.211 & 0.207 \\
 		\bottomrule
 	\end{tabular}
 \end{table}
+
+\noindent\textcolor{blue}{As shown in Table \ref{tab:comparisons}, there is no clear dominance among the different methods. Even though the specialised convolutional transformer architecture achieves the lowest average error, the two autoregressive approaches follow closely behind. Fine-tuned models are clearly more effective than the zero-shot approach used with Chronos, even our minimalist architecture achieves comparable performance to their specialised one.}
 
 \subsection{Ablation Studies}
 
