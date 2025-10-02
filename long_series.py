@@ -1,3 +1,4 @@
+import torch
 from torch.utils.data import Dataset, DataLoader, TensorDataset
 from dataset.dataset import DatasetTimeSeries, SheetType, PreprocessingTimeSeries
 from src.model import TransformerLikeModel
@@ -18,45 +19,6 @@ DROPOUT = 0.20
 EPOCHS = 10
 TRAIN_SIZE = 0.8
 BATCH_SIZE = 32
-
-def get_prediction(n: int) -> Tuple[List[float], List[float], List[float]]:
-    import re
-
-    with open("long_series.txt", "r") as f:
-        data = f.read()
-
-    # Split into blocks that start with 'Input sequence:'
-    parts = data.split('Input sequence:')
-    if n + 1 >= len(parts):
-        raise IndexError(f"Requested prediction index {n} out of range (found {len(parts)-1} chunks)")
-
-    chunk = parts[n + 1]
-
-    def extract_after(name: str, src: str) -> List[float]:
-        idx = src.find(name)
-        if idx == -1:
-            return []
-        start = idx + len(name)
-        end_candidates = []
-        for marker in ('Input sequence:', 'Target sequence:', 'Predicted sequence:'):
-            if marker == name:
-                continue
-            pos = src.find(marker, start)
-            if pos != -1:
-                end_candidates.append(pos)
-        end = min(end_candidates) if end_candidates else len(src)
-        section_text = src[start:end]
-        nums = re.findall(r"[-+]?(?:\d*\.\d+|\d+)", section_text)
-        return [float(x) for x in nums]
-
-    inputs = extract_after('', chunk)
-    if not inputs:
-        inputs = re.findall(r"[-+]?(?:\d*\.\d+|\d+)", chunk)
-
-    targets = extract_after('Target sequence:', chunk)
-    predicted = extract_after('Predicted sequence:', chunk)
-
-    return inputs, targets, predicted
 
 def main():
 
@@ -129,23 +91,59 @@ def main():
             'ytick.labelsize': 14,
             'legend.fontsize': 14,
         })
-        rows, cols = 2, 2
+        rows, cols = 2, 1
         fig, axs = plt.subplots(rows, cols, figsize=(12, 8))
         axs_flat = axs.flatten()
         for idx, item in enumerate(long_series):
+            if idx not in [0, 1]:
+                continue
             filename, train_ds, test_ds = item
+            train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)
+            test_loader = DataLoader(test_ds, batch_size=BATCH_SIZE, shuffle=False)
+
+            model = TransformerLikeModel(
+                embed_size=EMBED_SIZE,
+                output_len=OUTPUT_LEN,
+                max_seq_length=INPUT_LEN,
+                num_head_enc=HEADS_NUM,
+                num_head_dec_1=HEADS_NUM,
+                num_head_dec_2=HEADS_NUM,
+                dropout=DROPOUT,
+                encoder_size=2,
+                decoder_size=2
+            )
+
+            train_transformer_model(
+                model, EPOCHS,
+                train_data_loader=train_loader,
+                test_data_loader=test_loader,
+                verbose=True
+            )
+
+            # Transformer
+            model.eval()
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            whole_series = np.concatenate([train_ds.original_series, test_ds.original_series])
+            target = whole_series[-OUTPUT_LEN:]
+            inp = whole_series[:-OUTPUT_LEN]
+            transformer_input = inp[-INPUT_LEN:].reshape(1, INPUT_LEN, 1)
+            transformer_input_tensor = torch.tensor(transformer_input, dtype=torch.float32).to(device)
+            with torch.no_grad():
+                pred_transformer = model(transformer_input_tensor)
+                pred_transformer = pred_transformer.cpu().numpy().reshape(-1)
+
+            # Random Forest
             clf = RandomForestRegressor(n_estimators=250, random_state=42)
             X_np, y_np = train_ds.np_datasets
             clf.fit(X_np, y_np)
-            inp, target, pred = get_prediction(idx)
-            inp, target, pred = inp[:-1], target[:-2], pred[:-2]
-            pred_rf = clf.predict([inp])
+            classifier_input = inp[-INPUT_LEN:].reshape(1, -1)
+            pred_rf = clf.predict(classifier_input)
             pred_rf = pred_rf.reshape(-1)
             filename = filename.split('.')[0]
-            ax = axs_flat[idx]
+            ax = axs_flat[idx % 2]
             ax.plot(inp, label='series', color='blue')
             ax.plot(range(len(inp), len(inp) + len(target)), target, label='target', color='green')
-            ax.plot(range(len(inp), len(inp) + len(pred)), pred, label='transformer', color='red')
+            ax.plot(range(len(inp), len(inp) + len(pred_transformer)), pred_transformer, label='transformer', color='red')
             ax.plot(range(len(inp), len(inp) + len(pred_rf)), pred_rf, label='random forest', color='orange')
             ax.set_title(filename)
             ax.legend()
