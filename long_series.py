@@ -84,12 +84,12 @@ def main():
 
     if len(long_series) > 0:
         plt.rcParams.update({
-            'font.size': 16,
-            'axes.titlesize': 18,
-            'axes.labelsize': 16,
-            'xtick.labelsize': 14,
-            'ytick.labelsize': 14,
-            'legend.fontsize': 14,
+            'font.size': 17,
+            'axes.titlesize': 19,
+            'axes.labelsize': 17,
+            'xtick.labelsize': 15,
+            'ytick.labelsize': 15,
+            'legend.fontsize': 15,
         })
         rows, cols = 2, 1
         fig, axs = plt.subplots(rows, cols, figsize=(12, 8))
