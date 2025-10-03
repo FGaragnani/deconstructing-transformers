@@ -20,9 +20,19 @@ configurations = [
         "EMBED_SIZE": 8,
     },
     {
+        "ENCODER_SIZE": 1,
+        "DECODER_SIZE": 1,
+        "EMBED_SIZE": 16,
+    },
+    {
         "ENCODER_SIZE": 2,
         "DECODER_SIZE": 2,
         "EMBED_SIZE": 8,
+    },
+    {
+        "ENCODER_SIZE": 2,
+        "DECODER_SIZE": 2,
+        "EMBED_SIZE": 16,
     },
     {
         "ENCODER_SIZE": 3,
@@ -30,10 +40,20 @@ configurations = [
         "EMBED_SIZE": 8,
     },
     {
+        "ENCODER_SIZE": 3,
+        "DECODER_SIZE": 3,
+        "EMBED_SIZE": 16,
+    },
+    {
         "ENCODER_SIZE": 4,
         "DECODER_SIZE": 4,
         "EMBED_SIZE": 8,
     },
+    {
+        "ENCODER_SIZE": 4,
+        "DECODER_SIZE": 4,
+        "EMBED_SIZE": 16,
+    }
 ]
 
 def main():
@@ -41,10 +61,10 @@ def main():
 
     OUTPUT_LEN = 18
     INPUT_LEN = 24
-    NUM_HEADS = 4
+    NUM_HEADS = 8
     BATCH_SIZE = 64
-    EPOCHS = 10
-    DROPOUT = 0.05
+    EPOCHS = 100
+    DROPOUT = 0.15
 
     df = pd.read_csv('results/res_monthly.csv')
     # indices = df.id.tolist()

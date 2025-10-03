@@ -949,9 +949,9 @@ The tests have been performed on the M3 dataset with id $2047$, against which th
 	\end{tabular}
 \end{table}
 
-The above results can be briefly examined. First of all, as the number of encoder and decoder blocks increase, also obviously do the number of parameters (\textit{nparams}), which directly influence both the training time \textit{trtime} (expressed in seconds per epoch) and the inference time \textit{inftime} of the model. While the training loss is more or less unaltered, the capacity of the model to generalize data is expressed in the lowering test loss values. As it can be later seen in Table \ref{tab:scal2}, there is not a direct correlation between training loss and testing loss; and further training the model leads to better training results, but worse testing results.
+The above results can be briefly examined. First of all, as the number of encoder and decoder blocks increase, also obviously do the number of parameters (\textit{nparams}), which directly influence both the training time \textit{trtime} (expressed in seconds per epoch) and the inference time \textit{inftime} of the model. While the training loss is more or less unaltered, the capacity of the model to generalize data is expressed in the lowering test loss values. As it can be later seen in Table \ref{tab:scal2}, there is not a direct correlation between training loss and testing loss.
 
-Table \ref{tab:scal2} shows the result of a similar model in which both the model size and the internal embeddings' size change. Here, the number of epochs is set to $100$ - leading to better convergence on the training set.
+Table \ref{tab:scal2} shows the result of a similar model in which both the model size and the internal embeddings' size change. Here, the number of epochs is set to $100$: this leads to better convergence on the training set but to worse results on the training set (with respect to Table \ref{tab:scal2}). It must also be kept in mind the fact that the series is quite short; hence, after a certain threshold, increasing the size of the network - and hence the number of parameters - won't affect results dramatically.
 
 \begin{table}[H]
 	\caption{Scalability results.}
