@@ -17,22 +17,22 @@ configurations = [
     {
         "ENCODER_SIZE": 1,
         "DECODER_SIZE": 1,
-        "EMBED_SIZE": 12,
+        "EMBED_SIZE": 8,
     },
     {
         "ENCODER_SIZE": 2,
         "DECODER_SIZE": 2,
-        "EMBED_SIZE": 12,
+        "EMBED_SIZE": 8,
     },
     {
         "ENCODER_SIZE": 3,
         "DECODER_SIZE": 3,
-        "EMBED_SIZE": 12,
+        "EMBED_SIZE": 8,
     },
     {
         "ENCODER_SIZE": 4,
         "DECODER_SIZE": 4,
-        "EMBED_SIZE": 12,
+        "EMBED_SIZE": 8,
     },
 ]
 
@@ -41,15 +41,14 @@ def main():
 
     OUTPUT_LEN = 18
     INPUT_LEN = 24
-    EMBED_SIZE = 12
     NUM_HEADS = 4
-    BATCH_SIZE = 16
-    EPOCHS = 400
-    DROPOUT = 0.10
+    BATCH_SIZE = 64
+    EPOCHS = 10
+    DROPOUT = 0.05
 
     df = pd.read_csv('results/res_monthly.csv')
     # indices = df.id.tolist()
-    indices = [2758]
+    indices = [2047]
     tim = 0
 
     datasets: List[Tuple[DatasetTimeSeries, DatasetTimeSeries]] = parse_whole_dataset_from_xls("M3C.xls", SheetType.MONTHLY, input_len=INPUT_LEN, output_len=OUTPUT_LEN, preprocessing=PreprocessingTimeSeries.MIN_MAX)
@@ -77,7 +76,7 @@ def main():
                 max_seq_length=INPUT_LEN
             )
             print(f"""
-    Configuration - Encoder Size: {configuration["ENCODER_SIZE"]}, Decoder Size: {configuration["DECODER_SIZE"]}
+    Configuration - Encoder Size: {configuration["ENCODER_SIZE"]}, Decoder Size: {configuration["DECODER_SIZE"]}, Embedding Size: {configuration["EMBED_SIZE"]}
 """)
             print("Number of trainable parameters: ", sum(p.numel() for p in model.parameters() if p.requires_grad))
 
@@ -90,9 +89,7 @@ def main():
                 train_data_loader=train_loader, 
                 test_data_loader=test_loader, 
                 verbose=False, 
-                pretrain_seca=True,
-                early_stopping=True,
-                early_stopping_patience=5
+                pretrain_seca=True
             )
 
             end_time = time.time()

@@ -929,6 +929,48 @@ Another interesting observation that emerges from the above example is that the 
 	\label{fig:attention}
 \end{figure}
 }
+
+\subsection{Scalability}
+The model has also been evaluated in terms of scalability of its components (i.e., how does the number of parameters relate to training and inference time, as well as its performance).
+The tests have been performed on the M3 dataset with id $2047$, against which the minimalistic model showed significantly low testing results. The outcomes of these tests are reported in Tables \ref{tab:scal1} and \ref{tab:scal2}. In Table \ref{tab:scal1}, the embedding size used was $8$ and the number of training epochs was $20$.
+
+\begin{table}[H]
+	\caption{Scalability results.}
+	\label{tab:scal1}
+	\centering
+	\begin{tabular}{cc | ccccc}
+		Encoder & Decoder & trtrain & trtest & nparams & trtime & inftime \\
+		\toprule
+		1 & 1 & 0.181 & 0.397 & 2697 & 0.32 & 0.028 \\
+		2 & 2 & 0.200 & 0.365 & 4745 & 0.37 & 0.049 \\
+		3 & 3 & 0.191 & 0.251 & 6793 & 0.53 & 0.051 \\
+		4 & 4 & 0.188 & 0.162 & 8841 & 0.69 & 0.078 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+The above results can be briefly examined. First of all, as the number of encoder and decoder blocks increase, also obviously do the number of parameters (\textit{nparams}), which directly influence both the training time \textit{trtime} (expressed in seconds per epoch) and the inference time \textit{inftime} of the model. While the training loss is more or less unaltered, the capacity of the model to generalize data is expressed in the lowering test loss values. As it can be later seen in Table \ref{tab:scal2}, there is not a direct correlation between training loss and testing loss; and further training the model leads to better training results, but worse testing results.
+
+Table \ref{tab:scal2} shows the result of a similar model in which both the model size and the internal embeddings' size change. Here, the number of epochs is set to $100$ - leading to better convergence on the training set.
+
+\begin{table}[H]
+	\caption{Scalability results.}
+	\label{tab:scal2}
+	\centering
+	\begin{tabular}{ccc | ccccc}
+		Encoder & Decoder & embed & trtrain & trtest & nparams & trtime & inftime \\
+		\toprule
+		1 & 1 & 4 & 0.175 & 0.592 & 805 & 0.21 & 0.023 \\
+		1 & 1 & 40 & 0.135 & 0.417 & 57001 & 0.21 & 0.033 \\
+		2 & 2 & 4 & 0.164 & 0.508 & 1381 & 0.34 & 0.037 \\
+		2 & 2 & 40 & 0.176 & 0.422 & 103081 & 0.37 & 0.043 \\
+		4 & 4 & 4 & 0.132 & 0.433 & 2533 & 0.68 & 0.083 \\
+		4 & 4 & 40 & 0.180 & 0.294 & 195241 & 0.70 & 0.093 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusions} \label{sec:conclusions}
 
