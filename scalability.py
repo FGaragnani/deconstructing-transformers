@@ -17,18 +17,22 @@ configurations = [
     {
         "ENCODER_SIZE": 1,
         "DECODER_SIZE": 1,
+        "EMBED_SIZE": 12,
     },
     {
         "ENCODER_SIZE": 2,
         "DECODER_SIZE": 2,
+        "EMBED_SIZE": 12,
     },
     {
         "ENCODER_SIZE": 3,
         "DECODER_SIZE": 3,
+        "EMBED_SIZE": 12,
     },
     {
         "ENCODER_SIZE": 4,
         "DECODER_SIZE": 4,
+        "EMBED_SIZE": 12,
     },
 ]
 
@@ -62,7 +66,7 @@ def main():
         for configuration in configurations:
         
             model: TransformerLikeModel = TransformerLikeModel(
-                embed_size=EMBED_SIZE,
+                embed_size=configuration["EMBED_SIZE"],
                 encoder_size=configuration["ENCODER_SIZE"],
                 decoder_size=configuration["DECODER_SIZE"],
                 output_len=OUTPUT_LEN,
