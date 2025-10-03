@@ -163,7 +163,7 @@ Indeed, RNNs can be effective in capturing long-term dependencies among data, bu
 
 \textcolor{blue}{Transformer architectures are immune to these drawbacks because they do not rely on the assumption of stationarity. They capture global dependencies in input sequences without relying on recurrence, instead leveraging self-attention mechanisms to enable the direct modelling of long-range dependencies. This supports full parallelization during training and allows the model to focus on relevant time steps, regardless of their position in the sequence}.
 
-A key challenge in applying transformers to univariate time series is the absence of the rich semantic tokens found in language. Unlike words in a sentence, time series values are continuous and lack discrete meaning, making it more difficult to learn meaningful attention patterns. Therefore, transformers need to be adapted for time series forecasting. Early adaptations of transformers for use with time series data include:
+A key challenge in applying transformers to univariate time series is the absence of the rich semantic tokens found in language. Unlike words in a sentence, time series values are continuous and lack discrete meaning, making it more difficult to learn meaningful attention patterns. Therefore, transformers need to be adapted for time series forecasting. Some adaptations of transformers for use with time series data include:
 
 \begin{description}
 	\item Informer \citep{ZZPZ21}, which introduces a sparse self-attention mechanism to reduce the quadratic complexity of self-attention, making it more efficient for long sequence time series forecasting.
@@ -175,9 +175,11 @@ A key challenge in applying transformers to univariate time series is the absenc
 	\item PatchTST \citep{patchTST}, which employs a splitting mechanism to time series, converting multiple timesteps (i.e., a patch) into a single token, enabling a vanilla Transformer architecture to capture long-term dependencies with fewer tokens. 
 	
 	\item Chronos \citep{chronos}, a family of pretrained time series forecasting models based on language model architectures. Chronos models have been trained on a large corpus of publicly available time series data and they are particularly interested in their zero-shot performance.
+	
+	\item TCAN (Temporal Convolution Attention Network) \citep{tcan} which combines temporal convolutional network and attention mechanism. 
 \end{description}
 
-More recently, an explosion of adaptations has appeared, together with dedicated surveys and tutorials \cite{ WZZC23, ANTS23, SZLW25}. However, these models are often complex, incorporating multiple components such as static covariates, gating mechanisms, and probabilistic outputs. While these additions have shown empirical gains, they frequently obscure the core dynamics of the attention mechanism and make the models less accessible for analysis or adaptation.
+Recently, an explosion of adaptations has appeared, together with dedicated surveys and tutorials \cite{WZZC23, ANTS23, SZLW25}. However, these models are often complex, incorporating multiple components such as static covariates, gating mechanisms, and probabilistic outputs. While these additions have shown empirical gains, they frequently obscure the core dynamics of the attention mechanism and make the models less accessible for analysis or adaptation.
 
 By contrast, there is interest in minimal Transformer implementations, which isolate the effectiveness of self-attention in forecasting tasks. Informer has already demonstrated that a simplified Transformer, devoid of specialized components, can outperform classical models and RNNs on certain benchmarks when properly tuned. Similarly, \citep{LSNP21} proposed the `Temporal Attention' module within a lightweight Transformer framework, demonstrating that attention over timesteps alone can achieve comparable performance on univariate series. Other studies, such as iTransformer \cite{LHZW24}, investigate how the performance of standard Transformers is affected by different initialization, normalization, or positional encoding strategies. This sheds light on the contribution of each component to forecasting accuracy.
 
@@ -189,14 +191,14 @@ This body of work highlights the growing interest in demystifying transformer-ba
 \section{The transformer processing pipeline} \label{sec:transformer}
 
 This section describes the successive processing phases carried out by a minimalist transformer module to produce a multipoint forecast of a univariate data series. The relevant python code can be found in \cite{G25}. Successive processing stages are here showcased on a tiny time series obtained by querying Google Trends \cite{googletrends2025} on the term "restaurant". The series shows a trend (at the time of writing, it is holiday season in Italy and interest in dining out is increasing) as well as seasonality, due to increased interest at weekends. Only 35 data points are considered, 7 of which are kept for validation and 28 are used for training.
-
 The series $s(t)$ is the following:
+
 \begin{align}
 s(t) = (& 44, 48, 51, 48, 50, 63, 66, 48, 53, 56, 52, 57, 70, 67, 56, 60, 62, 60, 58, 75, 73, 59, 61, 65,\nonumber\\
         & 63, 63, 78, 80, 63, 64, 67, 65, 70, 87, 84)\nonumber
 \end{align}
 
-The data processing cycle consists of three main phases: encoding, decoding, and learning. A view of the whole model can be seen in Figure \ref{fig:trans}. The following subsections provide details on each phase, the reader is referred to \cite{VSPU17} for a more exhaustive exposition.
+\textcolor{blue}{The data processing cycle consists of three main phases: encoding, decoding, and learning. A view of the whole model can be seen in Figure \ref{fig:transformer}. The following subsections provide details on each phase, the reader is referred to \cite{VSPU17} for a more exhaustive exposition.}
 
 \begin{figure}
 	\centering
@@ -275,7 +277,9 @@ The objective of the encoding component (i.e., the \textit{encoder}) in a Transf
 	\label{fig:enc}
 \end{figure}
 
-The general structure of the encoding module is represented by the pseudocode in Algorithm \ref{algo:encoding} and sketched in Figure \ref{fig:enc}. All intermediate numerical results obtained for the restaurant series case study are reported in appendix \ref{sec:appendix} to enable the interested reader to immediately grasp the dimensionalities and values involved in this tiny example, and possibly to follow the corresponding evolution of a run of the code provided in \cite{G25}. In the case of the running example the following argument values are used: $n$=7, $m$=4, $k$=2, $d_k$=$d_v$=2, $p$=16.
+The general structure of the encoding module is represented by the pseudocode in Algorithm \ref{algo:encoding} and sketched in Figure \ref{fig:enc}. \textcolor{blue}{All intermediate numerical results obtained for the restaurant series case study are reported in the text or in appendix \ref{sec:appendix} when they are too big to be presented inline. This is to enable the interested reader to immediately grasp the dimensionalities and values involved in this tiny example, and possibly to follow the corresponding evolution of a run of the code provided in \cite{G25}. }
+
+In the case of the running example the following input parameter values are used: $n$=7, $m$=4, $k$=2, $d_k$=$d_v$=2, $p$=16.
 
 The individual steps are detailed below.
 
@@ -357,7 +361,7 @@ All these steps are detailed in the following.
 
 ~\\Lines \ref{enc:multihead1}-\ref{enc:multihead2}: (\textit{Multihead Attention})
 
-This loop iterates a basic attention mechanism that dynamically weighs the contribution of each past point in the series when computing the representation of those under scrutiny. It computes a set of attention scores relating the "query" vector of the current point and "key" vectors of all sequence values. The resulting attention weights determine which points matter most and the forecast is then given by a weighted sum of the corresponding "value" vectors.
+This loop iterates a basic attention mechanism that dynamically weighs the contribution of each past point in the series when computing the representation of those under scrutiny. It computes a set of attention scores relating the "query" vector of the current point and "key" vectors of all sequence values. In our application, a query comes from the embedding of the last known observation while the keys correspond to those of all past observations. The resulting attention weights determine which points matter most and the forecast is then given by a weighted sum of the corresponding "value" vectors.
 
 Queries (the elements currently focused on), keys (descriptors of the corresponding values), and values (the actual information) are all represented as matrices. Typically, queries and keys share the same inner dimension $d_k$, while values may have a different dimension $d_v$. At each iteration the corresponding set of query, key, and value is referred to as a \textit{head}. The matrices and the bias identified for the two heads used in our running example are reported in the appendix in tables \ref{tab:matWq} and \ref{tab:bias} .
 
@@ -371,7 +375,7 @@ Queries (the elements currently focused on), keys (descriptors of the correspond
 
 ~\\Line \ref{enc:attention1}: implements the first part of the attention function, in this case using the \textit{Scaled Dot-Product Attention} \cite{VSPU17}. The similarity between sequence elements is computed from $Q$ and $K$ through a dot product. The key matrix is transposed so that the operation compares each feature of every query with the corresponding feature of every key. This initial $A$ matrix will contain similarity values $a_{ij} \in \mathbb{R}$ between every query vector and every key vector. 
 
-~\\Line \ref{enc:softmax}: transforms the similarity values into `probability' scores. The $\text{softmax}()$ operator is applied to all elements $a_{ij}$ over every row: $a_{ij} = e^{a_{ij}} / \sum_k e^{a_{kj}},\quad \forall i,j  = 1,\,...,\,n $. In this way, for every query vector, normalized weights of similarity towards key vectors are obtained. 
+~\\Line \ref{enc:softmax}: transforms the similarity values into `probability' scores. The $\textit{softmax}()$ operator is applied to all elements $a_{ij}$ over every row: $a_{ij} = e^{a_{ij}} / \sum_k e^{a_{kj}},\quad \forall i,j  = 1,\,...,\,n $. In this way, for every query vector, normalized weights of similarity towards key vectors are obtained. 
 
 ~\\Line \ref{enc:attention2}: completes the computation of the attention function by implementing a weighted sum of the value vectors, $A^h = A^h \cdot V^h$, thereby aggregating information from the relevant timesteps.
 
@@ -428,7 +432,7 @@ The values learned by the sample architecture is reported in the appendix in tab
 
 ~\\Line \ref{enc:output}: (\textit{Output})
 
-The full output, stored in the matrix $X'$, contains the \textit{encoded} representation of the input timesteps. In order to distinguish it thereafter it will be denoted as $Z$. 
+The full output, stored in matrix $X'$, contains the \textit{encoded} representation of the input timesteps. In order to distinguish it thereafter it will be denoted as $Z$. 
 
 \subsection{Decoding} \label{subsec:decoding}
 
@@ -482,7 +486,6 @@ The general structure of the decoding module is represented by the pseudocode in
     \caption{The Decoding Process. For each block, the total number of learnable parameters for the restaurant series example is shown.}
     \label{fig:dec}
 \end{figure}
-
 
 \begin{algorithm2e} 
 	\SetKwInOut{Input}{Input}
@@ -641,7 +644,7 @@ The process is the standard neural learning process, flowing through three main 
 \begin{enumerate}
     \item a {\it forward pass} where input sequences (time series points) are embedded into vectors, flow through layers of multi-head self-attention and feed-forward networks obtaining a forecasted value.
 
-    \item {\it loss computation}, where the loss function measures how far the predictions are from the ground truth. In the case of forecasting data series, the most commonly used loss functions are Mean Squared Error (MSE), Mean Absolute Error (MAE) and Huber loss, which combines the robustness of MAE with the smoothness of MSE.
+    \item {\it loss computation}, where the loss function measures how far the predictions are from the ground truth. In the case of forecasting data series, the most commonly used loss functions are Mean Squared Error (MSE) or Root Mean Squared Error (RMSE), Mean Absolute Error (MAE) and Huber loss, which combines the robustness of MAE with the smoothness of MSE.
 
     \item a {\it backward pass} where gradients of the loss with respect to the parameters are computed by backpropagation and parameters are updated using an optimization algorithm (usually a variant of gradient descent).
 \end{enumerate}
@@ -652,7 +655,9 @@ Learning is a computationally intensive phase based on standard gradient descent
 
 The embedding matrices $W_i$ and $W_o$ are initialized in a way such that $W_i \cdot W_o = 1$ - to represent exactly the same projection. Specifically, $W_i$ is initialized by drawing each of its elements from a uniform distribution, and $W_o$ is set to be $\dfrac{W_i}{||W_i||^2}$ - since the bias arrays $b_i, b_o$ are zero-initialized. Then, during training, they are set to change without any constraint.
 
-The training technique is as follows. The input sequence $\textbf{X}$ of fixed length $n$ is given to the model. The predicted element at the $i$-th timestep $\hat y_i$ is looked at, and the loss function between the ground truth element $y_i$ is computed. The employed loss is the MSE. The backpropagation step, which updates the internal parameters of the mode, follows. Then, with probability $p$, the $\textbf{Y}$ matrix is filled not with the predicted element $\hat y_i$ but with the actual one, $y_i$. The probability of that happening is gradually decreased during the training phase, in order to let the model be more reliant on its own predictions - as will it be during inference. In the case of the running example, the total number of parameters to learn in the transformer model resulted to be 737. 
+The training technique is as follows. The input sequence $\textbf{X}$ of fixed length $n$ is given to the model. The predicted element at the $i$-th timestep $\hat y_i$ is looked at, and the loss function between the ground truth element $y_i$ is computed. The employed loss is the MSE. The backpropagation step, which updates the internal parameters of the mode, follows. Then, with probability $p$, the $\textbf{Y}$ matrix is filled not with the predicted element $\hat y_i$ but with the actual one, $y_i$. The probability of that happening is gradually decreased during the training phase, in order to let the model be more reliant on its own predictions - as will it be during inference. 
+
+In the case of the running example, the total number of parameters to learn in the transformer model resulted to be 737. 
 
 
 \subsection{Forecasting} \label{subsec:forecasting}
@@ -685,7 +690,9 @@ When the model is applied to this series, setting aside the last 12 values for v
 
 The series was preprocessed only by a standard min-max normalization, then it was projected into embeddings of size $m = 12$. Employing only $n = 12$ timesteps at a time, $118$ matrices $X \in \mathbb{R}^{12 \times 12}$ are obtained. Matrix $P$ used for positional embedding has the same dimensionality.
 
-Next comes multi-head attention. We used 2 heads, and for each head we set $d_k = d_v = \frac{12}{2} = 6$. Therefore all matrices $W^h_Q$, $W^h_K$ and $W^h_V$ had dimensions $12 \times 6$. These provide the bases for computing the attention function, where each $h-th$ head gives rise to the matrix $A^h=\frac{Q_hK'_h}{d_h} \in \mathbb{R}^{n \times n}$, in our case $A^h \in \mathbb{R}^{12 \times 12}$. The successive {\em softmax} function does not change its dimensionality. After multiplying by $V_h$ we obtain the output of each head, of dimension $12 \times 6$. All outputs are then concatenated by row, giving rise to a matrix $A \in \mathbb{R}^{12 \times 12}$. The input dimension is then kept, when the output attention matrix is multiplied by matrix $W_O \in \mathbb{R}^{hd_v \times m}$ - in our case, of dimension $12 \times 12$. In summary, the values used for the parameters were: $n$=12, $m$=12, $k$=2,  $d_k$=$d_v$=6, $p$=48. The number of epochs set for learning was 400, the total number of parameters to learn in the transformer model resulted to be 5413.
+Next comes multi-head attention. We used 2 heads, and for each head we set $d_k = d_v = \frac{12}{2} = 6$. Therefore all matrices $W^h_Q$, $W^h_K$ and $W^h_V$ had dimensions $12 \times 6$. These provide the bases for computing the attention function, where each $h-th$ head gives rise to the matrix $A^h=\frac{Q_hK'_h}{d_h} \in \mathbb{R}^{n \times n}$, in our case $A^h \in \mathbb{R}^{12 \times 12}$. The successive {\em softmax} function does not change its dimensionality. After multiplying by $V_h$ we obtain the output of each head, of dimension $12 \times 6$. All outputs are then concatenated by row, giving rise to a matrix $A \in \mathbb{R}^{12 \times 12}$. The input dimension is then kept, when the output attention matrix is multiplied by matrix $W_O \in \mathbb{R}^{hd_v \times m}$ - in our case, of dimension $12 \times 12$. In summary, the values used for the parameters were: $n$=12, $m$=12, $k$=2,  $d_k$=$d_v$=6, $p$=48. 
+
+The number of epochs set for learning was 400, the total number of parameters to learn in the transformer model resulted to be 5413.
 
 \begin{figure}
 	\centering
@@ -752,7 +759,7 @@ Seasonality is in fact much more pronounced in industry and demographics series,
 \caption{Minimalist transformer and random forest, aggregate results, scaled data}
 \label{tab:bestworse}
 \centering
-%% \tablesize{} %% You can specify the fontsize here, e.g., \tablesize{\footnotesize}. If commented out \small will be used.
+\footnotesize
 \begin{tabular}{cccccccccc}
 \toprule
 id   & type        & trtrain & trtest & rftrain & rftest & $\Delta$train & $\Delta$test & trtime & rftime \\
@@ -804,7 +811,7 @@ The results in the table confirm that the RMSE values are comparable in all case
 
 
 \textcolor{blue}{To evaluate the scalability of the attention mechanism in capturing patterns, we conducted experiments on four longer time series. The series were produced in the context of the SMARTLAGOON project \cite{CMT21}, an EU H2020 project, whose objective is the real-time monitoring, analysis, and prediction of the socio-environmental evolution of the vulnerable area Mar Menor area, the largest saltwater coastal lagoon in Europe. As part of the project, smart buoys were deployed in the lagoon and their sensors generated IoT series on different physical variables at different sampling frequencies from August 2022 to April 2023.
-Table \ref{tab:long} below reports the results of forecasting the series in relation to water temperature at a depth of 1 m ($SDI\_Temp\_1m$), steam pressure ($Vapor\_Pressure$), wind speed ($WS\_ms$) and water temperature at a depth of 1 m ($WTemp\_C1$). Each run had $24$ timesteps as input and had to predict $18$ points in time. Each dataset, instead, had $870$ samples in the training set and $187$ in the test set. Two plot examples of long series can be seen in Figure \ref{fig:long}.
+Table \ref{tab:long} below reports the results of forecasting the series in relation to water temperature at a depth of 1 m ($SDI\_Temp\_1m$), steam pressure ($Vapor\_Pressure$), wind speed ($WS\_ms$) and water temperature at a depth of 1 m ($WTemp\_C1$). Each run had $24$ timesteps as input and had to predict $18$ points in time. each dataset, instead, had $870$ samples in the training set and $187$ in the test set. Two plot examples of long series can be seen in Figure \ref{fig:long}.
 %
 The results presented in table \ref{tab:long} show much lower variance than those in Table \ref{tab:bestworse} as they refer to a single application domain. Interestingly, in this particular domain, our minimalist transformer performs particularly well in comparison to the random forest regressor. Despite achieving a higher RMSE error in the training phase, it was able to deliver better forecasting performance across all series.}
 
@@ -859,25 +866,23 @@ The results presented in table \ref{tab:long} show much lower variance than thos
 \end{table}
 
 \noindent\textcolor{blue}{As shown in Table \ref{tab:comparisons}, there is no clear dominance among the different methods. Even though the specialised convolutional transformer architecture achieves the lowest average error, the two autoregressive approaches follow closely behind. Fine-tuned models are clearly more effective than the zero-shot approach used with Chronos, even our minimalist architecture achieves comparable performance to their specialised one.}
-
+{\color{blue}
 \subsection{Ablation Studies}
 
-In Table \ref{tab:ablation} it's possible to see the effects of removing or editing computational blocks of the Encoder, as drawn in Figure \ref{fig:enc}, on the performance of the entire model. Each cell reports respectively the training and the testing loss of the configuration in the column of the instance in the row, and the corresponding loss, while the columns show:
+In Table \ref{tab:ablation} it's possible to see the effects of removing or editing computational blocks of the Encoder, as drawn in Figure \ref{fig:enc}, on the performance of the entire model. Each cell reports respectively the training and the testing loss of the configuration in the respective row and column, and the corresponding loss, while the columns show:
 
 \begin{itemize}
-	\item {id}: the id of the data series in the M3 collection;
-	\item {1-sized embeddings}: results using embeddings of a single value (i.e., no embedding), lines \ref{enc:seca1}-\ref{enc:seca2} of Algorithm \ref{algo:encoding};
-	\item {No PE}: results without positional encoding, line \ref{enc:positional} of Algorithm \ref{algo:encoding};
-	\item {Single Head}: results with single head instead than mutihead attention, lines \ref{enc:multihead1}-\ref{enc:multihead2} of Algorithm \ref{algo:encoding}; 
-	\item {No Add\&Norm 1}: results removing the first Add \& Norm block, line \ref{enc:addnorm1} of Algorithm \ref{algo:encoding};
-	\item {No FF}: results removing the feedforward network, line \ref{enc:ffn} of Algorithm \ref{algo:encoding};
-	\item {No Add\&Norm 2}: results removing the second Add \& Norm block, line \ref{enc:addnorm2} of Algorithm \ref{algo:encoding};
-	\item {Baseline}: results of the complete model.
+	\item {\it id}: the id of the data series in the M3 collection;
+	\item {\it 1-sized embeddings}: results using embeddings of a single value (i.e., no embedding), lines \ref{enc:seca1}-\ref{enc:seca2} of Algorithm \ref{algo:encoding};
+	\item {\it No PE}: results without positional encoding, line \ref{enc:positional} of Algorithm \ref{algo:encoding};
+	\item {\it Single Head}: results with single head instead than mutihead attention, lines \ref{enc:multihead1}-\ref{enc:multihead2} of Algorithm \ref{algo:encoding}; 
+	\item {\it No Add\&Norm 1}: results removing the first Add \& Norm block, line \ref{enc:addnorm1} of Algorithm \ref{algo:encoding};
+	\item {\it No FF}: results removing the feedforward network, line \ref{enc:ffn} of Algorithm \ref{algo:encoding};
+	\item {\it No Add\&Norm 2}: results removing the second Add \& Norm block, line \ref{enc:addnorm2} of Algorithm \ref{algo:encoding};
+	\item {\it Baseline}: results of the complete model.
 \end{itemize}
 
 As the model is quite small, comprising just a single encoder block and a single decoder block, the overall effect is visible but not particularly impactful. As expected, the baseline model achieves the best loss value over the validation data, while the model without the feedforward network is still almost equivalent to it, removing any other component has comparable highly disruptive effect. Furthermore, the full model has the fourth highest training loss value. This, alongside the validation result, indicates the model's ability to generalize over the training data.
-
-As the model is quite small, comprising just a single encoder block and a single decoder block, the overall effect is visible but not particularly impactful. As expected, the baseline model achieves the best loss value over the validation data. Moreover, it has the fourth highest training loss value, which, alongside the validation result, indicates the model's ability to generalize over the training data.
 
 \begin{sidewaystable}
 	\caption{Ablation studies.}
@@ -908,25 +913,26 @@ As the model is quite small, comprising just a single encoder block and a single
 \end{sidewaystable}
 
 \subsection{Interpretability}
-As an additional view, Figure \ref{fig:attention} shows - for the restaurant Google Trends series - the contribution of each timestep that the Decoder gives to both the encoded input time series and to the autoregressively generated output timestep. The bigger the circle around a certain timestep, the greater the attention weight given by the trained model for inference.
 
-More specifically, the attention of the input series - in blue - is extracted by the weights of the Cross-Attention layer, while the attention contribution of the generated series - in green - is examined in the Self-Attention layer.
+Figure \ref{fig:attention} provides an additional view of the effects of learning. It illustrates the contribution of each timestep provided by the decoder  to each generated output value. These contributions are made by both the encoded input time series and by the autoregressively generated output timestep, and are demonstrated using the Google Trends restaurant series. The larger the circle around a certain timestep, the greater the attention weight given by the trained model for inference.
 
-The results are aligned with what one might expect the model to learn about a seasonal trajectory. For instance, it can be seen that for the generation of the first timestep (titled in Figure \ref{fig:attention} as "Step 1") the model depends on the timestep seven days prior - which is when a certain seasonal small rise happens. A similar argument could be given by noticing that - from the generation of the fifth step onwards - the model heavily uses the peak value of the input series, probably to extract information about the correct value of the new seasonal peak.
+More specifically, the attention contribution of the input series - in blue - is extracted from the weights of the Cross-Attention layer, while the attention contribution of the generated series - in green - is extracted from the Self-Attention layer.
 
-Another interesting observation that emerges from the above example is that the model tries to focus on specific timesteps, almost ignoring entirely other. Since the difference between the those timesteps is small, the model tries best to gather as much information as possible from a few significant timesteps, rather than relying on too many similar ones.
+The results align with what one might expect the model to learn about a seasonal trajectory. For example, it can be seen that, when generating the first timestep (labelled "Step 1" in Figure \ref{fig:attention}), the model relies on the timestep seven days prior, when a slight seasonal increase occurs. A similar argument could be made by observing that, from the generation of the fifth timestep onwards, the model relies heavily on the peak value of the input series, probably in order to extract information about the correct value of the new seasonal peak.
+
+Another interesting observation that emerges from the above example is that the model focuses on specific timesteps while ignoring others entirely. Since the difference between these timesteps is small, the model attempts to gather as much information as possible from a few significant timesteps rather than relying on too many similar ones.
 
 \begin{figure}
 	\centering
 	\includegraphics[width=1.0\linewidth]{attention.png}
-	\caption{The contribution of each timestep for each generated output value.}
+	\caption{The contribution of each timestep to each generated output value.}
 	\label{fig:attention}
 \end{figure}
-
+}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusions} \label{sec:conclusions}
 
-\textcolor{blue}{This work presents a minimalist transformer architecture that is specifically designed for univariate time series forecasting}. Rather than proposing yet another cutting-edge variant, our contribution lies in systematically reducing the architecture to its essential components and documenting all relevant steps of the encoder, decoder and learning procedures in pseudocode. Our aim was to provide a transparent and replicable baseline for researchers and practitioners interested in understanding the core mechanisms of transformers when applied to forecasting tasks.
+\textcolor{blue}{This work presents a minimalist transformer architecture that is specifically designed for univariate time series forecasting}. Rather than trying to propose yet another cutting-edge variant, our contribution lies in systematically reducing the architecture to its essential components and documenting all relevant steps of the encoder, decoder and learning procedures in pseudocode. Our aim was to provide a transparent and replicable baseline for researchers and practitioners interested in understanding the core mechanisms of transformers when applied to forecasting tasks.
 
 \textcolor{blue}{The model is evaluated using a set of standard forecasting benchmarks and compared its performance with that of a random forest forecaster}. Although the minimalist transformer does not outperform the most sophisticated state-of-the-art models, it consistently achieves comparable accuracy, particularly for time series with long-term dependencies, where attention mechanisms can exploit global context more effectively than purely tree-based methods.
 
