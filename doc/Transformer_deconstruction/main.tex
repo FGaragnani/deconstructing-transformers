@@ -866,6 +866,7 @@ The results presented in table \ref{tab:long} show much lower variance than thos
 \end{table}
 
 \noindent\textcolor{blue}{As shown in Table \ref{tab:comparisons}, there is no clear dominance among the different methods. Even though the specialised convolutional transformer architecture achieves the lowest average error, the two autoregressive approaches follow closely behind. Fine-tuned models are clearly more effective than the zero-shot approach used with Chronos, even our minimalist architecture achieves comparable performance to their specialised one.}
+
 {\color{blue}
 \subsection{Ablation Studies}
 
@@ -928,11 +929,19 @@ Another interesting observation that emerges from the above example is that the 
 	\caption{The contribution of each timestep to each generated output value.}
 	\label{fig:attention}
 \end{figure}
-}
 
 \subsection{Scalability}
-The model has also been evaluated in terms of scalability of its components (i.e., how does the number of parameters relate to training and inference time, as well as its performance).
-The tests have been performed on the M3 dataset with id $2047$, against which the minimalistic model showed significantly low testing results. The outcomes of these tests are reported in Tables \ref{tab:scal1} and \ref{tab:scal2}. In Table \ref{tab:scal1}, the embedding size used was $8$ and the number of training epochs was $20$.
+The model has also been evaluated in terms of the scalability of its components, i.e. how the number of parameters relates to training and inference time and performance.
+These tests were performed on the M3 dataseries with ID $N2047$, against which the minimalist model produced unfavorable testing results. The outcomes of these tests are reported in Tables \ref{tab:scal1} and \ref{tab:scal2}. In Table \ref{tab:scal1}, the embedding size was 8 and the number of training epochs was 20. The columns show:
+\begin{itemize}
+	\item {\it Encoder}: number of encoder layers;
+	\item {\it Decoder}: number of decoder layers;
+	\item {\it trtrain}: absolute RMSE of the transformers model on the training part;
+	\item {\it trtest}: absolute RMSE of the transformers model on the test part, i.e., on the last 18 data points;
+	\item {\it nparams}: number of model parameters to train;
+	\item {\it trtime}: training time, in seconds per epoch;
+	\item {\it inftime}: inference time, in seconds.
+\end{itemize}
 
 \begin{table}[H]
 	\caption{Scalability results.}
@@ -949,9 +958,9 @@ The tests have been performed on the M3 dataset with id $2047$, against which th
 	\end{tabular}
 \end{table}
 
-The above results can be briefly examined. As the number of encoder and decoder blocks increases, the number of parameters (\textit{nparams}) also grows, directly influencing both the training time \textit{trtime} (expressed in seconds per epoch) and the inference time \textit{inftime}. While the training loss remains largely stable, the model’s generalization ability is reflected in the decreasing test loss values. As it can be later seen in Table \ref{tab:scal2}, there is not a direct correlation between training loss and testing loss.
+A brief examination of the above results shows that as the number of encoder and decoder blocks increases, so does the number of parameters (\textit{nparams}), which directly influences the training time (\textit{trtime}) and inference time (\textit{inftime}). While the training loss remains largely stable, the model’s ability to generalize is reflected in the decreasing test loss values. As will also be apparent from the following Table \ref{tab:scal2}, there is no direct correlation between training and testing loss.
 
-Table \ref{tab:scal2} shows the result of a similar model in which both the model size and the internal embeddings' size change. In this case, the number of epochs is set to $100$: this leads to better convergence on the training set but to worse results on the training set (with respect to Table \ref{tab:scal2}). It must also be kept in mind the fact that the series at hand is relatively short; hence, beyond a certain threshold, increasing the network size - and thus the number of parameters - has only a limited effect on performances.
+Table \ref{tab:scal2}, which includes a new {\it embed} column to report the size of the embeddings, shows the results of a model in which both the model size and the size of the internal embeddings change. In this case, the number of epochs is set to 100: this leads to better convergence on the training set, but worse results (with respect to Table \ref{tab:scal1}). It should also be noted that the series in question is relatively short; therefore, increasing the network size — and thus the number of parameters — beyond a certain threshold does not affect performance.
 
 \begin{table}[H]
 	\caption{Scalability results.}
@@ -969,7 +978,7 @@ Table \ref{tab:scal2} shows the result of a similar model in which both the mode
 		\bottomrule
 	\end{tabular}
 \end{table}
-
+}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusions} \label{sec:conclusions}
