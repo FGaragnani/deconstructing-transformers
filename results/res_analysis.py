@@ -118,7 +118,9 @@ def someplots():
             plt.plot(range(len(arrdata) - 18, len(arrdata)),rfdata,".",label="random forest",color="r",linewidth=3)
             plt.plot(range(len(arrdata) - 18, len(arrdata)),trdata,"--",label="transformer",color="g",linewidth=3)
             plt.legend()
-            plt.title(f"{categ} - N{id}")
+            plt.title(f"{categ} - N{id}", fontsize=18)
+            plt.xlabel("Time (months)", fontsize=16)
+            plt.ylabel("Value", fontsize=16)
             plt.ylim(min(arrdata)/1.01, max(arrdata)*1.01)
             plt.show()
    return
