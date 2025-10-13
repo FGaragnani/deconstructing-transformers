@@ -72,6 +72,21 @@ Nie, Y.; Nguyen, N.H.; Sinthong, P.; Kalagnanam, J.
   Transformers,  2023,  \href{http://arxiv.org/abs/2211.14730}{{\normalfont
   [arXiv:cs.LG/2211.14730]}}.
 
+\bibitem[Ansari et~al.(2024)Ansari, Stella, Turkmen, Zhang, Mercado, Shen,
+  Shchur, Rangapuram, Pineda~Arango, Kapoor, Zschiegner, Maddix, Mahoney,
+  Torkkola, Gordon~Wilson, Bohlke-Schneider, and Wang]{chronos}
+Ansari, A.F.; Stella, L.; Turkmen, C.; Zhang, X.; Mercado, P.; Shen, H.;
+  Shchur, O.; Rangapuram, S.S.; Pineda~Arango, S.; Kapoor, S.;  et~al.
+\newblock Chronos: Learning the Language of Time Series.
+\newblock {\em Transactions on Machine Learning Research} {\bf 2024}.
+
+\bibitem[Lin et~al.(2021)Lin, Koprinska, and Rana]{tcan}
+Lin, Y.; Koprinska, I.; Rana, M.
+\newblock Temporal Convolutional Attention Neural Networks for Time Series
+  Forecasting.
+\newblock In Proceedings of the Proceedings of the IEEE International Joint
+  Conference on Neural Networks (IJCNN),  2021.
+
 \bibitem[Wen et~al.(2023)Wen, Zhou, Zhang, Chen, Ma, Yan, and Sun]{WZZC23}
 Wen, Q.; Zhou, T.; Zhang, C.; Chen, W.; Ma, Z.; Yan, J.; Sun, L.
 \newblock Transformers in time series: a survey.
@@ -151,21 +166,6 @@ Cecilia, J.M.; Manzoni, P.; Trolle, D.; Nielsen, A.; Blanco, P.; Prandi, C.;
 \newblock In Proceedings of the Proceedings of the Conference on Information
   Technology for Social Good, New York, NY, USA,  2021; GoodIT '21, p.
   204–209.
-
-\bibitem[Ansari et~al.(2024)Ansari, Stella, Turkmen, Zhang, Mercado, Shen,
-  Shchur, Rangapuram, Pineda~Arango, Kapoor, Zschiegner, Maddix, Mahoney,
-  Torkkola, Gordon~Wilson, Bohlke-Schneider, and Wang]{chronos}
-Ansari, A.F.; Stella, L.; Turkmen, C.; Zhang, X.; Mercado, P.; Shen, H.;
-  Shchur, O.; Rangapuram, S.S.; Pineda~Arango, S.; Kapoor, S.;  et~al.
-\newblock Chronos: Learning the Language of Time Series.
-\newblock {\em Transactions on Machine Learning Research} {\bf 2024}.
-
-\bibitem[Lin et~al.(2021)Lin, Koprinska, and Rana]{tcan}
-Lin, Y.; Koprinska, I.; Rana, M.
-\newblock Temporal Convolutional Attention Neural Networks for Time Series
-  Forecasting.
-\newblock In Proceedings of the Proceedings of the IEEE International Joint
-  Conference on Neural Networks (IJCNN),  2021.
 
 \bibitem[Seabold and Perktold(2010)]{SP10}
 Seabold, S.; Perktold, J.
