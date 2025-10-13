@@ -465,6 +465,53 @@ $$
 						\end{bmatrix}
 $$
 
+\begin{figure}[H]
+	%    \centering
+	\begin{tikzpicture}[node distance=6mm]
+		
+		% Input Embeddings + Positional Encoding
+		\node (input) [block, fill=gray!10] {Input embeddings \\ \scriptsize (8)};
+		\node (pe) [block, fill=gray!10, below=of input] {+ Positional Encoding \\ \scriptsize (28)};
+		
+		% Masked MHA
+		\node (mha1) [mha, below=of pe] {Masked Multi-Head Attention \\ \scriptsize (80)};
+		\node (add1) [addnorm, below=of mha1] {Add \& Norm \par \scriptsize (8)};
+		
+		% Encoder-Decoder MHA
+		\node (mha2) [mha, below=of add1] {Multi-Head Cross-Attention \\ \scriptsize (80)};
+		\node (add2) [addnorm, below=of mha2] {Add \& Norm \par \scriptsize (8)};
+		
+		% Feedforward
+		\node (ff) [ff, below=of add2] {Feedforward Network \\ \scriptsize (148)};
+		\node (add3) [addnorm, below=of ff] {Add \& Norm \par \scriptsize (8)};
+		
+		% Output
+		\node (output) [block, fill=gray!10, below=of add3] {Output};
+		
+		% Arrows
+		\draw[arrow] (input) -- (pe);
+		\draw[arrow] (pe) -- (mha1);
+		\draw[arrow] (mha1) -- (add1);
+		\draw[arrow] (add1) -- (mha2);
+		\draw[arrow] (mha2) -- (add2);
+		\draw[arrow] (add2) -- (ff);
+		\draw[arrow] (ff) -- (add3);
+		\draw[arrow] (add3) -- (output);
+		
+		% Box around the decoder block
+		\node[draw, dashed, rounded corners, fit=(mha1) (add3), inner sep=6pt] (decbox) {};
+		\node[right=2mm of decbox.east] (declabel) {Decoder Block};
+		\node[below=0mm of declabel.south] {$\times l$};
+		
+		% Extra arrow from Encoder output to second MHA
+		\node (encout) [left=10mm of mha2] {Encoder Output $\textbf{Z}$};
+		\draw[arrow] (encout) -- (mha2.west);
+		
+	\end{tikzpicture}
+	\caption{The Decoding Process. For~each block, the~total number of learnable parameters for the restaurant series example is~shown.}
+	\label{fig:dec}
+\end{figure}
+
 \medskip\noindent Lines \ref{dec:decblock1}--\ref{dec:decblock2}: (\textit{Decoding Blocks})
 
 Just as in the encoding phase, the~main loop of the algorithm updates for $l$ iterations (Lines \ref{dec:decblock1}–\ref{dec:decblock2}) the matrix $\textbf{Y}$. The~block of code implementing each iteration is called a \textit{Decoding Block}.
@@ -549,53 +596,6 @@ $$
 where $\sigma$ represents the sigmoid~function.
 
 If we are at the $i$-th iteration of the outer output cycle (Lines \ref{dec:outer}--\ref{dec:outer2}), the~output matrix $\textbf{Y}$ contains in position $i$ the predicted embedding $Y_i$ for timestep $i$.
-
-\begin{figure}[H]
-%    \centering
-    \begin{tikzpicture}[node distance=6mm]
-    
-    % Input Embeddings + Positional Encoding
-    \node (input) [block, fill=gray!10] {Input embeddings \\ \scriptsize (8)};
-    \node (pe) [block, fill=gray!10, below=of input] {+ Positional Encoding \\ \scriptsize (28)};
-    
-    % Masked MHA
-    \node (mha1) [mha, below=of pe] {Masked Multi-Head Attention \\ \scriptsize (80)};
-    \node (add1) [addnorm, below=of mha1] {Add \& Norm \par \scriptsize (8)};
-    
-    % Encoder-Decoder MHA
-    \node (mha2) [mha, below=of add1] {Multi-Head Cross-Attention \\ \scriptsize (80)};
-    \node (add2) [addnorm, below=of mha2] {Add \& Norm \par \scriptsize (8)};
-    
-    % Feedforward
-    \node (ff) [ff, below=of add2] {Feedforward Network \\ \scriptsize (148)};
-    \node (add3) [addnorm, below=of ff] {Add \& Norm \par \scriptsize (8)};
-    
-    % Output
-    \node (output) [block, fill=gray!10, below=of add3] {Output};
-    
-    % Arrows
-    \draw[arrow] (input) -- (pe);
-    \draw[arrow] (pe) -- (mha1);
-    \draw[arrow] (mha1) -- (add1);
-    \draw[arrow] (add1) -- (mha2);
-    \draw[arrow] (mha2) -- (add2);
-    \draw[arrow] (add2) -- (ff);
-    \draw[arrow] (ff) -- (add3);
-    \draw[arrow] (add3) -- (output);
-    
-    % Box around the decoder block
-    \node[draw, dashed, rounded corners, fit=(mha1) (add3), inner sep=6pt] (decbox) {};
-    \node[right=2mm of decbox.east] (declabel) {Decoder Block};
-    \node[below=0mm of declabel.south] {$\times l$};
-    
-    % Extra arrow from Encoder output to second MHA
-    \node (encout) [left=10mm of mha2] {Encoder Output $\textbf{Z}$};
-    \draw[arrow] (encout) -- (mha2.west);
-    
-    \end{tikzpicture}
-    \caption{The Decoding Process. For~each block, the~total number of learnable parameters for the restaurant series example is~shown.}
-    \label{fig:dec}
-\end{figure}
 
 \begin{algorithm2e} [H]
 	\SetKwInOut{Input}{Input}
@@ -1048,7 +1048,7 @@ The robustness of the Transformer paradigm is also evident, as~even a stripped-d
 \textcolor{black}{In a research landscape often dominated by increasingly complex architectures, this study highlights the importance of transparent baselines}. Future work may explore the impact of specific enhancements, such as seasonal embeddings, multi-head configurations or hybridization with statistical components, on~forecasting performance when added to this minimalist~core.
 
 \vspace{6pt}
-\authorcontributions{All authors contributed equally to all activities related to this work. All authors have read and agreed to the published version of the manuscript.}
+\authorcontributions{All authors contributed equally to all activities related to this work. All authors have read and agreed to the published version of the manuscript. All authors have read and agreed to the published version of the manuscript.}
 
 \funding{This research received no external funding}
 
