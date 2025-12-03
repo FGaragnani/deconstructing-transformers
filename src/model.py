@@ -63,6 +63,7 @@ class TransformerLikeModel(nn.Module):
     only when feeding into the decoder per step.
     """
     batch_size, seq_length, _ = X.shape
+    X = X.to(self.cls_token.device)
     Y_tokens = self.cls_token.expand((batch_size, 1, self.embed_size))
 
     if self.seca is not None:
@@ -122,6 +123,15 @@ class TransformerLikeModel(nn.Module):
     _, attention_weights = self.decoder[0].mha_2((Y, Z, Z), return_attention=True) # type: ignore
 
     return attention_weights
+
+  def get_decoder_self_attention(self, Y):
+    Y_enc = self.seca.encode(Y)
+    if self.use_pe:
+      Y_enc = self.pe(Y_enc)
+
+    mha1: Any = self.decoder[0].mha_1
+    _, attn_weights = mha1((Y_enc, Y_enc, Y_enc), return_attention=True)  # type: ignore
+    return attn_weights
 
 
 class EncoderOnlyModel(nn.Module):

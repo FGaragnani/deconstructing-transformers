@@ -8,31 +8,32 @@ from ristoranti import RistorantiDataset
 from src.model import TransformerLikeModel
 from src.train import train_transformer_model
 
+SEQUENCE_LENGTH = 7
 PREDICTION_LENGTH = 7
 ENCODER_SIZE = 1
 DECODER_SIZE = 1
-
+EMBED_SIZE = 4
+num_heads = 2
+batch_size = 32
 
 # Hyperparameter search-space definitions
-NUM_HEADS_CHOICES = [1, 2, 4]
-SEQUENCE_LENGTHS = [i for i in range(5, 15)]
-BATCH_SIZES = [4, 8, 16, 32]
-EMBED_SIZES = [8, 12, 16]
-EPOCHS = 25
+
+# NUM_HEADS_CHOICES = [1, 2, 4]
+# BATCH_SIZES = [2, 4, 8, 16, 32]
+EPOCHS = 300
 DROPOUT_RANGE = (0.0, 0.30)
-LR_RANGE = (1e-3, 1e-2)
+LR_RANGE = (1e-4, 1e-1)
 TRAIN_PERCENTAGE = 0.75
 SEED = 42
 
 def objective(trial: optuna.trial.Trial):
 
     # Hyperparameters
-    embed_size = trial.suggest_categorical("embed_size", EMBED_SIZES)
-    sequence_length = trial.suggest_categorical("sequence_length", SEQUENCE_LENGTHS)
-    num_heads = trial.suggest_categorical("num_head_enc", NUM_HEADS_CHOICES)
+
+    # num_heads = trial.suggest_categorical("num_head_enc", NUM_HEADS_CHOICES)
     dropout = trial.suggest_float("dropout", DROPOUT_RANGE[0], DROPOUT_RANGE[1])
     learning_rate = trial.suggest_float("lr", LR_RANGE[0], LR_RANGE[1])
-    batch_size = trial.suggest_categorical("batch_size", BATCH_SIZES)
+    # batch_size = trial.suggest_categorical("batch_size", BATCH_SIZES)
 
     # Dataset
     df = pd.read_csv('ristorantiGTrend.csv')
@@ -41,7 +42,7 @@ def objective(trial: optuna.trial.Trial):
     min_val = np.min(series)
     max_val = np.max(series)
     series = (series - min_val) / (max_val - min_val)
-    dataset = RistorantiDataset(series, sequence_length, PREDICTION_LENGTH)
+    dataset = RistorantiDataset(series, SEQUENCE_LENGTH, PREDICTION_LENGTH)
 
     torch.manual_seed(SEED)
     output_len = PREDICTION_LENGTH
@@ -54,7 +55,7 @@ def objective(trial: optuna.trial.Trial):
     test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False)
 
     model = TransformerLikeModel(
-        embed_size=embed_size,
+        embed_size=EMBED_SIZE,
         encoder_size=ENCODER_SIZE,
         decoder_size=DECODER_SIZE,
         input_size=1,

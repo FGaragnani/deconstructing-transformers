@@ -9,9 +9,13 @@ from torch.utils.data import DataLoader
 
 from typing import Tuple
 
+LEARNING_RATE = 1e-4
+
 def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data_loader: DataLoader, test_data_loader: DataLoader, verbose: bool = True,
                 teacher_forcing_ratio: float = 1.0, pretrain_seca: bool = True, check_losses: bool = False, delta: bool = False,
-                early_stopping: bool = False, early_stopping_patience: int = 10, early_stopping_min_delta: float = 1e-4) -> Tuple[float, float]:
+                early_stopping: bool = False, early_stopping_patience: int = 10, early_stopping_min_delta: float = 1e-4,
+                learning_rate: float = LEARNING_RATE) -> Tuple[float, float]:
+  
   device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
   model.to(device)
 
@@ -21,9 +25,9 @@ def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data
   model.train()
   if pretrain_seca and model.seca is not None:
     model.seca.start()
-  #model.seca.freeze()
+  # model.seca.freeze()
 
-  optimizer = optim.AdamW(model.parameters(), lr=2e-3)
+  optimizer = optim.AdamW(model.parameters(), lr=learning_rate)
   scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.5)
   criterion = nn.MSELoss()
 
@@ -62,12 +66,12 @@ def train_transformer_model(model: TransformerLikeModel, epochs: int, train_data
 
       total_loss /= model.output_len
       total_loss.backward()
-      torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+      # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
       optimizer.step()
-      scheduler.step()
 
       epoch_loss += total_loss.item()
-
+    
+    scheduler.step()
     if (epoch + 1) % 10 == 0:
       teacher_forcing_ratio *= 0.8
 

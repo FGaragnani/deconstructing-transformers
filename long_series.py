@@ -10,6 +10,7 @@ import time
 import pandas as pd
 import matplotlib.pyplot as plt
 from typing import List, Tuple
+from tqdm import tqdm
 
 OUTPUT_LEN = 18
 INPUT_LEN = 24
@@ -21,6 +22,9 @@ TRAIN_SIZE = 0.8
 BATCH_SIZE = 32
 
 def main():
+
+    torch.manual_seed(42)
+    np.random.seed(42)
 
     folder = 'dataset/long/'
     long_series = []
@@ -95,11 +99,16 @@ def main():
         fig, axs = plt.subplots(rows, cols, figsize=(12, 8))
         axs_flat = axs.flatten()
         for idx, item in enumerate(long_series):
+
             if idx not in [0, 1]:
                 continue
             filename, train_ds, test_ds = item
             train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)
             test_loader = DataLoader(test_ds, batch_size=BATCH_SIZE, shuffle=False)
+
+            whole_series = np.concatenate([train_ds.original_series, test_ds.original_series])
+            target = whole_series[-OUTPUT_LEN:]
+            inp = whole_series[:-OUTPUT_LEN]
 
             model = TransformerLikeModel(
                 embed_size=EMBED_SIZE,
@@ -114,23 +123,47 @@ def main():
             )
 
             train_transformer_model(
-                model, EPOCHS,
+                model, EPOCHS + 10 * (idx),
                 train_data_loader=train_loader,
                 test_data_loader=test_loader,
-                verbose=True
+                verbose=True, learning_rate=2e-3
             )
 
             # Transformer
             model.eval()
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-            whole_series = np.concatenate([train_ds.original_series, test_ds.original_series])
-            target = whole_series[-OUTPUT_LEN:]
-            inp = whole_series[:-OUTPUT_LEN]
             transformer_input = inp[-INPUT_LEN:].reshape(1, INPUT_LEN, 1)
             transformer_input_tensor = torch.tensor(transformer_input, dtype=torch.float32).to(device)
             with torch.no_grad():
                 pred_transformer = model(transformer_input_tensor)
                 pred_transformer = pred_transformer.cpu().numpy().reshape(-1)
+
+            """
+            model = torch.nn.Transformer(d_model=1, nhead=1)
+            criterion = torch.nn.MSELoss()
+            for epoch in tqdm(range(EPOCHS + 10 * (idx)), desc=f"Training Transformer for {filename}"):
+                model.train()
+                for batch in train_loader:
+                    src, tgt = batch
+                    src = src.permute(1, 0, 2)  # (S, N, E)
+                    tgt_input = tgt[:, :-1].permute(1, 0, 2)  # (T, N, E)
+                    tgt_output = tgt[:, 1:].permute(1, 0, 2)  # (T, N, E)
+                    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+                    optimizer.zero_grad()
+                    output = model(src, tgt_input)
+                    loss = criterion(output, tgt_output)
+                    loss.backward()
+                    optimizer.step()
+            model.eval()
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            transformer_input = inp[-INPUT_LEN:].reshape(1, INPUT_LEN, 1)
+            transformer_input_tensor = torch.tensor(transformer_input, dtype=torch.float32).to(device)
+            with torch.no_grad():
+                pred_transformer = model(transformer_input_tensor)
+                pred_transformer = pred_transformer.cpu().numpy().reshape(-1)
+                test_loss = criterion(torch.tensor(pred_transformer), torch.tensor(target)).item()
+            print(f"Dataset Name: {filename}, Test Loss: {test_loss**0.5}")
+            """
 
             # Random Forest
             clf = RandomForestRegressor(n_estimators=250, random_state=42)
@@ -145,7 +178,9 @@ def main():
             ax.plot(range(len(inp), len(inp) + len(target)), target, label='target', color='green')
             ax.plot(range(len(inp), len(inp) + len(pred_transformer)), pred_transformer, label='transformer', color='red')
             ax.plot(range(len(inp), len(inp) + len(pred_rf)), pred_rf, label='random forest', color='orange')
-            ax.set_title(filename)
+            ax.set_xlabel('Time Step', fontsize=20)
+            ax.set_ylabel('Standardized Value', fontsize=20)
+            ax.set_title(filename, fontsize=23)
             ax.legend()
             ax.set_ylim(0.0, 1.0)
         plt.tight_layout()

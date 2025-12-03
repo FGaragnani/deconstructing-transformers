@@ -15,7 +15,7 @@ DECODER_SIZE = 1
 NUM_HEADS = 2
 BATCH_SIZE = 2
 EPOCHS = 500
-DROPOUT = 0.05
+DROPOUT = 0.001
 TRAIN_PERCENTAGE = 0.75
 SEED = 42
 DELTA = False
@@ -58,8 +58,9 @@ def main():
     print(f"Train set size: {len(train_set)}, Test set size: {len(test_set)}")
 
     train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True)
-    test_loader = DataLoader(test_set, batch_size=BATCH_SIZE, shuffle=True)
-
+    test_loader = DataLoader(test_set, batch_size=BATCH_SIZE, shuffle=False)
+    
+    """
     model = TransformerLikeModel(
         embed_size=EMBED_SIZE,
         encoder_size=ENCODER_SIZE,
@@ -71,19 +72,29 @@ def main():
         dropout=DROPOUT,
         max_seq_length=SEQUENCE_LENGTH
     )
-
     train_transformer_model(
         model,
         epochs=EPOCHS,
         train_data_loader=train_loader,
         test_data_loader=test_loader,
         verbose=True,
-        teacher_forcing_ratio=0.00,
+        teacher_forcing_ratio=0.90,
         pretrain_seca=True,
         check_losses=EARLY_STOPPING,
         delta=DELTA,
         early_stopping=EARLY_STOPPING
     )
+    """
+    model = TransformerLikeModel.load_model("ristoranti_model.pth", TransformerLikeModel,
+        embed_size=EMBED_SIZE,
+        encoder_size=ENCODER_SIZE,
+        decoder_size=DECODER_SIZE,
+        output_len=PREDICTION_LENGTH,
+        num_head_enc=NUM_HEADS,
+        num_head_dec_1=NUM_HEADS,
+        num_head_dec_2=NUM_HEADS,
+        dropout=DROPOUT,
+        max_seq_length=SEQUENCE_LENGTH)
 
     model.eval()
     with torch.no_grad():
@@ -116,14 +127,14 @@ def main():
                 flat_preds = np.concatenate(predictions)
                 prediction_series[SEQUENCE_LENGTH:SEQUENCE_LENGTH+len(flat_preds)] = flat_preds
         
-        plt.rcParams.update({'font.size': 14})  # Set default font size
+        plt.rcParams.update({'font.size': 22})
         plt.figure(figsize=(14, 6))
         plt.plot(range(len(series)), series, 'b-', label='Standardized Input Series')
         test_start = len(series) - int((1 - TRAIN_PERCENTAGE) * len(series))
         plt.plot(range(test_start, len(series)), series[test_start:], 'g-', label='Test Series', linewidth=2)
         plt.plot(range(len(series)), prediction_series, 'r--', linewidth=3, label='Predicted Series')
         plt.title('Original vs Predicted Series')
-        plt.xlabel('Timestep')
+        plt.xlabel('Time Step')
         plt.ylabel('Standardized Value')
         plt.legend()
         plt.grid(True, alpha=0.3)

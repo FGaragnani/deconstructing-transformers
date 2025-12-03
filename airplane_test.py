@@ -115,7 +115,7 @@ def main():
         normalization=Normalization.MIN_MAX
     )
 
-    plt.rcParams.update({'font.size': 14})  # Set default font size
+    plt.rcParams.update({'font.size': 18})
     fig, axes = plt.subplots(1, 1, figsize=(12, 6))
     
     """
@@ -167,7 +167,7 @@ def main():
         
         X_np = X_plot[0].squeeze().numpy()
         y_np = y_plot[0].squeeze().numpy()
-        pred_np = pred_plot[0].squeeze().numpy()
+        pred_np = pred_plot[0].squeeze().cpu().numpy()
 
         """
         plot_forecast_window(X_np, y_np, pred_np, delta=DELTA, ax=axes[1])
@@ -189,7 +189,7 @@ def main():
             predictions = []
             for i in range(0, len(original_series) - SEQUENCE_LENGTH, PREDICTION_LENGTH):
                 input_seq = torch.tensor(original_series[i:i + SEQUENCE_LENGTH].reshape(-1, 1), dtype=torch.float32).unsqueeze(0)
-                pred = model.forward(input_seq).squeeze().numpy()
+                pred = model.forward(input_seq).squeeze().cpu().numpy()
                 predictions.append(pred)
 
             if DELTA:
